@@ -59,11 +59,32 @@ buf[index] = '.'
 These things add up. So one trick is to compute hundreds instead of tens. And you use a lookup table.
 So you have precompted strings from `00`, `01`, `02`, up `99`.
 For the dot, you can also avoid having separate store by precomputing the strings
-`0.`, `1.`, `2.`,... or the strings .
+`0.`, `1.`, `2.`,... or something equivalent.
 
-The first think to realize is that 
+Similarly, for the exponent, you could precompute strings. E.g., you could certainly precompute `e+` and `e-` and
+not have two stores.
+
+There might be room for fancier strategies. See
+
+-  Daniel Lemire, "Converting integers to fix-digit representations quickly," in Daniel Lemire's blog, November 18, 2021, https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/.
+
+It is a research question whether AVX-512 can solve this problem. It might. The reason
+why AVX-512 might do it is that it supports *masked* stores. So you can safely store
+a SIMD register to memory, writing only part of it.
+It might also be possible to use SIMD in general if you allow writing beyond the expected
+buffer. This might be acceptable in many settings where you can assume that the memory
+is overallocated.
+
+
+## Computing the digit values
+
+
+This is where the fun mathematics comes in. I give you an integer, how do you compute
+quickly the remainder and the quotient? See the following paper.
 
 - Daniel Lemire, Colin Bartlett, Owen Kaser,  [Integer Division by Constants: Optimal Bounds](https://arxiv.org/abs/2012.12369),  Heliyon 7 (6), 2021
+
+Though the math is a bit tricky, we can often brute force a check for the solution.
 
 ## Usage
 
