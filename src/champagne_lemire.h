@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <stdio.h>
+#include <sys/types.h>
 #ifdef _MSC_VER
 #ifdef __clang__
 #define WE_HAVE_CLANGCL 1
@@ -13,6 +14,10 @@
 #define WE_HAVE_VISUAL_STUDIO 1
 #include <intrin.h>
 #endif
+#endif
+
+#ifdef __SSE2__
+#include <x86intrin.h>
 #endif
 
 constexpr auto int_pow = [](uint64_t base, uint64_t exponent) -> uint64_t {
@@ -298,9 +303,15 @@ std::pair<uint64_t, uint64_t> mul64x64_to_128(uint64_t a, uint64_t b) {
   return {high, low};
 #elif defined(__SIZEOF_INT128__)
   // GCC/Clang: Use __uint128_t
+#if __BMI2__
+  long long unsigned int high;
+  uint64_t low = _mulx_u64(a, b, &high);
+  return {uint64_t(high), low};
+#else
   __uint128_t result =
       static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
   return {static_cast<uint64_t>(result >> 64), static_cast<uint64_t>(result)};
+#endif
 #else
   auto emulu = [](uint32_t x, uint32_t y) -> uint64_t {
     return x * (uint64_t)y;
@@ -350,6 +361,11 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
   static_assert(is_double || sizeof(T) == 4, "Unsupported type size");
   int32_t exp = exponent;
   size_t exp_index;
+  if(mantissa == 0) {
+    // Special case for zero.
+    result[0] = '0';
+    return 1;
+  }
 
   if (mantissa >= 100'00'00'00'00'00'00'00) {
     size_t final_index = 17 + 1;
@@ -441,7 +457,7 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     }
   }
 
-  if (mantissa && exp) { // We do not print the exponent if mantissa is zero.
+  if (exp) { // We do not print the exponent if mantissa is zero but zero is handled above.
     // About 20 instructions for the exponent?
     memcpy(result + exp_index, "E-", 2);
     exp_index += 1 + (exp < 0);
@@ -454,21 +470,15 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
         exp = exp - head_digits * 100;
         write_two_digits(result + exp_index, exp);
         exp_index += 3;
-      } else if (exp >= 10) { // 2 digits
+      } else { // 2 digits
+        // If we need fewer than 2 digits, this will write a leading zero.
         write_two_digits(result + exp_index, exp);
         exp_index += 2;
-      } else { // 1 digit
-        result[exp_index] = (char)('0' + exp);
-        exp_index += 1;
       }
     } else {
-      if (exp >= 10) { // 2 digits
-        write_two_digits(result + exp_index, exp);
-        exp_index += 2;
-      } else { // 1 digit
-        result[exp_index] = (char)('0' + exp);
-        exp_index += 1;
-      }
+      // If we need fewer than 2 digits, this will write a leading zero.
+      write_two_digits(result + exp_index, exp);
+      exp_index += 2;
     }
   }
   return exp_index;

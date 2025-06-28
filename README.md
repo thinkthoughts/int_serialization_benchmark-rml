@@ -88,6 +88,10 @@ Though the math is a bit tricky, we can often brute force a check for the soluti
 
 ## Usage
 
+Currently, the benchmark is very approximative. The implementations are untested. This is at the demo stage.
+We compare `champagne_lemire` which is something like the function from Ryu, `fast+champagne_lemire` which
+is a slightly faster alternative and dragonbox (a very fast alternative).
+
 ```
 cmake -B build
 ./build/benchmark
@@ -100,3 +104,5 @@ Consider also testing with LLVM
 CXX=clang++ cmake -B buildclang
 ./buildclang/benchmark
 ```
+
+We definitively need more tests and better benchmarks including benchmarks on realistic data.
