@@ -93,3 +93,10 @@ cmake -B build
 ./build/benchmark
 ```
 
+Consider also testing with LLVM
+
+
+```
+CXX=clang++ cmake -B buildclang
+./buildclang/benchmark
+```
