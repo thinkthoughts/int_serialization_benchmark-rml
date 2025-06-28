@@ -64,6 +64,9 @@ For the dot, you can also avoid having separate store by precomputing the string
 Similarly, for the exponent, you could precompute strings. E.g., you could certainly precompute `e+` and `e-` and
 not have two stores.
 
+Obviously, going from tens to hundreds to tens of housands could speed things further, although we might need
+a slightly larger table (40kB?). We'd like to avoid massive tables if there are more clever approaches.
+
 There might be room for fancier strategies. See
 
 -  Daniel Lemire, "Converting integers to fix-digit representations quickly," in Daniel Lemire's blog, November 18, 2021, https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/.
@@ -83,21 +86,38 @@ This is where the fun mathematics comes in. I give you an integer, how do you co
 quickly the remainder and the quotient? See the following paper.
 
 - Daniel Lemire, Colin Bartlett, Owen Kaser,  [Integer Division by Constants: Optimal Bounds](https://arxiv.org/abs/2012.12369),  Heliyon 7 (6), 2021
+- Takahashi, D. (2023). Multiple Integer Divisions with an Invariant Dividend and Monotonically Increasing or Decreasing Divisors. In: Gervasi, O., et al. Computational Science and Its Applications – ICCSA 2023. ICCSA 2023. Lecture Notes in Computer Science, vol 13957. Springer, Cham. https://doi.org/10.1007/978-3-031-36808-0_26
 
 Though the math is a bit tricky, we can often brute force a check for the solution.
+
+Currently, we can *almost* bring it down to one multiplication per digit (where a digit could a value in [0,99] in this context).
+
+
+## Open question
+
+We also compute the value, e.g. the integer 43, and then we compute the string to write.
+
+## Overall challenge
+
+How low can you go? By a rough  estimation, the Ryu string generation algorithm might use 200 instructions
+per float where as Dragonbox can go under 100 instructions per float. That's excellent, but still 
+about 5 instructions per character produced.
 
 ## Usage
 
 Currently, the benchmark is very approximative. The implementations are untested. This is at the demo stage.
 We compare `champagne_lemire` which is something like the function from Ryu, `fast+champagne_lemire` which
-is a slightly faster alternative and dragonbox (a very fast alternative).
+is a slightly faster alternative and dragonbox (a very fast alternative). Some of the code is assuredly
+or wrong makes assumptions not satisfied by the benchmark.
 
 ```
 cmake -B build
 ./build/benchmark
 ```
 
-Consider also testing with LLVM
+To get performance counters, you might need to run the benchmark program in privileged mode (sudo).
+
+Consider also testing with LLVM/clang.
 
 
 ```
@@ -106,3 +126,11 @@ CXX=clang++ cmake -B buildclang
 ```
 
 We definitively need more tests and better benchmarks including benchmarks on realistic data.
+
+Further, the system archictecture is assuredly a factor.
+
+
+## References
+
+- Cassio Neri, Lorenz Schneider, Euclidean affine functions and their application to calendar algorithms, Software: Practice and Experience 53 (4), 2023.
+- Daniel Lemire, Owen Kaser, Nathan Kurz, Faster remainder by direct computation: Applications to compilers and software libraries. Software: Practice and Experience, 49(6), 2019.
