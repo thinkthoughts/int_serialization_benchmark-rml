@@ -109,7 +109,6 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     uint64_t high, low;
     std::tie(high, low) = mul64x64_to_128(r1, 100);
     write_two_digits(result + final_index - 2, high);
-    auto l = low;
     std::tie(high, low) = mul64x64_to_128(low, 100);
     write_two_digits(result + final_index - 4, high);
 
@@ -198,6 +197,7 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     // About 20 instructions for the exponent?
     memcpy(result + exp_index, "E-", 2);
     exp_index += 1 + (exp < 0);
+    exp = (exp < 0) ? -exp : exp;
 
     if constexpr (is_double) {
       if (exp >= 100) { // 3 digits
