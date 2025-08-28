@@ -85,15 +85,18 @@ decimal_float double_to_decimal_float(double value) {
   return result;
 }
 
-void pretty_print(size_t volume, size_t bytes, const std::string& name,
+void pretty_print(size_t volume, size_t bytes, const std::string &name,
                   event_aggregate agg) {
   fmt::print("{:<50} : ", name);
   fmt::print(" {:5.2f} ns/d ", agg.fastest_elapsed_ns() / volume);
   if (collector.has_events()) {
-    fmt::print(" {:5.2f} GHz ", agg.fastest_cycles() / agg.fastest_elapsed_ns());
+    fmt::print(" {:5.2f} GHz ",
+               agg.fastest_cycles() / agg.fastest_elapsed_ns());
     fmt::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
     fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
-    fmt::print(" {:5.2f} i/c ", agg.fastest_instructions() / agg.fastest_cycles());
+    fmt::print(" {:5.2f} i/B ", agg.fastest_instructions() / bytes);
+    fmt::print(" {:5.2f} i/c ",
+               agg.fastest_instructions() / agg.fastest_cycles());
   }
   fmt::print("\n");
 }
@@ -117,7 +120,7 @@ template <typename T> struct uniform_generator : float_number_generator<T> {
   T new_float() override { return dis(gen); }
 };
 
-std::vector<decimal_float> generate_large_set(size_t count = 10'000) {
+std::vector<decimal_float> generate_large_set(size_t count = 1000'000) {
   std::vector<decimal_float> result;
   uniform_generator<double> gen(-1e10, 1e10);
   result.reserve(count);
@@ -159,35 +162,23 @@ int main(int argc, char **argv) {
     // Génération aléatoire par défaut
     data = generate_large_set();
   }
-  size_t volume = data.size();
   volatile uint64_t counter = 0;
   char buffer[64];
-  for (size_t i = 0; i < 4; i++) {
-    fmt::print("Run {}\n", i + 1);
-    pretty_print(data.size(), volume, "champagne_lemire",
-                 bench([&data, &counter, &buffer]() {
-                   for (size_t i = 0; i < data.size(); ++i) {
-                     counter =
-                         counter + to_chars(data[i].mantissa, data[i].exponent,
-                                            data[i].sign, buffer);
-                   }
-                 }));
-    pretty_print(data.size(), volume, "fast+champagne_lemire",
-                 bench([&data, &counter, &buffer]() {
-                   for (size_t i = 0; i < data.size(); ++i) {
-                     char *start = buffer;
-                     if (data[i].sign) {
-                       buffer[0] = '-';
-                       start++;
-                     }
-                     counter = counter +
-                               fast_to_chars(data[i].mantissa, data[i].exponent,
-                                             start) +
-                               (data[i].sign ? 1 : 0);
-                   }
-                 }));
-    pretty_print(data.size(), volume, "dragonbox",
-                 bench([&data, &counter, &buffer]() {
+  auto fastl = [&data, &counter, &buffer]() {
+    for (size_t i = 0; i < data.size(); ++i) {
+      char *start = buffer;
+      if (data[i].sign) {
+        buffer[0] = '-';
+        start++;
+      }
+      counter = counter +
+                fast_to_chars(data[i].mantissa, data[i].exponent, start) +
+                (data[i].sign ? 1 : 0);
+    }
+  };
+  fastl();
+  size_t volume = counter;
+  auto drag = [&data, &counter, &buffer]() {
                    for (size_t i = 0; i < data.size(); ++i) {
                      char *start = buffer;
                      if (data[i].sign) {
@@ -197,8 +188,17 @@ int main(int argc, char **argv) {
                      counter = counter +
                                (jkj::dragonbox::detail::to_chars(
                                     data[i].mantissa, data[i].exponent, start) -
-                                buffer);
+                                buffer) +
+                               (data[i].sign ? 1 : 0);
                    }
-                 }));
+                 };
+  counter = 0;
+  drag();
+  size_t volume_drag = counter;
+  for (size_t i = 0; i < 4; i++) {
+    fmt::print("Run {}\n", i + 1);
+    pretty_print(data.size(), volume, "fast+champagne_lemire", bench(fastl));
+    pretty_print(data.size(), volume_drag, "dragonbox",
+                 bench(drag));
   }
 }
