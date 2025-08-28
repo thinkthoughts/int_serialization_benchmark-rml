@@ -52,6 +52,21 @@ inline void write_one_digits(char *buffer,
 }
 
 
+std::array<char, 3> get_two_digits_with_dot(uint32_t value) {
+   constexpr static std::array<std::array<char, 3>, 100> hundreds_digit_table =
+      []() {
+        std::array<std::array<char, 3>, 100> table{};
+        for (int i = 0; i < 100; ++i) {
+            table[i] = {static_cast<char>((i / 10)%10 + '0'), '.', static_cast<char>((i % 10) + '0')};
+        }
+        return table;
+      }();
+  return hundreds_digit_table[value];
+}
+
+inline void write_two_digits_with_dot(char *buffer, uint32_t value) {
+  std::memcpy(buffer, get_two_digits_with_dot(value).data(), 3);
+}
 
 #ifdef __aarch64__
 std::pair<uint64_t, uint64_t> div100(uint64_t x) {
@@ -130,6 +145,9 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     write_one_digits(result, mantissa);
     exp += 16;
     exp_index = 17 + 1;
+  } else if (mantissa < 10) {
+    result[0] = (char)('0' + mantissa);
+    exp_index = 1;
   } else {
     // 1 to 16
     const uint32_t number_of_digits =
@@ -137,7 +155,8 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     exp += number_of_digits - 1;
     size_t final_index = number_of_digits + 1;
     exp_index = final_index;
-    if (mantissa >= 100'00'00'00) {
+    if(number_of_digits >= 9) {
+    //if (mantissa >= 100'00'00'00) {
       // here we have at least 9 digits, up to 16 digits.
       // We are going to write the last 8 digits first.
       // So we shall have between 1 and 8 digits left to write.
@@ -156,7 +175,7 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
       final_index -= 8;
     }
     // between 1 and 8 digits left to write.
-    if (mantissa >= 100'00) {
+    if(number_of_digits >= 5) {
       // We have 5 to 8 digits left to write.
       // We are going to write the last 4 digits first.
       // So we shall have between 1 and 4 digits left to write.
@@ -169,27 +188,21 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
       write_two_digits(result + final_index - 4, high);
       final_index -= 4;
     }
-    if (mantissa >= 100) {
-      // We have 3 to 4 digits left to write.
-      // We are going to write the last 2 digits first.
-      // So 1 to 2 digits left to write.
+    if(number_of_digits >= 3) {
+      // We have between 3 and 4 digits left.
+      // So it is either 1.11 or 1.111.
       uint64_t r;
       std::tie(mantissa, r) = div100(mantissa);
       write_two_digits(result + final_index - 2, r);
       final_index -= 2;
     }
     // We have one or two digits left to write.
-    if (mantissa < 10) {
-      if (number_of_digits == 1) {
-        result[0] = (char)('0' + mantissa);
-        exp_index = 1;
-      } else {
-        write_one_digits(result, mantissa);
-      }
-    } else {
-      auto tens = (mantissa * 103) >> 10;
-      write_one_digits(result, tens);
-      result[2] = (mantissa - 10 * tens) + '0';
+    if (number_of_digits & 1) { // odd
+      // 1.
+      write_one_digits(result, mantissa);
+    } else { // even
+      // 1.1
+      write_two_digits_with_dot(result, mantissa);
     }
   }
 

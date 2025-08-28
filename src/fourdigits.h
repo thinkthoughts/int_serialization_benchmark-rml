@@ -47,12 +47,26 @@ std::array<char, 2> get_two_digits_v(uint32_t value) {
       }();
   return hundreds_digit_table[value];
 }
+
 }
+
+
 
 void write_four_digits_10000(char* buffer, uint64_t value) {
    auto [high, low] = fourdigits::div100v(value);
    std::memcpy(buffer, fourdigits::get_two_digits(high).data(), 2);
    std::memcpy(buffer + 2, fourdigits::get_two_digits_v(low).data(), 2);
 }
+
+void write_three_or_four_digits_10000(char* buffer, uint64_t value) {
+   auto [high, low] = fourdigits::div100v(value);
+   if(value < 1000) {
+       buffer[0] = (char)('0' + high);
+   } else {
+       std::memcpy(buffer, fourdigits::get_two_digits(high).data(), 2);
+   }
+   std::memcpy(buffer + 2, fourdigits::get_two_digits_v(low).data(), 2);
+}
+
 
 #endif
