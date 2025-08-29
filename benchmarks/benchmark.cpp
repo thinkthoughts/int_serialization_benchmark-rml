@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
     pretty_print(data.size(), volume512, "avx-512+champagne_lemire", bench(avx512l));
 #endif
 
-    pretty_print(data.size(), volume, "reference", bench(fastl));
+    //pretty_print(data.size(), volume, "reference", bench(fastl));
     pretty_print(data.size(), volume_drag, "dragonbox",
                  bench(drag));
   }
