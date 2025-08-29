@@ -3,6 +3,7 @@
 #include "fourdigits.h"
 #include "fullmultiplier.h"
 #include "digitcount.h"
+#include "ifma_avx512.h"
 
 #include <bit>
 #include <cassert>
@@ -96,6 +97,75 @@ std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
 } // 128 - 190
 #endif // __aarch64__
 
+
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+
+template <typename T>
+int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
+  constexpr bool is_double = sizeof(T) == 8;
+  static_assert(is_double || sizeof(T) == 4, "Unsupported type size");
+  int32_t exp = exponent;
+  size_t exp_index;
+  if(mantissa == 0) {
+    // Special case for zero.
+    result[0] = '0';
+    return 1;
+  }
+
+  if (mantissa >= 100'00'00'00'00'00'00'00) {
+    // The mantissa is in [10^16, 10^17)
+    size_t final_index = 17 + 1;
+    // Ok, so we have to write 17 digits.
+    uint64_t top_digit = mantissa / 10'000'000'000'000'000;
+    write_one_digits(result, top_digit);
+    auto digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
+    _mm_storeu_si128((__m128i *)(result + 1), digits_15_0);
+    exp += 16;
+    exp_index = 17 + 1;
+  } else if (mantissa < 10) {
+    result[0] = (char)('0' + mantissa);
+    exp_index = 1;
+  } else {
+    // The mantissa is in [1,10^16)
+    auto digits_15_0 = to_string_avx512ifma(mantissa);
+    const uint32_t number_of_digits =
+        is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
+    exp += number_of_digits - 1;
+    exp_index = number_of_digits + 1;
+    digits_15_0 = shift_and_insert_dot(digits_15_0, number_of_digits);
+    _mm_mask_storeu_epi8(result, (1 << (number_of_digits + 1)) - 1, digits_15_0);
+  }
+  if (exp) { // We do not print the exponent if mantissa is zero but zero is handled above.
+    // About 20 instructions for the exponent?
+    memcpy(result + exp_index, "E-", 2);
+    exp_index += 1 + (exp < 0);
+    exp = (exp < 0) ? -exp : exp;
+
+    if constexpr (is_double) {
+      if (exp >= 100) { // 3 digits
+        uint64_t prod = exp * 42949673;
+        uint32_t head_digits = int(prod >> 32);
+        result[exp_index++] = (char)('0' + head_digits);
+        exp = exp - head_digits * 100;
+        write_two_digits(result + exp_index, exp);
+        exp_index += 3;
+      } else { // 2 digits
+        // If we need fewer than 2 digits, this will write a leading zero.
+        write_two_digits(result + exp_index, exp);
+        exp_index += 2;
+      }
+    } else {
+      // If we need fewer than 2 digits, this will write a leading zero.
+      write_two_digits(result + exp_index, exp);
+      exp_index += 2;
+    }
+  }
+  return exp_index;
+
+
+}
+#endif // CHAMPAGNE_LEMIRE_AVX512
+
 template <typename T>
 int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
   constexpr bool is_double = sizeof(T) == 8;
@@ -149,12 +219,12 @@ int fast_to_chars(T mantissa, int32_t exponent, char *const result) {
     result[0] = (char)('0' + mantissa);
     exp_index = 1;
   } else {
-    // 1 to 16
-    const uint32_t number_of_digits =
-        is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
-    exp += number_of_digits - 1;
-    size_t final_index = number_of_digits + 1;
-    exp_index = final_index;
+      // 1 to 16
+      const uint32_t number_of_digits =
+          is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
+      exp += number_of_digits - 1;
+      size_t final_index = number_of_digits + 1;
+      exp_index = final_index;
     if(number_of_digits >= 9) {
     //if (mantissa >= 100'00'00'00) {
       // here we have at least 9 digits, up to 16 digits.

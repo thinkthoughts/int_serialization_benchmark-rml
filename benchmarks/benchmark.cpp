@@ -178,6 +178,21 @@ int main(int argc, char **argv) {
   };
   fastl();
   size_t volume = counter;
+  auto avx512l = [&data, &counter, &buffer]() {
+    for (size_t i = 0; i < data.size(); ++i) {
+      char *start = buffer;
+      if (data[i].sign) {
+        buffer[0] = '-';
+        start++;
+      }
+      counter = counter +
+                avx512_to_chars(data[i].mantissa, data[i].exponent, start) +
+                (data[i].sign ? 1 : 0);
+    }
+  };
+  counter = 0;
+  avx512l();
+  size_t volume512 = counter;
   auto drag = [&data, &counter, &buffer]() {
                    for (size_t i = 0; i < data.size(); ++i) {
                      char *start = buffer;
@@ -197,8 +212,17 @@ int main(int argc, char **argv) {
   size_t volume_drag = counter;
   for (size_t i = 0; i < 4; i++) {
     fmt::print("Run {}\n", i + 1);
-    pretty_print(data.size(), volume, "fast+champagne_lemire", bench(fastl));
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+    pretty_print(data.size(), volume512, "avx-512+champagne_lemire", bench(avx512l));
+#endif
+
+    pretty_print(data.size(), volume, "reference", bench(fastl));
     pretty_print(data.size(), volume_drag, "dragonbox",
                  bench(drag));
   }
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+  fmt::print("Using AVX512IFMA\n");
+#else
+  fmt::print("Using fallback implementation (AVX-512 not found)\n");
+#endif
 }

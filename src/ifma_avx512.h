@@ -8,6 +8,59 @@
 
 #define CHAMPAGNE_LEMIRE_AVX512 1
 
+#include <x86intrin.h>
+
+// Precomputed shuffle masks for K = 1 to 15
+static const uint8_t shuffle_masks[15][16] = {
+    // K = 1: [15, 0x80, 0x80, ...]
+    {15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 2: [14, 0x80, 15, 0x80, ...]
+    {14, 0x80, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 3: [13, 0x80, 14, 15, 0x80, ...]
+    {13, 0x80, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 4: [12, 0x80, 13, 14, 15, 0x80, ...]
+    {12, 0x80, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 5: [11, 0x80, 12, 13, 14, 15, 0x80, ...]
+    {11, 0x80, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 6: [10, 0x80, 11, 12, 13, 14, 15, 0x80, ...]
+    {10, 0x80, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 7: [9, 0x80, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {9, 0x80, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 8: [8, 0x80, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {8, 0x80, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 9: [7, 0x80, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {7, 0x80, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 10: [6, 0x80, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {6, 0x80, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80, 0x80},
+    // K = 11: [5, 0x80, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {5, 0x80, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80, 0x80},
+    // K = 12: [4, 0x80, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {4, 0x80, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80, 0x80},
+    // K = 13: [3, 0x80, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, ...]
+    {3, 0x80, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80, 0x80},
+    // K = 14: [2, 0x80, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80]
+    {2, 0x80, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0x80},
+    // K = 15: [1, 0x80, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    {1, 0x80, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+};
+
+
+// K should be between 1 and 15
+__m128i shift_and_insert_dot(__m128i input, int K) {
+    // Prepare a vector with '.' (0x2E) at index 1 and zeros elsewhere
+    __m128i dot_vector = _mm_setr_epi8(0, 0x2E, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    // Load the precomputed shuffle mask for K (index K-1)
+    __m128i mask = _mm_loadu_si128((__m128i*)shuffle_masks[K - 1]);
+
+    // Perform the shuffle to reposition the K bytes
+    __m128i shuffled = _mm_shuffle_epi8(input, mask);
+
+    // Blend with dot_vector to insert '.' at index 1
+    __m128i result = _mm_or_si128(shuffled, dot_vector);
+
+    return result;
+}
 
 /*
 The IFMA decimal print method: 
@@ -57,7 +110,8 @@ Solution: we use 0x2af31dc = 0x2af31dd - 1 as c, and use 0x1A1A400 bias instead 
 // the output is 16 bytes long
 // The value n should be no larger than 9999999999999999
 // That is, it needs to be in [0, 10^16)
-void to_string_avx512ifma(uint64_t n, char *out) {
+__attribute__((always_inline))
+inline __m128i to_string_avx512ifma(uint64_t n) {
   uint64_t n_15_08  = n / 100000000;
   uint64_t n_07_00  = n % 100000000;
   __m512i bcstq_h   = _mm512_set1_epi64(n_15_08);
@@ -77,7 +131,7 @@ void to_string_avx512ifma(uint64_t n, char *out) {
   __m512i highbits_l	= _mm512_madd52hi_epu64(asciiZero, zmmTen, lowbits_l);
   __m512i perm          = _mm512_permutex2var_epi8(highbits_h, permb_const, highbits_l);
   __m128i digits_15_0	= _mm512_castsi512_si128(perm);
-  _mm_storeu_si128((__m128i *)out, digits_15_0);
+  return digits_15_0;
 }
 
 #endif
