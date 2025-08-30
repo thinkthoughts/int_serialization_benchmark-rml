@@ -1,0 +1,71 @@
+#ifndef DIGITCOUNT_H
+#define DIGITCOUNT_H
+
+#include <bit>
+#include <cstdint>
+
+inline int int_log2_64(uint64_t x) {
+  return 63 - std::countl_zero(x | 1);
+}
+
+/**
+ * Reference:
+ * Daniel Lemire, "Computing the number of digits of an integer even faster," in
+ * Daniel Lemire's blog, June 3, 2021,
+ * https://lemire.me/blog/2021/06/03/computing-the-number-of-digits-of-an-integer-even-faster/.
+ */
+inline int fast_digit_count32(uint32_t x) {
+  static uint64_t table[] = {
+      4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
+      12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
+      21474826480, 21474826480, 21474826480, 21474826480, 25769703776,
+      25769703776, 25769703776, 30063771072, 30063771072, 30063771072,
+      34349738368, 34349738368, 34349738368, 34349738368, 38554705664,
+      38554705664, 38554705664, 41949672960, 41949672960, 41949672960,
+      42949672960, 42949672960};
+  return uint32_t((x + table[int_log2_64(x)]) >> 32);
+}
+
+/**
+ * Reference:
+ * Daniel Lemire, "Counting the digits of 64-bit integers," in Daniel Lemire's
+ * blog, January 7, 2025,
+ * https://lemire.me/blog/2025/01/07/counting-the-digits-of-64-bit-integers/.
+ */
+inline int fast_digit_count64(uint64_t x) {
+  static uint64_t table[] = {9,
+                             99,
+                             999,
+                             9999,
+                             99999,
+                             999999,
+                             9999999,
+                             99999999,
+                             999999999,
+                             9999999999,
+                             99999999999,
+                             999999999999,
+                             9999999999999,
+                             99999999999999,
+                             999999999999999ULL,
+                             9999999999999999ULL,
+                             99999999999999999ULL,
+                             999999999999999999ULL,
+                             9999999999999999999ULL};
+  int y = (19 * int_log2_64(x) >> 6);
+  y += x > table[y];
+  return y + 1;
+}
+
+template <typename T>
+int fast_digit_count(T x) {
+  if constexpr (sizeof(T) == 4) {
+    return fast_digit_count32(x);
+  } else if constexpr (sizeof(T) == 8) {
+    return fast_digit_count64(x);
+  } else {
+    static_assert(sizeof(T) == 4 || sizeof(T) == 8, "Unsupported type size");
+  }
+}
+
+#endif

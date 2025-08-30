@@ -71,12 +71,7 @@ There might be room for fancier strategies. See
 
 -  Daniel Lemire, "Converting integers to fix-digit representations quickly," in Daniel Lemire's blog, November 18, 2021, https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/.
 
-It is a research question whether AVX-512 can solve this problem. It might. The reason
-why AVX-512 might do it is that it supports *masked* stores. So you can safely store
-a SIMD register to memory, writing only part of it.
-It might also be possible to use SIMD in general if you allow writing beyond the expected
-buffer. This might be acceptable in many settings where you can assume that the memory
-is overallocated.
+
 
 
 ## Computing the digit values
@@ -93,15 +88,24 @@ Though the math is a bit tricky, we can often brute force a check for the soluti
 Currently, we can *almost* bring it down to one multiplication per digit (where a digit could a value in [0,99] in this context).
 
 
-## Open question
-
-We also compute the value, e.g. the integer 43, and then we compute the string to write.
-
 ## Overall challenge
 
 How low can you go? By a rough  estimation, the Ryu string generation algorithm might use 200 instructions
 per float where as Dragonbox can go under 100 instructions per float. That's excellent, but still 
 about 5 instructions per character produced.
+
+## AVX-512 solution
+
+We have a sketch of an AVX-512 solution. It is sketch because it might be incorrect.
+
+The results *might* be good with a caveat: we can rather significantly reduce the number of instructions,
+but loading the additional constants take time. So we inline the parsing function. By doing so, 
+we hope that constants are loaded once.
+
+This simulate the use case where you need to write a lot of floating-point numbers at once. That's
+a realistic and useful case.
+
+To write just one floating-point number, the AVX-512 solution might not be faster than conventional strategies.
 
 ## Usage
 
@@ -117,6 +121,12 @@ cmake -B build
 
 To get performance counters, you might need to run the benchmark program in privileged mode (sudo).
 
+You can also feed in data files.
+```
+./build/benchmark data/canada.txt
+./build/benchmark data/mesh.txt 
+```
+
 Consider also testing with LLVM/clang.
 
 
@@ -129,6 +139,20 @@ We definitively need more tests and better benchmarks including benchmarks on re
 
 Further, the system archictecture is assuredly a factor.
 
+
+## Upcoming tasks
+
+- [ ] test, verify and correct the AVX-512 function (it is almost certainly incorrect)
+- [ ] optimize the AVX-512 function for the case where we have short strings (with branching), the `mesh` data file is a good test case
+- [ ] optionally, make sure that it builds under Visual Studio
+- [ ] [investigate whether generating the constants](http://www.0x80.pl/notesen/2023-01-19-avx512-consts.html) might be faster
+
+## Further thoughts
+
+We solve the string generation from a DIY structure (mantissa + exponent), it is an interesting exercise in itself, but is this applicable? Could we plug our function instead a float-to-string function and get decent results? 
+
+It seems that a more interesting approach would be to do bulk processing. I am given a whole lot of floating-point values (maybe from an array) and
+I need to write them out.
 
 ## References
 

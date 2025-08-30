@@ -322,6 +322,7 @@ template <> char *to_chars(uint32_t s32, int exponent, char *buffer) noexcept {
 }
 
 template <>
+JKJ_FORCEINLINE // Daniel: we force inline the function, to maximize performance.
 char *to_chars(uint64_t const significand, int exponent,
                char *buffer) noexcept {
   // Print significand by decomposing it into a 9-digit block and a 8-digit
