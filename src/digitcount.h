@@ -57,4 +57,15 @@ inline int fast_digit_count64(uint64_t x) {
   return y + 1;
 }
 
+template <typename T>
+int fast_digit_count(T x) {
+  if constexpr (sizeof(T) == 4) {
+    return fast_digit_count32(x);
+  } else if constexpr (sizeof(T) == 8) {
+    return fast_digit_count64(x);
+  } else {
+    static_assert(sizeof(T) == 4 || sizeof(T) == 8, "Unsupported type size");
+  }
+}
+
 #endif

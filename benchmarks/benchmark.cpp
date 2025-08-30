@@ -162,22 +162,11 @@ int main(int argc, char **argv) {
     // Génération aléatoire par défaut
     data = generate_large_set();
   }
+  fmt::print("Data size: {} floats\n", data.size());
+
   volatile uint64_t counter = 0;
-  char buffer[64];
-  auto fastl = [&data, &counter, &buffer]() {
-    for (size_t i = 0; i < data.size(); ++i) {
-      char *start = buffer;
-      if (data[i].sign) {
-        buffer[0] = '-';
-        start++;
-      }
-      counter = counter +
-                fast_to_chars(data[i].mantissa, data[i].exponent, start) +
-                (data[i].sign ? 1 : 0);
-    }
-  };
-  fastl();
-  size_t volume = counter;
+  char buffer[128];
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   auto avx512l = [&data, &counter, &buffer]() {
     for (size_t i = 0; i < data.size(); ++i) {
       char *start = buffer;
@@ -193,6 +182,8 @@ int main(int argc, char **argv) {
   counter = 0;
   avx512l();
   size_t volume512 = counter;
+  fmt::print("Volume 512: {}\n", volume512);
+#endif 
   auto drag = [&data, &counter, &buffer]() {
                    for (size_t i = 0; i < data.size(); ++i) {
                      char *start = buffer;
@@ -210,13 +201,14 @@ int main(int argc, char **argv) {
   counter = 0;
   drag();
   size_t volume_drag = counter;
+  fmt::print("Volume drag: {}\n", volume_drag);
+
   for (size_t i = 0; i < 4; i++) {
     fmt::print("Run {}\n", i + 1);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     pretty_print(data.size(), volume512, "avx-512+champagne_lemire", bench(avx512l));
 #endif
 
-    //pretty_print(data.size(), volume, "reference", bench(fastl));
     pretty_print(data.size(), volume_drag, "dragonbox",
                  bench(drag));
   }
