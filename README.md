@@ -23,6 +23,13 @@ in the  Dragonbox float-to-string implementation.
 
 What is challenging? 
 
+## Requirements
+
+- AVX-512 capable machine (e.g., Zen 4 or better).
+- A recent GCC or LLVM on a Linux system or the equivalent
+- CMake
+
+
 ## Knowing where to write
 
 One challenge is that you want to write the characters at the right place
