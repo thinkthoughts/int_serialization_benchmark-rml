@@ -120,27 +120,25 @@ std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
 
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+#ifndef champagne_lemire_likely
+#define champagne_lemire_likely(x) __builtin_expect(!!(x), 1)
+#endif
+#ifndef champagne_lemire_unlikely
+#define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
+#endif
 
 // It is a SKETCH. It is like not quite correct, but the spirit is there.
 // Important: we inline the function.
 template <typename T> inline
-__attribute__((always_inline))
+__attribute__((always_inline)) 
 int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   constexpr bool is_double = sizeof(T) == 8;
   static_assert(is_double || sizeof(T) == 4, "Unsupported type size");
   int32_t exp = exponent;
   size_t exp_index;
-  if(mantissa == 0) {
-    // Special case for zero. We use a special case because
-    // 0E10 should be 0, so we may always have to check somehow whether
-    // the mantissa is zero ?
-    result[0] = '0';
-    return 1;
-  }
-
-  // THe special case where we max out the number of
-  // digits exceeds 16 digits, and we handle it separately.
-  if (true){//mantissa >= 100'00'00'00'00'00'00'00) {
+  if (mantissa >= 100'00'00'00'00'00'00'00) {
+    // The special case where we max out the number of
+    // digits exceeds 16 digits, and we handle it separately.
     // The mantissa is in [10^16, 10^17)
     size_t final_index = 17 + 1;
     // Ok, so we have to write 17 digits.
@@ -153,6 +151,13 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     exp += 16;
     exp_index = 17 + 1;
   } else if (mantissa < 10) {
+    // Special case for zero. We use a special case because
+    // 0E10 should be 0, so we may always have to check somehow whether
+    // the mantissa is zero ?
+    if(mantissa == 0) {
+      result[0] = '0';
+      return 1;
+    }
     // If we have just one digit, that's another special case best
     // handled alone, because there is not '.'
     result[0] = (char)('0' + mantissa);
