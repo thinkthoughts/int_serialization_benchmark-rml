@@ -30,7 +30,6 @@ template <int number_digits>
 std::array<int, number_digits> to_digits(uint64_t temp) {
   static_assert(number_digits > 0 && number_digits <= 9,
                 "number_digits must be between 1 and 9 inclusive");
-  std::array<int, number_digits> result;
   constexpr auto int_pow = [](uint64_t base, uint64_t exponent) -> uint64_t {
     uint64_t result = 1;
     while (exponent > 0) {
@@ -41,6 +40,8 @@ std::array<int, number_digits> to_digits(uint64_t temp) {
     }
     return result;
   };
+
+  std::array<int, number_digits> result;
   if constexpr (number_digits < 6) {
     constexpr uint64_t constant =
         ((1ULL << 32) / int_pow(10, number_digits - 1)) + 1;
@@ -71,6 +72,7 @@ std::array<int, number_digits> to_digits(uint64_t temp) {
 
   return result;
 }
+
 std::array<int, 4> to_centi_digits_dragon(uint64_t temp) {
   std::array<int, 4> result;
 
@@ -123,6 +125,7 @@ std::array<int, number_centi_digits> to_centi_digits_classic(uint64_t temp) {
 
   return result;
 }
+
 template <size_t N>
 std::array<int, N + 1> prepend_zero(const std::array<int, N> &input) {
   std::array<int, N + 1> result{};
@@ -143,6 +146,7 @@ std::array<int, N + 2> prepend_zero2(const std::array<int, N> &input) {
   }
   return result;
 }
+
 template <int number_centi_digits>
 std::array<int, number_centi_digits> to_centi_digits(uint64_t temp) {
   static_assert(number_centi_digits > 0 && number_centi_digits <= 4,
@@ -264,8 +268,7 @@ std::array<int, number_centi_digits> to_centi_digits128(uint64_t temp) {
 // Templated to_centi_digits function, temp should be in [0, 100**number_digits)
 // (We do not check this, so it is the caller's responsibility)
 template <int number_centi_digits>
-std::array<int, number_centi_digits>
-to_centi_digits_non_zero_lead(uint64_t temp) {
+std::array<int, number_centi_digits> to_centi_digits_non_zero_lead(uint64_t temp) {
   std::array<int, number_centi_digits> result;
   if constexpr (number_centi_digits == 1) {
     result[0] = temp; // Directly return the last two digits
@@ -295,7 +298,8 @@ to_centi_digits_non_zero_lead(uint64_t temp) {
 }
 
 // Structure to hold the result of a mistake
-template <int number_digits> struct mistake {
+template <int number_digits>
+struct mistake {
   uint64_t input;
   std::array<int, number_digits> output;
   std::array<int, number_digits> expected;
@@ -346,6 +350,7 @@ std::array<int, number_digits> get_expected_centi_digits(uint64_t num) {
   }
   return result;
 }
+
 // Test function to find the first mistake
 template <int number_digits>
 std::optional<mistake<number_digits>> find_first_mistake() {
@@ -449,87 +454,107 @@ find_first_centi_mistake_non_zero_lead() {
 }
 
 int test_digits() {
-
+  fmt::print("Testing digits 1...\n");
   if (auto m = find_first_mistake<1>(); m) {
     std::cout << "1:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 2...\n");
   if (auto m = find_first_mistake<2>(); m) {
     std::cout << "2:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 3...\n");
   if (auto m = find_first_mistake<3>(); m) {
     std::cout << "3:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 4...\n");
   if (auto m = find_first_mistake<4>(); m) {
     std::cout << "4:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 5...\n");
   if (auto m = find_first_mistake<5>(); m) {
     std::cout << "5:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 6...\n");
   if (auto m = find_first_mistake<6>(); m) {
     std::cout << "6:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 7...\n");
   if (auto m = find_first_mistake<7>(); m) {
     std::cout << "7:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 8...\n");
   if (auto m = find_first_mistake<8>(); m) {
     std::cout << "8:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits 9...\n");
   if (auto m = find_first_mistake<9>(); m) {
     std::cout << "9:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
+
+  fmt::print("Testing digits...ok\n");
   return EXIT_SUCCESS; // No mistakes found
 }
 
 int test_centi_digits() {
   fmt::print("Testing dragon...\n");
-
   if (auto m = find_first_centi_mistake_dragon(); m) {
     fmt::print("dragon:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
-  fmt::print("Testing 1...\n");
 
+  fmt::print("Testing centi 1...\n");
   if (auto m = find_first_centi_mistake<1>(); m) {
     fmt::print("1:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
-  fmt::print("Testing 2...\n");
 
+  fmt::print("Testing centi 2...\n");
   if (auto m = find_first_centi_mistake<2>(); m) {
     fmt::print("2:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
-  fmt::print("Testing 3...\n");
 
+  fmt::print("Testing centi 3...\n");
   if (auto m = find_first_centi_mistake<3>(); m) {
     fmt::print("3:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
-  fmt::print("Testing 4...\n");
 
+  fmt::print("Testing centi 4...\n");
   if (auto m = find_first_centi_mistake<4>(); m) {
     fmt::print("4:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
-  fmt::print("Testing find_first_centi_mistake_non_zero_lead...\n");
 
+  fmt::print("Testing find_first_centi_mistake_non_zero_lead...\n");
   if (auto m = find_first_centi_mistake_non_zero_lead<8>(); m) {
     fmt::print("8:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
+
   fmt::print("Testing find_first_centi_mistake_non_zero_leads...ok\n");
   return EXIT_SUCCESS; // No mistakes found
 }
 
 int main() {
-  return test_centi_digits(); // No mistakes found
+  return
+    test_digits() |
+    test_centi_digits();
 }

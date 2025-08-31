@@ -9,17 +9,17 @@ and you mapped it to a decimal form.
 The project might have applications to more conventional problems such as converting
 integer values to decimal representation.
 
-
 In principle, converting `significant * 10**power` into a decimal string is not difficult.
 You can compute `significant % 10` and get the last significant digits, and so forth.
-This is the typically right-to-left approach: you write the least significant digit,
-and the next least significant digit, and so forht.
+This is the typical right-to-left approach: you write the least significant digit,
+and the next least significant digit, and so forth.
 You need to determine which way you go to the shortest string (do you write `0.1` or `1E-1`),
 but that's not too difficult.
 
-So why is this interesting? It is interesting because we noticed that a highly optimized
-function in a Ryu float-to-string implementation was much slower then the implementation
-in the  Dragonbox float-to-string implementation.
+So why is this interesting? It is interesting because we noticed that a highly
+optimized function in a [Ryu](https://github.com/ulfjack/ryu) float-to-string
+implementation was much slower then the implementation in the
+[Dragonbox](https://github.com/jk-jeon/dragonbox) float-to-string implementation.
 
 What is challenging? 
 
@@ -29,12 +29,11 @@ What is challenging?
 - A recent GCC or LLVM on a Linux system or the equivalent
 - CMake
 
-
 ## Knowing where to write
 
 One challenge is that you want to write the characters at the right place
 from the start. This is not trivial because you don't known initially how many digits you 
-need to write. If you consider the  right-to-left approach, it requires you to start 
+need to write. If you consider the right-to-left approach, it requires you to start 
 writing *somewhere* implying that you know how many digits you have. Thankfully, there
 are fast algorithms to count digits:
 
@@ -78,27 +77,22 @@ There might be room for fancier strategies. See
 
 -  Daniel Lemire, "Converting integers to fix-digit representations quickly," in Daniel Lemire's blog, November 18, 2021, https://lemire.me/blog/2021/11/18/converting-integers-to-fix-digit-representations-quickly/.
 
-
-
-
 ## Computing the digit values
-
 
 This is where the fun mathematics comes in. I give you an integer, how do you compute
 quickly the remainder and the quotient? See the following paper.
 
-- Daniel Lemire, Colin Bartlett, Owen Kaser,  [Integer Division by Constants: Optimal Bounds](https://arxiv.org/abs/2012.12369),  Heliyon 7 (6), 2021
+- Daniel Lemire, Colin Bartlett, Owen Kaser, [Integer Division by Constants: Optimal Bounds](https://arxiv.org/abs/2012.12369),  Heliyon 7 (6), 2021
 - Takahashi, D. (2023). Multiple Integer Divisions with an Invariant Dividend and Monotonically Increasing or Decreasing Divisors. In: Gervasi, O., et al. Computational Science and Its Applications – ICCSA 2023. ICCSA 2023. Lecture Notes in Computer Science, vol 13957. Springer, Cham. https://doi.org/10.1007/978-3-031-36808-0_26
 
 Though the math is a bit tricky, we can often brute force a check for the solution.
 
-Currently, we can *almost* bring it down to one multiplication per digit (where a digit could a value in [0,99] in this context).
-
+Currently, we can *almost* bring it down to one multiplication per digit (where a digit could be a value in [0,99] in this context).
 
 ## Overall challenge
 
-How low can you go? By a rough  estimation, the Ryu string generation algorithm might use 200 instructions
-per float where as Dragonbox can go under 100 instructions per float. That's excellent, but still 
+How low can you go? By a rough estimation, the Ryu string generation algorithm might use 200 instructions
+per float whereas Dragonbox can go under 100 instructions per float. That's excellent, but still 
 about 5 instructions per character produced.
 
 ## AVX-512 solution
@@ -119,10 +113,11 @@ To write just one floating-point number, the AVX-512 solution might not be faste
 Currently, the benchmark is very approximative. The implementations are untested. This is at the demo stage.
 We compare `champagne_lemire` which is something like the function from Ryu, `fast+champagne_lemire` which
 is a slightly faster alternative and dragonbox (a very fast alternative). Some of the code is assuredly
-or wrong makes assumptions not satisfied by the benchmark.
+wrong or makes assumptions not satisfied by the benchmark.
 
 ```
 cmake -B build
+cmake --build build
 ./build/benchmark
 ```
 
@@ -136,16 +131,15 @@ You can also feed in data files.
 
 Consider also testing with LLVM/clang.
 
-
 ```
 CXX=clang++ cmake -B buildclang
+cmake --build buildclang
 ./buildclang/benchmark
 ```
 
 We definitively need more tests and better benchmarks including benchmarks on realistic data.
 
 Further, the system archictecture is assuredly a factor.
-
 
 ## Upcoming tasks
 

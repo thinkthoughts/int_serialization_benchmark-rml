@@ -1,0 +1,4 @@
+.gdb_history
+.crush
+build*
+compile_commands.json

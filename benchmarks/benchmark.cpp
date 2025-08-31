@@ -24,12 +24,6 @@ constexpr uint8_t FloatExponentBits = 8;
 constexpr uint8_t DoubleMantissaBits = 52;
 constexpr uint8_t DoubleExponentBits = 11;
 
-struct IEEE754f {
-  uint32_t mantissa;
-  uint32_t exponent;
-  bool sign;
-};
-
 // mantissa * 10^exponent
 struct decimal_float {
   uint64_t mantissa;
@@ -75,7 +69,7 @@ decimal_float double_to_decimal_float(double value) {
     exp10++;
   }
   // We keep at most 17 digits in the mantissa
-  while (mantissa > 100000000000000000) {
+  while (mantissa > 100'000'000'000'000'000) {
     mantissa = (mantissa / 10) + (mantissa % 10 >= 5 ? 1 : 0); // naive rounding
     exp10++;
   }
@@ -101,12 +95,15 @@ void pretty_print(size_t volume, size_t bytes, const std::string &name,
   fmt::print("\n");
 }
 
-template <typename T> struct float_number_generator {
+template <typename T>
+struct float_number_generator {
   virtual T new_float() = 0;
   virtual std::string describe() = 0;
   virtual ~float_number_generator() = default;
 };
-template <typename T> struct uniform_generator : float_number_generator<T> {
+
+template <typename T>
+struct uniform_generator : float_number_generator<T> {
   std::random_device rd;
   std::mt19937_64 gen;
   std::uniform_real_distribution<T> dis;
@@ -120,7 +117,7 @@ template <typename T> struct uniform_generator : float_number_generator<T> {
   T new_float() override { return dis(gen); }
 };
 
-std::vector<decimal_float> generate_large_set(size_t count = 1000'000) {
+std::vector<decimal_float> generate_large_set(size_t count = 1'000'000) {
   std::vector<decimal_float> result;
   uniform_generator<double> gen(-1e10, 1e10);
   result.reserve(count);
@@ -174,30 +171,27 @@ int main(int argc, char **argv) {
         buffer[0] = '-';
         start++;
       }
-      counter = counter +
-                avx512_to_chars(data[i].mantissa, data[i].exponent, start) +
-                (data[i].sign ? 1 : 0);
+      counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
+               + (data[i].sign ? 1 : 0);
     }
   };
   counter = 0;
   avx512l();
   size_t volume512 = counter;
   fmt::print("Volume 512: {}\n", volume512);
-#endif 
+#endif
   auto drag = [&data, &counter, &buffer]() {
-                   for (size_t i = 0; i < data.size(); ++i) {
-                     char *start = buffer;
-                     if (data[i].sign) {
-                       buffer[0] = '-';
-                       start++;
-                     }
-                     counter = counter +
-                               (jkj::dragonbox::detail::to_chars(
-                                    data[i].mantissa, data[i].exponent, start) -
-                                buffer) +
-                               (data[i].sign ? 1 : 0);
-                   }
-                 };
+    using jkj::dragonbox::detail::to_chars;
+    for (size_t i = 0; i < data.size(); ++i) {
+      char *start = buffer;
+      if (data[i].sign) {
+        buffer[0] = '-';
+        start++;
+      }
+      counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
+               + (data[i].sign ? 1 : 0);
+    }
+  };
   counter = 0;
   drag();
   size_t volume_drag = counter;
@@ -208,9 +202,7 @@ int main(int argc, char **argv) {
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     pretty_print(data.size(), volume512, "avx-512+champagne_lemire", bench(avx512l));
 #endif
-
-    pretty_print(data.size(), volume_drag, "dragonbox",
-                 bench(drag));
+    pretty_print(data.size(), volume_drag, "dragonbox", bench(drag));
   }
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   fmt::print("Using AVX512IFMA\n");

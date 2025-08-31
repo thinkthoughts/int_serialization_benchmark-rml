@@ -21,16 +21,16 @@
 
 inline std::array<char, 2> get_two_digits(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 100> hundreds_digit_table =
-      []() {
-        std::array<std::array<char, 2>, 100> table;
-        for (int i = 0; i < 100; ++i) {
-          // Calculate the tens digit
-          table[i][0] = (i / 10) + '0';
-          // Calculate the units digit
-          table[i][1] = (i % 10) + '0';
-        }
-        return table;
-      }();
+    []() {
+      std::array<std::array<char, 2>, 100> table;
+      for (int i = 0; i < 100; ++i) {
+        // Calculate the tens digit
+        table[i][0] = (i / 10) + '0';
+        // Calculate the units digit
+        table[i][1] = (i % 10) + '0';
+      }
+      return table;
+    }();
   return hundreds_digit_table[value];
 }
 
@@ -38,20 +38,20 @@ inline void write_two_digits(char *buffer, uint32_t value) {
   std::memcpy(buffer, get_two_digits(value).data(), 2);
 }
 
-
+// We stop at 309 because that is the upper bound for the exponent in a double
 inline std::array<char, 3> get_three_digits(uint32_t value) {
   constexpr static std::array<std::array<char, 3>, 309> digit_table =
-      []() {
-        std::array<std::array<char, 3>, 309> table;
-        for (int i = 0; i < 309; ++i) {
-          table[i][0] = (i / 100) + '0';
-          // Calculate the tens digit
-          table[i][1] = ((i / 10) % 10) + '0';
-          // Calculate the units digit
-          table[i][2] = (i % 10) + '0';
-        }
-        return table;
-      }();
+    []() {
+      std::array<std::array<char, 3>, 309> table;
+      for (int i = 0; i < 309; ++i) {
+        table[i][0] = (i / 100) + '0';
+        // Calculate the tens digit
+        table[i][1] = ((i / 10) % 10) + '0';
+        // Calculate the units digit
+        table[i][2] = (i % 10) + '0';
+      }
+      return table;
+    }();
   return digit_table[value];
 }
 
@@ -73,21 +73,19 @@ get_one_digits(uint32_t value) {
   return digit_table[value];
 }
 
-inline void write_one_digits(char *buffer,
-                                                            uint32_t value) {
+inline void write_one_digits(char *buffer, uint32_t value) {
   std::memcpy(buffer, get_one_digits(value).data(), 2);
 }
 
-
 std::array<char, 3> get_two_digits_with_dot(uint32_t value) {
-   constexpr static std::array<std::array<char, 3>, 100> hundreds_digit_table =
-      []() {
-        std::array<std::array<char, 3>, 100> table{};
-        for (int i = 0; i < 100; ++i) {
-            table[i] = {static_cast<char>((i / 10)%10 + '0'), '.', static_cast<char>((i % 10) + '0')};
-        }
-        return table;
-      }();
+  constexpr static std::array<std::array<char, 3>, 100> hundreds_digit_table =
+    []() {
+      std::array<std::array<char, 3>, 100> table{};
+      for (int i = 0; i < 100; ++i) {
+        table[i] = {static_cast<char>((i / 10)%10 + '0'), '.', static_cast<char>((i % 10) + '0')};
+      }
+      return table;
+    }();
   return hundreds_digit_table[value];
 }
 
@@ -125,16 +123,17 @@ std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
 
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-// It is a SKETCH. It is like not quite correct, but the spirit is there.
+
+// It is a SKETCH. It is likely not quite correct, but the spirit is there.
 // Important: we inline the function.
-template <typename T> inline
-__attribute__((always_inline)) 
+template <typename T>
+inline __attribute__((always_inline))
 int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   constexpr bool is_double = sizeof(T) == 8;
   static_assert(is_double || sizeof(T) == 4, "Unsupported type size");
   int32_t exp = exponent;
   size_t exp_index;
-  if (mantissa >= 100'00'00'00'00'00'00'00) {
+  if (mantissa >= 10'000'000'000'000'000) {
     // The special case where we max out the number of
     // digits exceeds 16 digits, and we handle it separately.
     // The mantissa is in [10^16, 10^17)
@@ -157,14 +156,14 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
       return 1;
     }
     // If we have just one digit, that's another special case best
-    // handled alone, because there is not '.'
+    // handled alone, because there is no '.'
     result[0] = (char)('0' + mantissa);
     exp_index = 1;
   } else {
-    //  Next we do the general case.
+    // Next we do the general case.
     //
     // The mantissa is in [1,10^16)
-    // Want the mantissage is SHORT (few digits), the following is wasteful.
+    // When the mantissa is SHORT (few digits), the following is wasteful.
     // We could probably compute 8 digits faster. So we could branch here.
     auto digits_15_0 = to_string_avx512ifma(mantissa);
     const uint32_t number_of_digits =
@@ -174,14 +173,13 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     digits_15_0 = shift_and_insert_dot(digits_15_0, number_of_digits);
     _mm_mask_storeu_epi8(result, (1 << (number_of_digits + 1)) - 1, digits_15_0);
   }
-  //
+
   // Finally, we may have to handle the exponent.
   //
   // It looks simple but it is extraordinarily expensive relatively speaking.
   //
   // This may account for a THIRD for the processing in terms of instructions.
   // Maybe 25 instructions?
-  //
   if (exp) { // We do not print the exponent if mantissa is zero but zero is handled above.
     // About 20 instructions for the exponent?
     memcpy(result + exp_index, "E-", 2);
@@ -203,11 +201,10 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
       exp_index += 2;
     }
   }
+
   return exp_index;
-
-
 }
-#endif // CHAMPAGNE_LEMIRE_AVX512
 
+#endif // CHAMPAGNE_LEMIRE_AVX512
 
 #endif // CHAMPAGNE_LEMIRE_H
