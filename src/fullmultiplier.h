@@ -32,14 +32,26 @@ std::pair<uint64_t, uint64_t> mul64x64_to_128(uint64_t a, uint64_t b) {
   auto emulu = [](uint32_t x, uint32_t y) -> uint64_t {
     return x * (uint64_t)y;
   };
-  uint64_t ad = emulu((uint32_t)(ab >> 32), (uint32_t)cd);
-  uint64_t bd = emulu((uint32_t)ab, (uint32_t)cd);
-  uint64_t adbc = ad + emulu((uint32_t)ab, (uint32_t)(cd >> 32));
-  uint64_t adbc_carry = (uint64_t)(adbc < ad);
-  uint64_t lo = bd + (adbc << 32);
-  return {emulu((uint32_t)(ab >> 32), (uint32_t)(cd >> 32)) + (adbc >> 32) +
-              (adbc_carry << 32) + (uint64_t)(lo < bd),
-          lo};
+
+  // Split 64-bit numbers into 32-bit halves
+  uint32_t a_lo = (uint32_t)a;
+  uint32_t a_hi = (uint32_t)(a >> 32);
+  uint32_t b_lo = (uint32_t)b;
+  uint32_t b_hi = (uint32_t)(b >> 32);
+
+  // Perform partial multiplications
+  uint64_t ll = emulu(a_lo, b_lo);
+  uint64_t lh = emulu(a_lo, b_hi);
+  uint64_t hl = emulu(a_hi, b_lo);
+  uint64_t hh = emulu(a_hi, b_hi);
+
+  // Combine partial products with carry handling
+  uint64_t cross = lh + hl;
+  uint64_t cross_carry = (cross < lh);
+  uint64_t low = ll + (cross << 32);
+  uint64_t low_carry = (low < ll);
+  uint64_t high = hh + (cross >> 32) + cross_carry + low_carry;
+  return {high, low};
 #endif
 }
 
