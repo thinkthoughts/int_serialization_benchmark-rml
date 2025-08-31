@@ -12,7 +12,12 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-
+#ifndef champagne_lemire_likely
+#define champagne_lemire_likely(x) __builtin_expect(!!(x), 1)
+#endif
+#ifndef champagne_lemire_unlikely
+#define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
+#endif
 
 inline std::array<char, 2> get_two_digits(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 100> hundreds_digit_table =
@@ -120,13 +125,6 @@ std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
 
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-#ifndef champagne_lemire_likely
-#define champagne_lemire_likely(x) __builtin_expect(!!(x), 1)
-#endif
-#ifndef champagne_lemire_unlikely
-#define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
-#endif
-
 // It is a SKETCH. It is like not quite correct, but the spirit is there.
 // Important: we inline the function.
 template <typename T> inline
