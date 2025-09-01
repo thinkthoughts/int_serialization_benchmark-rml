@@ -1,0 +1,19 @@
+name: Ubuntu 24.04 Sanitized CI (GCC 13)
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu-build:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - {shared: ON}
+          - {shared: OFF}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use cmake
+        run: |
+          mkdir build &&
+          cmake -B build &&
+          cmake --build build
