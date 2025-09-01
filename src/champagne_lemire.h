@@ -147,18 +147,6 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     _mm_storeu_si128((__m128i *)(result + 1), digits_15_0);
     exp += 16;
     exp_index = 17 + 1;
-  } else if (mantissa < 10) {
-    // Special case for zero. We use a special case because
-    // 0E10 should be 0, so we may always have to check somehow whether
-    // the mantissa is zero ?
-    if(mantissa == 0) {
-      result[0] = '0';
-      return 1;
-    }
-    // If we have just one digit, that's another special case best
-    // handled alone, because there is no '.'
-    result[0] = (char)('0' + mantissa);
-    exp_index = 1;
   } else {
     // Next we do the general case.
     //
@@ -169,9 +157,10 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     const uint32_t number_of_digits =
         is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
     exp += number_of_digits - 1;
-    exp_index = number_of_digits + 1;
+    bool use_dot = (mantissa >= 10);
+    exp_index = number_of_digits + use_dot;
     digits_15_0 = shift_and_insert_dot(digits_15_0, number_of_digits);
-    _mm_mask_storeu_epi8(result, (1 << (number_of_digits + 1)) - 1, digits_15_0);
+    _mm_mask_storeu_epi8(result, (1 << (number_of_digits + use_dot)) - 1, digits_15_0);
   }
 
   // Finally, we may have to handle the exponent.
@@ -180,7 +169,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   //
   // This may account for a THIRD for the processing in terms of instructions.
   // Maybe 25 instructions?
-  if (exp) { // We do not print the exponent if mantissa is zero but zero is handled above.
+  if (mantissa && exp) { // We do not print the exponent if mantissa is zero but zero is handled above.
     // About 20 instructions for the exponent?
     memcpy(result + exp_index, "E-", 2);
     exp_index += 1 + (exp < 0);

@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
         buffer[0] = '-';
         start++;
       }
-      counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
+      counter = counter + avx512_to_chars(data[i].mantissa, data[i].exponent, start)
                + (data[i].sign ? 1 : 0);
     }
   };
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
         buffer[0] = '-';
         start++;
       }
-      counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
+      counter = counter + (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
                + (data[i].sign ? 1 : 0);
     }
   };
