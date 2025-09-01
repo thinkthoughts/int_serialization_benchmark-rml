@@ -147,6 +147,7 @@ Further, the system archictecture is assuredly a factor.
 - [ ] optimize the AVX-512 function for the case where we have short strings (with branching), the `mesh` data file is a good test case
 - [ ] optionally, make sure that it builds under Visual Studio
 - [ ] [investigate whether generating the constants](http://www.0x80.pl/notesen/2023-01-19-avx512-consts.html) might be faster
+- [ ] build a fast SIMD function for the case where  n < 100000000
 
 ## Further thoughts
 
