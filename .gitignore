@@ -1,4 +1,5 @@
 .gdb_history
 .crush
 build*
+**/tags
 compile_commands.json

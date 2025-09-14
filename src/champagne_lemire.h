@@ -5,11 +5,7 @@
 #include "digitcount.h"
 #include "ifma_avx512.h"
 
-#include <bit>
-#include <cassert>
 #include <cstdlib>
-#include <cstring>
-#include <stdio.h>
 #include <sys/types.h>
 
 #ifndef champagne_lemire_likely
@@ -129,8 +125,8 @@ std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
 template <typename T>
 inline __attribute__((always_inline))
 int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
-  constexpr bool is_double = sizeof(T) == 8;
-  static_assert(is_double || sizeof(T) == 4, "Unsupported type size");
+  static_assert(sizeof(T) == 4 || sizeof(T) == 8, "Unsupported type size");
+
   int32_t exp = exponent;
   size_t exp_index;
   if (mantissa >= 10'000'000'000'000'000) {
@@ -146,7 +142,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     auto digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
     _mm_storeu_si128((__m128i *)(result + 1), digits_15_0);
     exp += 16;
-    exp_index = 17 + 1;
+    exp_index = 18; // 17 digits + dot
   } else {
     // Next we do the general case.
     //
@@ -154,8 +150,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     // When the mantissa is SHORT (few digits), the following is wasteful.
     // We could probably compute 8 digits faster. So we could branch here.
     auto digits_15_0 = to_string_avx512ifma(mantissa);
-    const uint32_t number_of_digits =
-        is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
+    const uint32_t number_of_digits = fast_digit_count(mantissa);
     exp += number_of_digits - 1;
     bool use_dot = (mantissa >= 10);
     exp_index = number_of_digits + use_dot;
@@ -175,7 +170,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     exp_index += 1 + (exp < 0);
     exp = (exp < 0) ? -exp : exp;
 
-    if constexpr (is_double) {
+    if constexpr (sizeof(T) == 8) {
       if (exp >= 100) { // 3 digits
         write_three_digits(result + exp_index, exp);
         exp_index += 3;
