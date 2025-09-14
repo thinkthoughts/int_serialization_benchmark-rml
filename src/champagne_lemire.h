@@ -1,7 +1,7 @@
 #ifndef CHAMPAGNE_LEMIRE_H
 #define CHAMPAGNE_LEMIRE_H
-#include "fourdigits.h"
-#include "fullmultiplier.h"
+
+#include "digits.h"
 #include "digitcount.h"
 #include "ifma_avx512.h"
 
@@ -14,109 +14,6 @@
 #ifndef champagne_lemire_unlikely
 #define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
 #endif
-
-inline std::array<char, 2> get_two_digits(uint32_t value) {
-  constexpr static std::array<std::array<char, 2>, 100> hundreds_digit_table =
-    []() {
-      std::array<std::array<char, 2>, 100> table;
-      for (int i = 0; i < 100; ++i) {
-        // Calculate the tens digit
-        table[i][0] = (i / 10) + '0';
-        // Calculate the units digit
-        table[i][1] = (i % 10) + '0';
-      }
-      return table;
-    }();
-  return hundreds_digit_table[value];
-}
-
-inline void write_two_digits(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits(value).data(), 2);
-}
-
-// We stop at 309 because that is the upper bound for the exponent in a double
-inline std::array<char, 3> get_three_digits(uint32_t value) {
-  constexpr static std::array<std::array<char, 3>, 309> digit_table =
-    []() {
-      std::array<std::array<char, 3>, 309> table;
-      for (int i = 0; i < 309; ++i) {
-        table[i][0] = (i / 100) + '0';
-        // Calculate the tens digit
-        table[i][1] = ((i / 10) % 10) + '0';
-        // Calculate the units digit
-        table[i][2] = (i % 10) + '0';
-      }
-      return table;
-    }();
-  return digit_table[value];
-}
-
-inline void write_three_digits(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_three_digits(value).data(), 3);
-}
-
-inline std::array<char, 2>
-get_one_digits(uint32_t value) {
-  constexpr static std::array<std::array<char, 2>, 10> digit_table = []() {
-    std::array<std::array<char, 2>, 10> table;
-    for (int i = 0; i < 10; ++i) {
-      // Calculate the tens digit
-      table[i][0] = i + '0';
-      table[i][1] = '.';
-    }
-    return table;
-  }();
-  return digit_table[value];
-}
-
-inline void write_one_digits(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_one_digits(value).data(), 2);
-}
-
-std::array<char, 3> get_two_digits_with_dot(uint32_t value) {
-  constexpr static std::array<std::array<char, 3>, 100> hundreds_digit_table =
-    []() {
-      std::array<std::array<char, 3>, 100> table{};
-      for (int i = 0; i < 100; ++i) {
-        table[i] = {static_cast<char>((i / 10)%10 + '0'), '.', static_cast<char>((i % 10) + '0')};
-      }
-      return table;
-    }();
-  return hundreds_digit_table[value];
-}
-
-inline void write_two_digits_with_dot(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits_with_dot(value).data(), 3);
-}
-
-#ifdef __aarch64__
-std::pair<uint64_t, uint64_t> div100(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
-  return {high, mul64x64_to_128(low, 100).first};
-} // 120 - 174
-#else // ARM__aarch64__64
-std::pair<uint64_t, uint64_t> div100(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
-  return {high, x - 100 * high};
-} // 128 - 190
-#endif //__aarch64__
-
-#ifdef __aarch64__
-// requires x <= 999999999999999 < 10**15
-// return low bits
-std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
-  return {high, low};
-} // 120 - 174
-#else // __aarch64__
-// requires x <= 999999999999999 < 10**15
-// return low bits
-std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
-  return {high, low};
-} // 128 - 190
-#endif // __aarch64__
-
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
 
@@ -136,7 +33,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     size_t final_index = 17 + 1;
     // Ok, so we have to write 17 digits.
     uint64_t top_digit = mantissa / 10'000'000'000'000'000;
-    write_one_digits(result, top_digit);
+    digits::write_one_digit_with_dot(result, top_digit);
     // The call to to_string_avx512ifma and its storage amount to about
     // 25 instructions, and that can be about a third of the processing time.
     auto digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
@@ -172,16 +69,16 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
 
     if constexpr (sizeof(T) == 8) {
       if (exp >= 100) { // 3 digits
-        write_three_digits(result + exp_index, exp);
+        digits::write_three_digits(result + exp_index, exp);
         exp_index += 3;
       } else { // 2 digits
         // If we need fewer than 2 digits, this will write a leading zero.
-        write_two_digits(result + exp_index, exp);
+        digits::write_two_digits(result + exp_index, exp);
         exp_index += 2;
       }
     } else {
       // If we need fewer than 2 digits, this will write a leading zero.
-      write_two_digits(result + exp_index, exp);
+      digits::write_two_digits(result + exp_index, exp);
       exp_index += 2;
     }
   }
