@@ -37,7 +37,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     // The call to to_string_avx512ifma and its storage amount to about
     // 25 instructions, and that can be about a third of the processing time.
     auto digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
-    _mm_storeu_si128((__m128i *)(result + 1), digits_15_0);
+    _mm_storeu_si128((__m128i *)(result + 2), digits_15_0);
     exp += 16;
     exp_index = 18; // 17 digits + dot
   } else {
