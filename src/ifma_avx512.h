@@ -48,7 +48,7 @@ static const uint8_t shuffle_masks[15][16] = {
 };
 
 // K should be between 1 and 15
-__m128i shift_and_insert_dot(__m128i input, int K) {
+inline __m128i shift_and_insert_dot(__m128i input, int K) {
   // Prepare a vector with '.' (0x2E) at index 1 and zeros elsewhere
   __m128i dot_vector = _mm_setr_epi8(0, 0x2E, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 

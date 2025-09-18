@@ -30,7 +30,6 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     // The special case where we max out the number of
     // digits exceeds 16 digits, and we handle it separately.
     // The mantissa is in [10^16, 10^17)
-    size_t final_index = 17 + 1;
     // Ok, so we have to write 17 digits.
     uint64_t top_digit = mantissa / 10'000'000'000'000'000;
     digits::write_one_digit_with_dot(result, top_digit);

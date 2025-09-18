@@ -1,11 +1,9 @@
 #ifndef FOURDIGITS_H
 #define FOURDIGITS_H
 
-#include <cstdio>
 #include <array>
 #include <cstring>
 #include <utility>
-#include <vector>
 #include <cstdint>
 
 #include "fullmultiplier.h"
@@ -23,12 +21,12 @@ constexpr std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
 }
 
 #ifdef __aarch64__
-std::pair<uint64_t, uint64_t> div100(uint64_t x) {
+inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
   auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
   return {high, mul64x64_to_128(low, 100).first};
 } // 120 - 174
 #else // x86_64
-std::pair<uint64_t, uint64_t> div100(uint64_t x) {
+inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
   auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
   return {high, x - 100 * high};
 } // 128 - 190
@@ -37,12 +35,12 @@ std::pair<uint64_t, uint64_t> div100(uint64_t x) {
 // requires x <= 999999999999999 < 10**15
 // return low bits
 #ifdef __aarch64__
-std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
+inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
   auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
   return {high, low};
 } // 120 - 174
 #else // x86_64
-std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
+inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
   auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
   return {high, low};
 } // 128 - 190
@@ -79,7 +77,8 @@ inline std::array<char, 2> get_two_digits_v(uint32_t value) {
     []() {
       std::array<std::array<char, 2>, 256> table{};
       for (int i = 0; i < 10000; ++i) {
-        table[div100v(i).second] = {static_cast<char>((i / 10) % 10 + '0'), static_cast<char>((i % 10) + '0')};
+        table[div100v(i).second] = {static_cast<char>((i / 10) % 10 + '0'),
+                                    static_cast<char>((i % 10) + '0')};
       }
       return table;
     }();
@@ -134,13 +133,13 @@ inline void write_three_digits(char *buffer, uint32_t value) {
   std::memcpy(buffer, get_three_digits(value).data(), 3);
 }
 
-void write_four_digits_10000(char* buffer, uint64_t value) {
+inline void write_four_digits_10000(char* buffer, uint64_t value) {
   auto [high, low] = div100v(value);
   std::memcpy(buffer, get_two_digits(high).data(), 2);
   std::memcpy(buffer + 2, get_two_digits_v(low).data(), 2);
 }
 
-void write_three_or_four_digits_10000(char* buffer, uint64_t value) {
+inline void write_three_or_four_digits_10000(char* buffer, uint64_t value) {
   auto [high, low] = div100v(value);
   if(value < 1000) {
     buffer[0] = (char)('0' + high);
