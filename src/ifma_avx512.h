@@ -107,6 +107,12 @@ Solution: we use 0x2af31dc = 0x2af31dd - 1 as c, and use 0x1A1A400 bias instead 
 (0x19999996FD600 + 0x1A1A400) * 10 = 0x1000000EAEC400
 */
 
+// (0xFFFFFFFFFFFFFFFF ) / d + 1 for d = 10^8, 10^7, ..., 10^1
+static const __m512i ifma_const = _mm512_setr_epi64(
+  0x00000000002af31dc, 0x0000000001ad7f29b, 0x0000000010c6f7a0c, 0x00000000a7c5ac472,
+  0x000000068db8bac72, 0x0000004189374bc6b, 0x0000028f5c28f5c29, 0x0000199999999999a
+);
+
 // caller is responsible for providing a buffer of at least 16 bytes
 // the output is not null-terminated
 // the output is 16 bytes long
@@ -121,12 +127,6 @@ inline __m128i to_string_avx512ifma(uint64_t n) {
   __m512i zmmzero   = _mm512_castsi128_si512(_mm_cvtsi64_si128(0x01A1A400));
   __m512i zmmTen    = _mm512_set1_epi64(10);
   __m512i asciiZero = _mm512_set1_epi64('0');
-
-  // (0xFFFFFFFFFFFFFFFF ) / d + 1 for d = 10^8, 10^7, ..., 10^1
-  __m512i ifma_const	= _mm512_setr_epi64(
-    0x00000000002af31dc, 0x0000000001ad7f29b, 0x0000000010c6f7a0c, 0x00000000a7c5ac472,
-    0x000000068db8bac72, 0x0000004189374bc6b, 0x0000028f5c28f5c29, 0x0000199999999999a
-  );
 
   __m512i permb_const = _mm512_castsi128_si512(
       _mm_set_epi8(0x78, 0x70, 0x68, 0x60, 0x58, 0x50, 0x48, 0x40,
