@@ -1,4 +1,3 @@
-#include "performancecounters/benchmarker.h"
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
@@ -12,11 +11,12 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 using std::literals::string_literals::operator""s;
+
+#include "performancecounters/benchmarker.h"
 #include "champagne_lemire.h"
 #include "dragonbox.h"
-
-#include <vector>
 
 constexpr uint8_t FloatMantissaBits = 23;
 constexpr uint8_t FloatExponentBits = 8;
@@ -163,6 +163,7 @@ int main(int argc, char **argv) {
 
   volatile uint64_t counter = 0;
   char buffer[128];
+
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   auto avx512l = [&data, &counter, &buffer]() {
     for (size_t i = 0; i < data.size(); ++i) {

@@ -10,26 +10,26 @@ inline int int_log2_64(uint64_t x) {
 
 /**
  * Reference:
- * Daniel Lemire, "Computing the number of digits of an integer even faster," in
- * Daniel Lemire's blog, June 3, 2021,
+ * Daniel Lemire, "Computing the number of digits of an integer even faster,"
+ * in Daniel Lemire's blog, June 3, 2021,
  * https://lemire.me/blog/2021/06/03/computing-the-number-of-digits-of-an-integer-even-faster/.
  */
 inline int fast_digit_count32(uint32_t x) {
   static uint64_t table[] = {
-      4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
-      12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
-      21474826480, 21474826480, 21474826480, 21474826480, 25769703776,
-      25769703776, 25769703776, 30063771072, 30063771072, 30063771072,
-      34349738368, 34349738368, 34349738368, 34349738368, 38554705664,
-      38554705664, 38554705664, 41949672960, 41949672960, 41949672960,
-      42949672960, 42949672960};
+    4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
+    12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
+    21474826480, 21474826480, 21474826480, 21474826480, 25769703776,
+    25769703776, 25769703776, 30063771072, 30063771072, 30063771072,
+    34349738368, 34349738368, 34349738368, 34349738368, 38554705664,
+    38554705664, 38554705664, 41949672960, 41949672960, 41949672960,
+    42949672960, 42949672960};
   return uint32_t((x + table[int_log2_64(x)]) >> 32);
 }
 
 /**
  * Reference:
- * Daniel Lemire, "Counting the digits of 64-bit integers," in Daniel Lemire's
- * blog, January 7, 2025,
+ * Daniel Lemire, "Counting the digits of 64-bit integers,"
+ * in Daniel Lemire's blog, January 7, 2025,
  * https://lemire.me/blog/2025/01/07/counting-the-digits-of-64-bit-integers/.
  */
 inline int fast_digit_count64(uint64_t x) {

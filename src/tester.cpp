@@ -5,7 +5,6 @@
 #include <optional>
 #include <ranges>
 #include <tuple>
-#include <vector>
 
 #if ((defined(_WIN32) || defined(_WIN64)) && !defined(__clang__)) ||           \
     (defined(_M_ARM64) && !defined(__MINGW32__))

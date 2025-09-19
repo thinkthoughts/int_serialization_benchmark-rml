@@ -21,6 +21,7 @@ endfunction()
 if(MSVC)
   # On Windows, always use AVX512 flag
   set(SFF_MARCH_FLAG "/arch:AVX512")
+  set(PROJECT_WARNINGS /W4)
 else()
   # On Linux with GCC/Clang
   check_avx512_support(HOST_HAS_AVX512)
@@ -29,6 +30,11 @@ else()
   else() # still enable baseline AVX512 support (e.g., for compile test on Github CI)
     set(SFF_MARCH_FLAG "-march=x86-64-v4")
   endif()
+
+  set(PROJECT_WARNINGS
+    -Wall
+    -Wextra
+  )
 endif()
 
 include(CheckCXXCompilerFlag)
@@ -49,9 +55,11 @@ CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 include_directories(benchmarks src)
 
 add_executable(benchmark benchmarks/benchmark.cpp)
+target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE fmt::fmt)
 
 add_executable(tester src/tester.cpp)
+target_compile_options(tester PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(tester PRIVATE fmt::fmt)
 
 if(NOT CMAKE_BUILD_TYPE)
