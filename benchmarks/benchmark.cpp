@@ -134,10 +134,8 @@ std::vector<double> read_floats_from_file(const std::string &filename) {
   std::string line;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
-    double val;
-    if (iss >> val) {
+    if (double val; iss >> val)
       values.push_back(val);
-    }
   }
   return values;
 }
@@ -172,6 +170,14 @@ int main(int argc, char **argv) {
     data = generate_large_set();
   }
   fmt::print("Data size: {} floats\n", data.size());
+
+  // Print mantissa length distribution
+  std::array<size_t, 17 + 1> mantissaDistrib{};
+  for (const auto &df : data)
+    ++mantissaDistrib[fast_digit_count(df.mantissa)];
+  fmt::print("Mantissa length distribution:\n");
+  for (size_t i = 1; i < mantissaDistrib.size(); ++i)
+    fmt::print("\t{:2}: {}\n", i, mantissaDistrib[i]);
 
   volatile uint64_t counter = 0;
   char buffer[128];
