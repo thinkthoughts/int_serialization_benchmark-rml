@@ -1,17 +1,14 @@
-#include <algorithm>
 #include <cstddef>
 #include <cstdio>
-#include <fmt/core.h>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <numeric>
 #include <random>
-#include <ranges>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
+#include <fmt/core.h>
+#include <cxxopts.hpp>
 using std::literals::string_literals::operator""s;
 
 #include "performancecounters/benchmarker.h"
@@ -117,12 +114,36 @@ struct uniform_generator : float_number_generator<T> {
   T new_float() override { return dis(gen); }
 };
 
-std::vector<decimal_float> generate_large_set(size_t count = 1'000'000) {
+std::vector<decimal_float> generate_large_set(size_t count = 1'000'000,
+                                              int min_digits = 1,
+                                              int max_digits = 17) {
   std::vector<decimal_float> result;
-  uniform_generator<double> gen(-1e10, 1e10);
   result.reserve(count);
+
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_int_distribution<int> digit_dist(min_digits, max_digits);
+  std::uniform_int_distribution<int> exp_dist(-50, 50);
+  std::uniform_int_distribution<int> sign_dist(0, 1);
+
   for (size_t i = 0; i < count; ++i) {
-    result.push_back(double_to_decimal_float(gen.new_float()));
+    int num_digits = digit_dist(gen);
+
+    // Generate mantissa with exactly num_digits digits
+    // For n digits, range is [10^(n-1), 10^n - 1]
+    uint64_t min_val = 1;
+    uint64_t max_val = 9;
+    for (int d = 1; d < num_digits; ++d) {
+      min_val *= 10;
+      max_val = max_val * 10 + 9;
+    }
+
+    std::uniform_int_distribution<uint64_t> mantissa_dist(min_val, max_val);
+    uint64_t mantissa = mantissa_dist(gen);
+    int32_t exponent = exp_dist(gen);
+    bool sign = sign_dist(gen) == 1;
+
+    result.push_back({mantissa, exponent, sign});
   }
 
   return result;
@@ -152,23 +173,86 @@ void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
   fmt::print("Dragonbox: {}\n", buffer);
 }
 
+void test_some_harcoded_cases() {
+  compare_avx512_and_dragonbox(12345678901234567ul, 20); // 17
+  compare_avx512_and_dragonbox(123456789, 8); // 9
+  compare_avx512_and_dragonbox(123456, 8); // 6
+  compare_avx512_and_dragonbox(0, 1);
+  compare_avx512_and_dragonbox(1, 1);
+}
+
 int main(int argc, char **argv) {
+  cxxopts::Options options("benchmark", "Float to string conversion benchmark");
+
+  options.add_options()
+    ("h,help",  "Show help message")
+    ("q,quick", "Do a quick validation test with some hardcoded cases")
+    ("f,file",  "Input file containing floating point numbers", cxxopts::value<std::string>())
+    ("n,num",   "Number of random numbers to generate", cxxopts::value<size_t>()->default_value("1000000"))
+    ("m,min",   "Minimum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("1"))
+    ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"));
+
   std::vector<decimal_float> data;
-  if (argc > 1) {
-    // Lecture du fichier passé en argument
-    auto floats = read_floats_from_file(argv[1]);
-    if (floats.empty()) {
-      fmt::print(stderr, "No valid floats found in the file.\n");
+  try {
+    auto result = options.parse(argc, argv);
+
+    if (result.count("help")) {
+      fmt::print("{}\n", options.help());
+      fmt::print("\nExamples:\n");
+      fmt::print("  {} -n 1000               # Random 1000 numbers with 1-17 digit mantissas\n", argv[0]);
+      fmt::print("  {} -f data/canada.txt    # Use data from file\n", argv[0]);
+      fmt::print("  {} -m 1 -M 5             # Random data with 1-5 digit mantissas\n", argv[0]);
+      fmt::print("  {} --min=10 --max=17     # Random data with 10-17 digit mantissas\n", argv[0]);
+      return EXIT_SUCCESS;
+    }
+
+    if (result.count("quick")) {
+      test_some_harcoded_cases();
+      return EXIT_SUCCESS;
+    }
+
+    size_t num_values = result["num"].as<size_t>();
+    int min_digits = result["min"].as<int>();
+    int max_digits = result["max"].as<int>();
+
+    // Validate digit ranges
+    if (min_digits < 1 || min_digits > 17) {
+      fmt::print(stderr, "Error: min_digits must be between 1 and 17\n");
       return EXIT_FAILURE;
     }
-    data.reserve(floats.size());
-    for (double f : floats) {
-      data.push_back(double_to_decimal_float(f));
+    if (max_digits < 1 || max_digits > 17) {
+      fmt::print(stderr, "Error: max_digits must be between 1 and 17\n");
+      return EXIT_FAILURE;
     }
-  } else {
-    // Génération aléatoire par défaut
-    data = generate_large_set();
+    if (min_digits > max_digits) {
+      fmt::print(stderr, "Error: min_digits ({}) cannot be greater than max_digits ({})\n", min_digits, max_digits);
+      return EXIT_FAILURE;
+    }
+
+    if (result.count("file")) {
+      // Load data from file
+      const std::string filename = result["file"].as<std::string>();
+      const auto floats = read_floats_from_file(filename);
+      if (floats.empty()) {
+        fmt::print(stderr, "No valid floats found in the file: {}\n", filename);
+        return EXIT_FAILURE;
+      }
+      data.reserve(floats.size());
+      for (double f : floats)
+        data.push_back(double_to_decimal_float(f));
+      fmt::print("Loaded {} floats from file: {}\n", data.size(), filename);
+    } else {
+      // Generate random data
+      data = generate_large_set(num_values, min_digits, max_digits);
+      fmt::print("Generated {} random values with mantissa digits in range [{}, {}]\n",
+                 num_values, min_digits, max_digits);
+    }
+  } catch (const cxxopts::exceptions::exception& e) {
+    fmt::print(stderr, "Error parsing arguments: {}\n", e.what());
+    fmt::print(stderr, "Use -h or --help for usage information.\n");
+    return EXIT_FAILURE;
   }
+
   fmt::print("Data size: {} floats\n", data.size());
 
   // Print mantissa length distribution
@@ -223,9 +307,4 @@ int main(int argc, char **argv) {
 #endif
     pretty_print(data.size(), volume_drag, "dragonbox", bench(drag));
   }
-#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-  fmt::print("Using AVX512IFMA\n");
-#else
-  fmt::print("Using fallback implementation (AVX-512 not found)\n");
-#endif
 }
