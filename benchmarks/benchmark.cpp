@@ -142,6 +142,18 @@ std::vector<double> read_floats_from_file(const std::string &filename) {
   return values;
 }
 
+void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
+  char buffer[32];
+
+  int n = avx512_to_chars(mantissa, exponent, buffer);
+  buffer[n] = '\0';
+  fmt::print("AVX-512:   {}\n", buffer);
+
+  n = jkj::dragonbox::detail::to_chars(mantissa, exponent, buffer) - buffer;
+  buffer[n] = '\0';
+  fmt::print("Dragonbox: {}\n", buffer);
+}
+
 int main(int argc, char **argv) {
   std::vector<decimal_float> data;
   if (argc > 1) {
