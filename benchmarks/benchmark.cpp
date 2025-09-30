@@ -28,7 +28,7 @@ struct decimal_float {
   bool sign;
 };
 
-decimal_float double_to_decimal_float(double value) {
+decimal_float double_to_decimal_float(double value, int mantissa_size = 17) {
   decimal_float result = {0, 0, false};
 
   // Handle zero
@@ -56,19 +56,24 @@ decimal_float double_to_decimal_float(double value) {
     normalized /= 10.0;
     exp10++;
   }
+
   // Convert to mantissa with up to 17 digits (max for uint64_t)
   uint64_t mantissa =
       static_cast<uint64_t>(normalized * 100'000'000'000'000'000.0 + 0.5);
   exp10 -= 17; // Adjust exponent to account for the scaling factor
+
   // Remove trailing zeros
   while (mantissa % 10 == 0 && mantissa != 0) {
     mantissa /= 10;
     exp10++;
   }
-  // We keep at most 17 digits in the mantissa
-  while (mantissa > 100'000'000'000'000'000) {
+
+  // If mantissa has more digits than mantissa_size, scale it down
+  int current_digits = fast_digit_count(mantissa);
+  while (current_digits > mantissa_size) {
     mantissa = (mantissa / 10) + (mantissa % 10 >= 5 ? 1 : 0); // naive rounding
     exp10++;
+    current_digits--;
   }
 
   result.mantissa = mantissa;
@@ -92,58 +97,35 @@ void pretty_print(size_t volume, size_t bytes, const std::string &name,
   fmt::print("\n");
 }
 
-template <typename T>
-struct float_number_generator {
-  virtual T new_float() = 0;
-  virtual std::string describe() = 0;
-  virtual ~float_number_generator() = default;
-};
-
-template <typename T>
-struct uniform_generator : float_number_generator<T> {
-  std::random_device rd;
-  std::mt19937_64 gen;
-  std::uniform_real_distribution<T> dis;
-  explicit uniform_generator(T a = 0.0, T b = 1.0)
-      : rd(), gen(rd()), dis(a, b) {}
-  std::string describe() override {
-    return "generate random numbers uniformly in the interval [" +
-           std::to_string((dis.min)()) + std::string(",") +
-           std::to_string((dis.max)()) + std::string("]");
-  }
-  T new_float() override { return dis(gen); }
+enum class DistributionMode {
+  Uniform,  // Uniform distribution across digit lengths
+  Natural   // Natural distribution (more high-digit numbers)
 };
 
 std::vector<decimal_float> generate_large_set(size_t count = 1'000'000,
                                               int min_digits = 1,
-                                              int max_digits = 17) {
+                                              int max_digits = 17,
+                                              DistributionMode mode = DistributionMode::Uniform) {
   std::vector<decimal_float> result;
   result.reserve(count);
 
   std::random_device rd;
   std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<int> digit_dist(min_digits, max_digits);
-  std::uniform_int_distribution<int> exp_dist(-50, 50);
-  std::uniform_int_distribution<int> sign_dist(0, 1);
+  std::uniform_real_distribution<double> value_dist(-1e10, 1e10);
+  std::uniform_int_distribution<int> uniform_digit_dist(min_digits, max_digits);
+
+  // Create weights that exponentially favor higher digit counts
+  std::vector<double> weights;
+  double val = 1.0;
+  for (int i = min_digits; i <= max_digits; ++i, val *= 16.0)
+    weights.push_back(val);
+  std::discrete_distribution<int> natural_digit_dist(weights.begin(), weights.end());
 
   for (size_t i = 0; i < count; ++i) {
-    int num_digits = digit_dist(gen);
-
-    // Generate mantissa with exactly num_digits digits
-    // For n digits, range is [10^(n-1), 10^n - 1]
-    uint64_t min_val = 1;
-    uint64_t max_val = 9;
-    for (int d = 1; d < num_digits; ++d) {
-      min_val *= 10;
-      max_val = max_val * 10 + 9;
-    }
-
-    std::uniform_int_distribution<uint64_t> mantissa_dist(min_val, max_val);
-    uint64_t mantissa = mantissa_dist(gen);
-    int32_t exponent = exp_dist(gen);
-    bool sign = sign_dist(gen) == 1;
-
-    result.push_back({mantissa, exponent, sign});
+    int mantissa_size = mode == DistributionMode::Natural
+                      ? min_digits + natural_digit_dist(gen)
+                      : uniform_digit_dist(gen);
+    result.emplace_back(double_to_decimal_float(value_dist(gen), mantissa_size));
   }
 
   return result;
@@ -190,7 +172,9 @@ int main(int argc, char **argv) {
     ("f,file",  "Input file containing floating point numbers", cxxopts::value<std::string>())
     ("n,num",   "Number of random numbers to generate", cxxopts::value<size_t>()->default_value("1000000"))
     ("m,min",   "Minimum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("1"))
-    ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"));
+    ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"))
+    ("d,distribution", "Distribution mode: 'uniform' (equal probability for each digit count)"
+                       "or 'natural' (more high-digit numbers)", cxxopts::value<std::string>()->default_value("natural"));
 
   std::vector<decimal_float> data;
   try {
@@ -199,10 +183,12 @@ int main(int argc, char **argv) {
     if (result.count("help")) {
       fmt::print("{}\n", options.help());
       fmt::print("\nExamples:\n");
-      fmt::print("  {} -n 1000               # Random 1000 numbers with 1-17 digit mantissas\n", argv[0]);
-      fmt::print("  {} -f data/canada.txt    # Use data from file\n", argv[0]);
-      fmt::print("  {} -m 1 -M 5             # Random data with 1-5 digit mantissas\n", argv[0]);
-      fmt::print("  {} --min=10 --max=17     # Random data with 10-17 digit mantissas\n", argv[0]);
+      fmt::print("  {} -n 1000                 # Random 1000 numbers with 1-17 digit mantissas\n", argv[0]);
+      fmt::print("  {} -f data/canada.txt      # Use data from file\n", argv[0]);
+      fmt::print("  {} -m 1 -M 5               # Random data with 1-5 digit mantissas (uniform)\n", argv[0]);
+      fmt::print("  {} --min=10 --max=17       # Random data with 10-17 digit mantissas (uniform)\n", argv[0]);
+      fmt::print("  {} -d natural              # Natural distribution (more high-digit numbers)\n", argv[0]);
+      fmt::print("  {} -m 5 -M 15 -d natural   # Natural distribution with 5-15 digit range\n", argv[0]);
       return EXIT_SUCCESS;
     }
 
@@ -214,6 +200,18 @@ int main(int argc, char **argv) {
     size_t num_values = result["num"].as<size_t>();
     int min_digits = result["min"].as<int>();
     int max_digits = result["max"].as<int>();
+    std::string distribution_str = result["distribution"].as<std::string>();
+
+    // Parse distribution mode
+    DistributionMode distribution_mode;
+    if (distribution_str == "uniform") {
+      distribution_mode = DistributionMode::Uniform;
+    } else if (distribution_str == "natural") {
+      distribution_mode = DistributionMode::Natural;
+    } else {
+      fmt::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
+      return EXIT_FAILURE;
+    }
 
     // Validate digit ranges
     if (min_digits < 1 || min_digits > 17) {
@@ -243,9 +241,9 @@ int main(int argc, char **argv) {
       fmt::print("Loaded {} floats from file: {}\n", data.size(), filename);
     } else {
       // Generate random data
-      data = generate_large_set(num_values, min_digits, max_digits);
-      fmt::print("Generated {} random values with mantissa digits in range [{}, {}]\n",
-                 num_values, min_digits, max_digits);
+      data = generate_large_set(num_values, min_digits, max_digits, distribution_mode);
+      fmt::print("Generated {} random values with mantissa digits in range [{}, {}] using {} distribution\n",
+                 num_values, min_digits, max_digits, distribution_str);
     }
   } catch (const cxxopts::exceptions::exception& e) {
     fmt::print(stderr, "Error parsing arguments: {}\n", e.what());
