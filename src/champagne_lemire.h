@@ -33,19 +33,18 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
     // Ok, so we have to write 17 digits.
     uint64_t top_digit = mantissa / 10'000'000'000'000'000;
     digits::write_one_digit_with_dot(result, top_digit);
+
     // The call to to_string_avx512ifma and its storage amount to about
     // 25 instructions, and that can be about a third of the processing time.
-    auto digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
+    __m128i digits_15_0 = to_string_avx512ifma(mantissa % 10'000'000'000'000'000);
     _mm_storeu_si128((__m128i *)(result + 2), digits_15_0);
     exp += 16;
     exp_index = 18; // 17 digits + dot
   } else {
-    // Next we do the general case.
-    //
-    // The mantissa is in [1,10^16)
-    // When the mantissa is SHORT (few digits), the following is wasteful.
-    // We could probably compute 8 digits faster. So we could branch here.
-    auto digits_15_0 = to_string_avx512ifma(mantissa);
+    __m128i digits_15_0 = mantissa <= 99'999'999 ?
+        to_string_avx512ifma_8digits(mantissa) :
+        to_string_avx512ifma(mantissa);
+
     const uint32_t number_of_digits = fast_digit_count(mantissa);
     exp += number_of_digits - 1;
     bool use_dot = (mantissa >= 10);
