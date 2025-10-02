@@ -145,10 +145,13 @@ std::vector<double> read_floats_from_file(const std::string &filename) {
 
 void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
   char buffer[32];
+  int n;
 
-  int n = avx512_to_chars(mantissa, exponent, buffer);
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+  n = avx512_to_chars(mantissa, exponent, buffer);
   buffer[n] = '\0';
   fmt::print("AVX-512:   {}\n", buffer);
+#endif
 
   n = jkj::dragonbox::detail::to_chars(mantissa, exponent, buffer) - buffer;
   buffer[n] = '\0';
