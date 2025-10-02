@@ -15,12 +15,6 @@ using std::literals::string_literals::operator""s;
 #include "champagne_lemire.h"
 #include "dragonbox.h"
 
-constexpr uint8_t FloatMantissaBits = 23;
-constexpr uint8_t FloatExponentBits = 8;
-
-constexpr uint8_t DoubleMantissaBits = 52;
-constexpr uint8_t DoubleExponentBits = 11;
-
 // mantissa * 10^exponent
 struct decimal_float {
   uint64_t mantissa;

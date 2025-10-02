@@ -92,7 +92,6 @@ int main(int argc, char **argv) {
 #endif 
   auto standard_to_chars = [&data, &counter, &buffer]() {
                    for (size_t i = 0; i < data.size(); ++i) {
-                     char *start = buffer;
                      counter = counter +
                                (std::to_chars(buffer, buffer + 128, data[i]).ptr -
                                 buffer);
