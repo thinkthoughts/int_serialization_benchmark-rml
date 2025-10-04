@@ -63,10 +63,6 @@ target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE fmt::fmt)
 target_link_libraries(benchmark PRIVATE cxxopts)
 
-add_executable(itoa_benchmark benchmarks/itoa_benchmark.cpp)
-target_compile_options(itoa_benchmark PRIVATE ${PROJECT_WARNINGS})
-target_link_libraries(itoa_benchmark PRIVATE fmt::fmt)
-
 add_executable(tester src/tester.cpp)
 target_compile_options(tester PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(tester PRIVATE fmt::fmt)
