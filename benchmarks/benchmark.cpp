@@ -1,17 +1,14 @@
-#include <algorithm>
 #include <cstddef>
 #include <cstdio>
-#include <fmt/core.h>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <map>
-#include <numeric>
 #include <random>
-#include <ranges>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 #include <vector>
+#include <fmt/core.h>
+#include <cxxopts.hpp>
 using std::literals::string_literals::operator""s;
 
 #include "performancecounters/benchmarker.h"
@@ -31,7 +28,7 @@ struct decimal_float {
   bool sign;
 };
 
-decimal_float double_to_decimal_float(double value) {
+decimal_float double_to_decimal_float(double value, int mantissa_size = 17) {
   decimal_float result = {0, 0, false};
 
   // Handle zero
@@ -59,19 +56,24 @@ decimal_float double_to_decimal_float(double value) {
     normalized /= 10.0;
     exp10++;
   }
+
   // Convert to mantissa with up to 17 digits (max for uint64_t)
   uint64_t mantissa =
       static_cast<uint64_t>(normalized * 100'000'000'000'000'000.0 + 0.5);
   exp10 -= 17; // Adjust exponent to account for the scaling factor
+
   // Remove trailing zeros
   while (mantissa % 10 == 0 && mantissa != 0) {
     mantissa /= 10;
     exp10++;
   }
-  // We keep at most 17 digits in the mantissa
-  while (mantissa > 100'000'000'000'000'000) {
+
+  // If mantissa has more digits than mantissa_size, scale it down
+  int current_digits = fast_digit_count(mantissa);
+  while (current_digits > mantissa_size) {
     mantissa = (mantissa / 10) + (mantissa % 10 >= 5 ? 1 : 0); // naive rounding
     exp10++;
+    current_digits--;
   }
 
   result.mantissa = mantissa;
@@ -95,34 +97,35 @@ void pretty_print(size_t volume, size_t bytes, const std::string &name,
   fmt::print("\n");
 }
 
-template <typename T>
-struct float_number_generator {
-  virtual T new_float() = 0;
-  virtual std::string describe() = 0;
-  virtual ~float_number_generator() = default;
+enum class DistributionMode {
+  Uniform,  // Uniform distribution across digit lengths
+  Natural   // Natural distribution (more high-digit numbers)
 };
 
-template <typename T>
-struct uniform_generator : float_number_generator<T> {
-  std::random_device rd;
-  std::mt19937_64 gen;
-  std::uniform_real_distribution<T> dis;
-  explicit uniform_generator(T a = 0.0, T b = 1.0)
-      : rd(), gen(rd()), dis(a, b) {}
-  std::string describe() override {
-    return "generate random numbers uniformly in the interval [" +
-           std::to_string((dis.min)()) + std::string(",") +
-           std::to_string((dis.max)()) + std::string("]");
-  }
-  T new_float() override { return dis(gen); }
-};
-
-std::vector<decimal_float> generate_large_set(size_t count = 1'000'000) {
+std::vector<decimal_float> generate_large_set(size_t count = 1'000'000,
+                                              int min_digits = 1,
+                                              int max_digits = 17,
+                                              DistributionMode mode = DistributionMode::Uniform) {
   std::vector<decimal_float> result;
-  uniform_generator<double> gen(-1e10, 1e10);
   result.reserve(count);
+
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+  std::uniform_real_distribution<double> value_dist(-1e10, 1e10);
+  std::uniform_int_distribution<int> uniform_digit_dist(min_digits, max_digits);
+
+  // Create weights that exponentially favor higher digit counts
+  std::vector<double> weights;
+  double val = 1.0;
+  for (int i = min_digits; i <= max_digits; ++i, val *= 16.0)
+    weights.push_back(val);
+  std::discrete_distribution<int> natural_digit_dist(weights.begin(), weights.end());
+
   for (size_t i = 0; i < count; ++i) {
-    result.push_back(double_to_decimal_float(gen.new_float()));
+    int mantissa_size = mode == DistributionMode::Natural
+                      ? min_digits + natural_digit_dist(gen)
+                      : uniform_digit_dist(gen);
+    result.emplace_back(double_to_decimal_float(value_dist(gen), mantissa_size));
   }
 
   return result;
@@ -134,32 +137,132 @@ std::vector<double> read_floats_from_file(const std::string &filename) {
   std::string line;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
-    double val;
-    if (iss >> val) {
+    if (double val; iss >> val)
       values.push_back(val);
-    }
   }
   return values;
 }
 
+void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
+  char buffer[32];
+  int n;
+
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+  n = avx512_to_chars(mantissa, exponent, buffer);
+  buffer[n] = '\0';
+  fmt::print("AVX-512:   {}\n", buffer);
+#endif
+
+  n = jkj::dragonbox::detail::to_chars(mantissa, exponent, buffer) - buffer;
+  buffer[n] = '\0';
+  fmt::print("Dragonbox: {}\n", buffer);
+}
+
+void test_some_harcoded_cases() {
+  compare_avx512_and_dragonbox(12345678901234567ul, 20); // 17
+  compare_avx512_and_dragonbox(123456789, 8); // 9
+  compare_avx512_and_dragonbox(123456, 8); // 6
+  compare_avx512_and_dragonbox(0, 1);
+  compare_avx512_and_dragonbox(1, 1);
+}
+
 int main(int argc, char **argv) {
+  cxxopts::Options options("benchmark", "Float to string conversion benchmark");
+
+  options.add_options()
+    ("h,help",  "Show help message")
+    ("q,quick", "Do a quick validation test with some hardcoded cases")
+    ("f,file",  "Input file containing floating point numbers", cxxopts::value<std::string>())
+    ("n,num",   "Number of random numbers to generate", cxxopts::value<size_t>()->default_value("1000000"))
+    ("m,min",   "Minimum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("1"))
+    ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"))
+    ("d,distribution", "Distribution mode: 'uniform' (equal probability for each digit count)"
+                       "or 'natural' (more high-digit numbers)", cxxopts::value<std::string>()->default_value("natural"));
+
   std::vector<decimal_float> data;
-  if (argc > 1) {
-    // Lecture du fichier passé en argument
-    auto floats = read_floats_from_file(argv[1]);
-    if (floats.empty()) {
-      fmt::print(stderr, "No valid floats found in the file.\n");
+  try {
+    auto result = options.parse(argc, argv);
+
+    if (result.count("help")) {
+      fmt::print("{}\n", options.help());
+      fmt::print("\nExamples:\n");
+      fmt::print("  {} -n 1000                 # Random 1000 numbers with 1-17 digit mantissas\n", argv[0]);
+      fmt::print("  {} -f data/canada.txt      # Use data from file\n", argv[0]);
+      fmt::print("  {} -m 1 -M 5               # Random data with 1-5 digit mantissas (uniform)\n", argv[0]);
+      fmt::print("  {} --min=10 --max=17       # Random data with 10-17 digit mantissas (uniform)\n", argv[0]);
+      fmt::print("  {} -d natural              # Natural distribution (more high-digit numbers)\n", argv[0]);
+      fmt::print("  {} -m 5 -M 15 -d natural   # Natural distribution with 5-15 digit range\n", argv[0]);
+      return EXIT_SUCCESS;
+    }
+
+    if (result.count("quick")) {
+      test_some_harcoded_cases();
+      return EXIT_SUCCESS;
+    }
+
+    size_t num_values = result["num"].as<size_t>();
+    int min_digits = result["min"].as<int>();
+    int max_digits = result["max"].as<int>();
+    std::string distribution_str = result["distribution"].as<std::string>();
+
+    // Parse distribution mode
+    DistributionMode distribution_mode;
+    if (distribution_str == "uniform") {
+      distribution_mode = DistributionMode::Uniform;
+    } else if (distribution_str == "natural") {
+      distribution_mode = DistributionMode::Natural;
+    } else {
+      fmt::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
       return EXIT_FAILURE;
     }
-    data.reserve(floats.size());
-    for (double f : floats) {
-      data.push_back(double_to_decimal_float(f));
+
+    // Validate digit ranges
+    if (min_digits < 1 || min_digits > 17) {
+      fmt::print(stderr, "Error: min_digits must be between 1 and 17\n");
+      return EXIT_FAILURE;
     }
-  } else {
-    // Génération aléatoire par défaut
-    data = generate_large_set();
+    if (max_digits < 1 || max_digits > 17) {
+      fmt::print(stderr, "Error: max_digits must be between 1 and 17\n");
+      return EXIT_FAILURE;
+    }
+    if (min_digits > max_digits) {
+      fmt::print(stderr, "Error: min_digits ({}) cannot be greater than max_digits ({})\n", min_digits, max_digits);
+      return EXIT_FAILURE;
+    }
+
+    if (result.count("file")) {
+      // Load data from file
+      const std::string filename = result["file"].as<std::string>();
+      const auto floats = read_floats_from_file(filename);
+      if (floats.empty()) {
+        fmt::print(stderr, "No valid floats found in the file: {}\n", filename);
+        return EXIT_FAILURE;
+      }
+      data.reserve(floats.size());
+      for (double f : floats)
+        data.push_back(double_to_decimal_float(f));
+      fmt::print("Loaded {} floats from file: {}\n", data.size(), filename);
+    } else {
+      // Generate random data
+      data = generate_large_set(num_values, min_digits, max_digits, distribution_mode);
+      fmt::print("Generated {} random values with mantissa digits in range [{}, {}] using {} distribution\n",
+                 num_values, min_digits, max_digits, distribution_str);
+    }
+  } catch (const cxxopts::exceptions::exception& e) {
+    fmt::print(stderr, "Error parsing arguments: {}\n", e.what());
+    fmt::print(stderr, "Use -h or --help for usage information.\n");
+    return EXIT_FAILURE;
   }
+
   fmt::print("Data size: {} floats\n", data.size());
+
+  // Print mantissa length distribution
+  std::array<size_t, 17 + 1> mantissaDistrib{};
+  for (const auto &df : data)
+    ++mantissaDistrib[fast_digit_count(df.mantissa)];
+  fmt::print("Mantissa length distribution:\n");
+  for (size_t i = 1; i < mantissaDistrib.size(); ++i)
+    fmt::print("\t{:2}: {}\n", i, mantissaDistrib[i]);
 
   volatile uint64_t counter = 0;
   char buffer[128];
@@ -205,9 +308,4 @@ int main(int argc, char **argv) {
 #endif
     pretty_print(data.size(), volume_drag, "dragonbox", bench(drag));
   }
-#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-  fmt::print("Using AVX512IFMA\n");
-#else
-  fmt::print("Using fallback implementation (AVX-512 not found)\n");
-#endif
 }
