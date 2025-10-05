@@ -205,6 +205,10 @@ void test_some_harcoded_floats() {
 }
 
 void test_some_harcoded_integers() {
+  compare_integers_algorithms(12345678901234567890ul); // 20
+  compare_integers_algorithms(1234567890123456789ul); // 19
+  compare_integers_algorithms(123456789012345678ul); // 18
+  compare_integers_algorithms(12345678901234567ul); // 17
   compare_integers_algorithms(1234567890123456ul); // 16
   compare_integers_algorithms(123456789); // 9
   compare_integers_algorithms(123456); // 6
