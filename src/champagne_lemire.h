@@ -8,13 +8,6 @@
 #include <cstdlib>
 #include <sys/types.h>
 
-#ifndef champagne_lemire_likely
-#define champagne_lemire_likely(x) __builtin_expect(!!(x), 1)
-#endif
-#ifndef champagne_lemire_unlikely
-#define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
-#endif
-
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
 
 // It is a SKETCH. It is likely not quite correct, but the spirit is there.
@@ -85,34 +78,20 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
 }
 
 static inline char* up_to_four_digits_to_chars(uint32_t v, char *result) {
-  alignas(64) static constexpr std::array<uint16_t, 100> DigitPair = [] {
-    auto pack_digits = [](char a, char b) {
-      return static_cast<uint16_t>(static_cast<uint8_t>(a) | (static_cast<uint8_t>(b) << 8));
-    };
-    std::array<uint16_t, 100> arr{};
-    for (int i = 0; i < 100; ++i)
-      arr[i] = pack_digits('0' + i / 10, '0' + i % 10);
-    return arr;
-  }();
-
   if (v >= 100) {
     uint32_t hi = v / 100;
     uint32_t lo = v - hi * 100;
-    uint16_t chars_lo = DigitPair[lo];
     if (v >= 1000) {
-      uint16_t chars_hi = DigitPair[hi];
-      std::memcpy(result,     &chars_hi, 2);
-      std::memcpy(result + 2, &chars_lo, 2);
+      digits::write_two_digits(result, hi);
+      digits::write_two_digits(result + 2, lo);
       return result + 4;
     } else {
       *result++ = static_cast<char>('0' + hi);
-      uint16_t t = DigitPair[lo];
-      std::memcpy(result, &t, 2);
+      digits::write_two_digits(result, lo);
       return result + 2;
     }
   } else if (v >= 10) {
-    uint16_t t = DigitPair[v];
-    std::memcpy(result, &t, 2);
+    digits::write_two_digits(result, v);
     return result + 2;
   } else {
     *result++ = static_cast<char>('0' + v);
