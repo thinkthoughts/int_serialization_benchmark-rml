@@ -165,6 +165,7 @@ std::vector<T> read_from_file(const std::string &filename) {
 void compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
   fmt::print("\nComparing mantissa={} exponent={}\n", mantissa, exponent);
   char buffer[32];
+  std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
@@ -181,6 +182,7 @@ void compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
 void compare_integers_algorithms(uint64_t number) {
   fmt::print("\nComparing number={}\n", number);
   char buffer[32];
+  std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
@@ -203,7 +205,7 @@ void test_some_harcoded_floats() {
 }
 
 void test_some_harcoded_integers() {
-  compare_integers_algorithms(12345678901234567ul); // 17
+  compare_integers_algorithms(1234567890123456ul); // 16
   compare_integers_algorithms(123456789); // 9
   compare_integers_algorithms(123456); // 6
   compare_integers_algorithms(0);

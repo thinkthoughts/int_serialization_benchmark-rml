@@ -84,11 +84,11 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   return exp_index;
 }
 
-
 int avx512_to_chars(uint64_t value, char *const result) {
-  auto digits_15_0 = to_string_avx512ifma(value);
+  const __m128i digits_15_0 = to_string_avx512ifma(value);
   const uint32_t number_of_digits = fast_digit_count(value);
-  _mm_mask_storeu_epi8(result - 16 + number_of_digits, (1 << (number_of_digits)) - 1, digits_15_0);
+  const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - number_of_digits));
+  _mm_mask_storeu_epi8(result - 16 + number_of_digits, mask, digits_15_0);
   return number_of_digits;
 }
 
