@@ -6,6 +6,7 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 #include <fmt/core.h>
 #include <cxxopts.hpp>
@@ -14,6 +15,8 @@ using std::literals::string_literals::operator""s;
 #include "performancecounters/benchmarker.h"
 #include "champagne_lemire.h"
 #include "dragonbox.h"
+
+constexpr size_t Number_Benchmark_Runs = 4;
 
 // mantissa * 10^exponent
 struct decimal_float {
@@ -96,49 +99,73 @@ enum class DistributionMode {
   Natural   // Natural distribution (more high-digit numbers)
 };
 
-std::vector<decimal_float> generate_large_set(size_t count = 1'000'000,
-                                              int min_digits = 1,
-                                              int max_digits = 17,
-                                              DistributionMode mode = DistributionMode::Uniform) {
-  std::vector<decimal_float> result;
+template<typename T>
+std::vector<T> generate_large_set(size_t count = 1'000'000,
+                                  int min_digits = 1, int max_digits = 17,
+                                  DistributionMode mode = DistributionMode::Uniform) {
+  std::vector<T> result;
   result.reserve(count);
 
   std::random_device rd;
   std::mt19937_64 gen(rd());
-  std::uniform_real_distribution<double> value_dist(-1e10, 1e10);
-  std::uniform_int_distribution<int> uniform_digit_dist(min_digits, max_digits);
 
   // Create weights that exponentially favor higher digit counts
   std::vector<double> weights;
   double val = 1.0;
   for (int i = min_digits; i <= max_digits; ++i, val *= 16.0)
     weights.push_back(val);
-  std::discrete_distribution<int> natural_digit_dist(weights.begin(), weights.end());
 
-  for (size_t i = 0; i < count; ++i) {
-    int mantissa_size = mode == DistributionMode::Natural
-                      ? min_digits + natural_digit_dist(gen)
-                      : uniform_digit_dist(gen);
-    result.emplace_back(double_to_decimal_float(value_dist(gen), mantissa_size));
+  std::uniform_int_distribution<int> uniform_digit_dist(min_digits, max_digits);
+  std::discrete_distribution<int> natural_digit_dist(weights.begin(), weights.end());
+  auto pick_digits = [&](DistributionMode m) {
+    return m == DistributionMode::Natural
+             ? min_digits + natural_digit_dist(gen)
+             : uniform_digit_dist(gen);
+  };
+
+  if constexpr (std::is_same_v<T, decimal_float>) {
+    std::uniform_real_distribution<double> value_dist(-1e10, 1e10);
+    for (size_t i = 0; i < count; ++i) {
+      int mantissa_size = pick_digits(mode);
+      result.emplace_back(double_to_decimal_float(value_dist(gen), mantissa_size));
+    }
+  } else if constexpr (std::is_same_v<T, uint64_t>) {
+    std::array<uint64_t, 20 + 1> pow10;
+    pow10[0] = 1;
+    for (int i = 1; i <= 20; ++i)
+      pow10[i] = pow10[i - 1] * 10;
+
+    for (size_t i = 0; i < count; ++i) {
+      int digits = pick_digits(mode);
+      uint64_t lower = pow10[digits - 1];
+      uint64_t upper = digits < 20
+                     ? pow10[digits] - 1
+                     : std::numeric_limits<uint64_t>::max();
+      std::uniform_int_distribution<uint64_t> dis(lower, upper);
+      result.push_back(dis(gen));
+    }
   }
 
   return result;
 }
 
-std::vector<double> read_floats_from_file(const std::string &filename) {
-  std::vector<double> values;
+template <typename T>
+std::vector<T> read_from_file(const std::string &filename) {
+  std::vector<T> values;
   std::ifstream infile(filename);
   std::string line;
   while (std::getline(infile, line)) {
     std::istringstream iss(line);
-    if (double val; iss >> val)
+    if (T val; iss >> val)
       values.push_back(val);
   }
   return values;
 }
 
-void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
+void compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
+  fmt::print("\nComparing mantissa={} exponent={}\n", mantissa, exponent);
   char buffer[32];
+  std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
@@ -152,12 +179,123 @@ void compare_avx512_and_dragonbox(uint64_t mantissa, int32_t exponent) {
   fmt::print("Dragonbox: {}\n", buffer);
 }
 
-void test_some_harcoded_cases() {
-  compare_avx512_and_dragonbox(12345678901234567ul, 20); // 17
-  compare_avx512_and_dragonbox(123456789, 8); // 9
-  compare_avx512_and_dragonbox(123456, 8); // 6
-  compare_avx512_and_dragonbox(0, 1);
-  compare_avx512_and_dragonbox(1, 1);
+void compare_integers_algorithms(uint64_t number) {
+  fmt::print("\nComparing number={}\n", number);
+  char buffer[32];
+  std::fill(buffer, buffer + sizeof(buffer), 0);
+  int n;
+
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+  n = avx512_to_chars(number, buffer);
+  buffer[n] = '\0';
+  fmt::print("AVX-512:       {}\n", buffer);
+#endif
+
+  n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
+  buffer[n] = '\0';
+  fmt::print("std::to_chars: {}\n", buffer);
+}
+
+void test_some_harcoded_floats() {
+  compare_decimal_floats_algorithms(12345678901234567ul, 20); // 17
+  compare_decimal_floats_algorithms(123456789, 8); // 9
+  compare_decimal_floats_algorithms(123456, 8); // 6
+  compare_decimal_floats_algorithms(0, 1);
+  compare_decimal_floats_algorithms(1, 1);
+}
+
+void test_some_harcoded_integers() {
+  compare_integers_algorithms(12345678901234567890ul); // 20
+  compare_integers_algorithms(1234567890123456789ul); // 19
+  compare_integers_algorithms(123456789012345678ul); // 18
+  compare_integers_algorithms(12345678901234567ul); // 17
+  compare_integers_algorithms(1234567890123456ul); // 16
+  compare_integers_algorithms(123456789); // 9
+  compare_integers_algorithms(123456); // 6
+  compare_integers_algorithms(0);
+  compare_integers_algorithms(1);
+}
+
+template<typename T>
+void run_benchmark(const std::vector<T> &data) {
+  volatile uint64_t counter = 0;
+  char buffer[128];
+
+  // --- Helper to pretty-print run results ---
+  auto run_and_report = [&](auto&& name, auto&& func, size_t volume) {
+    fmt::print("\n");
+    for (size_t i = 0; i < Number_Benchmark_Runs; ++i)
+      pretty_print(data.size(), volume, name, bench(func));
+  };
+
+  if constexpr (std::is_same_v<T, decimal_float>) {
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+    auto avx512l = [&data, &counter, &buffer]() {
+      for (size_t i = 0; i < data.size(); ++i) {
+        char *start = buffer;
+        if (data[i].sign) {
+          buffer[0] = '-';
+          start++;
+        }
+        counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
+                 + (data[i].sign ? 1 : 0);
+      }
+    };
+    counter = 0;
+    avx512l();
+    size_t volume512 = counter;
+    fmt::print("Volume 512: {}\n", volume512);
+#endif
+
+    auto drag = [&data, &counter, &buffer]() {
+      using jkj::dragonbox::detail::to_chars;
+      for (size_t i = 0; i < data.size(); ++i) {
+        char *start = buffer;
+        if (data[i].sign) {
+          buffer[0] = '-';
+          start++;
+        }
+        counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
+                 + (data[i].sign ? 1 : 0);
+      }
+    };
+    counter = 0;
+    drag();
+    size_t volume_drag = counter;
+    fmt::print("Volume drag: {}\n", volume_drag);
+
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+    run_and_report("avx-512+champagne_lemire", avx512l, volume512);
+#endif
+    run_and_report("dragonbox", drag, volume_drag);
+  } else if constexpr (std::is_same_v<T, uint64_t>) {
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+    auto avx512l = [&data, &counter, &buffer]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += avx512_to_chars(data[i], buffer);
+    };
+    counter = 0;
+    avx512l();
+    size_t volume512 = counter;
+    fmt::print("Volume 512: {}\n", volume512);
+#endif
+
+    auto standard_to_chars = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += std::to_chars(buffer, buffer + sizeof(buffer), data[i]).ptr - buffer;
+    };
+    counter = 0;
+    standard_to_chars();
+    size_t volume_standard = counter;
+    fmt::print("Volume std::to_chars: {}\n", volume_standard);
+
+#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
+    run_and_report("avx-512+champagne_lemire", avx512l, volume512);
+#endif
+    run_and_report("std::to_chars", standard_to_chars, volume_standard);
+  } else {
+    static_assert(false, "Unsupported type");
+  }
 }
 
 int main(int argc, char **argv) {
@@ -165,32 +303,36 @@ int main(int argc, char **argv) {
 
   options.add_options()
     ("h,help",  "Show help message")
+    ("i,int",   "Evaluate integer conversion (uint64_t) instead of floats")
     ("q,quick", "Do a quick validation test with some hardcoded cases")
-    ("f,file",  "Input file containing floating point numbers", cxxopts::value<std::string>())
+    ("f,file",  "Input file containing numbers", cxxopts::value<std::string>())
     ("n,num",   "Number of random numbers to generate", cxxopts::value<size_t>()->default_value("1000000"))
     ("m,min",   "Minimum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("1"))
     ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"))
     ("d,distribution", "Distribution mode: 'uniform' (equal probability for each digit count)"
                        "or 'natural' (more high-digit numbers)", cxxopts::value<std::string>()->default_value("natural"));
 
-  std::vector<decimal_float> data;
+  std::variant<std::vector<decimal_float>, std::vector<uint64_t>> data;
   try {
     auto result = options.parse(argc, argv);
 
     if (result.count("help")) {
       fmt::print("{}\n", options.help());
       fmt::print("\nExamples:\n");
-      fmt::print("  {} -n 1000                 # Random 1000 numbers with 1-17 digit mantissas\n", argv[0]);
-      fmt::print("  {} -f data/canada.txt      # Use data from file\n", argv[0]);
-      fmt::print("  {} -m 1 -M 5               # Random data with 1-5 digit mantissas (uniform)\n", argv[0]);
-      fmt::print("  {} --min=10 --max=17       # Random data with 10-17 digit mantissas (uniform)\n", argv[0]);
-      fmt::print("  {} -d natural              # Natural distribution (more high-digit numbers)\n", argv[0]);
-      fmt::print("  {} -m 5 -M 15 -d natural   # Natural distribution with 5-15 digit range\n", argv[0]);
+      fmt::print("  {} -n 1000             # Random 1000 numbers with 1-17 digits precision\n", argv[0]);
+      fmt::print("  {} -f data/canada.txt  # Use data from file\n", argv[0]);
+      fmt::print("  {} -m 1 -M 20 -i       # Random uint64_t with 1-20 digits (uniform)\n", argv[0]);
+      fmt::print("  {} -m 10 -M 17         # Random floats with 10-17 digit mantissas (uniform)\n", argv[0]);
+      fmt::print("  {} -m 5 -M 15 -d natural  # Natural distribution with 5-15 digit range\n", argv[0]);
       return EXIT_SUCCESS;
     }
 
+    bool integer_mode = result.count("int") > 0;
     if (result.count("quick")) {
-      test_some_harcoded_cases();
+      if (integer_mode)
+        test_some_harcoded_integers();
+      else
+        test_some_harcoded_floats();
       return EXIT_SUCCESS;
     }
 
@@ -211,36 +353,49 @@ int main(int argc, char **argv) {
     }
 
     // Validate digit ranges
-    if (min_digits < 1 || min_digits > 17) {
-      fmt::print(stderr, "Error: min_digits must be between 1 and 17\n");
-      return EXIT_FAILURE;
-    }
-    if (max_digits < 1 || max_digits > 17) {
-      fmt::print(stderr, "Error: max_digits must be between 1 and 17\n");
-      return EXIT_FAILURE;
-    }
-    if (min_digits > max_digits) {
-      fmt::print(stderr, "Error: min_digits ({}) cannot be greater than max_digits ({})\n", min_digits, max_digits);
+    const int max_allowed = integer_mode ? 20 : 17;
+    if ((min_digits < 1) | (min_digits > max_allowed) |
+        (min_digits < 1) | (max_digits > max_allowed) |
+        (min_digits > max_digits)) {
+      fmt::print(stderr, "Error: invalid digit range [{}, {}]\n", min_digits, max_digits);
       return EXIT_FAILURE;
     }
 
     if (result.count("file")) {
       // Load data from file
       const std::string filename = result["file"].as<std::string>();
-      const auto floats = read_floats_from_file(filename);
-      if (floats.empty()) {
-        fmt::print(stderr, "No valid floats found in the file: {}\n", filename);
-        return EXIT_FAILURE;
+
+      if (integer_mode) {
+        const auto ints = read_from_file<uint64_t>(filename);
+        if (ints.empty()) {
+          fmt::print(stderr, "No valid integers found in the file: {}\n", filename);
+          return EXIT_FAILURE;
+        }
+        fmt::print("Loaded {} integers from file: {}\n", ints.size(), filename);
+        data = std::move(ints);
+      } else {
+        const auto floats = read_from_file<double>(filename);
+        if (floats.empty()) {
+          fmt::print(stderr, "No valid floats found in the file: {}\n", filename);
+          return EXIT_FAILURE;
+        }
+        fmt::print("Loaded {} floats from file: {}\n", floats.size(), filename);
+
+        std::vector<decimal_float> floats_as_decimals;
+        floats_as_decimals.reserve(floats.size());
+        for (double f : floats)
+          floats_as_decimals.push_back(double_to_decimal_float(f));
+        data = std::move(floats_as_decimals);
       }
-      data.reserve(floats.size());
-      for (double f : floats)
-        data.push_back(double_to_decimal_float(f));
-      fmt::print("Loaded {} floats from file: {}\n", data.size(), filename);
     } else {
       // Generate random data
-      data = generate_large_set(num_values, min_digits, max_digits, distribution_mode);
-      fmt::print("Generated {} random values with mantissa digits in range [{}, {}] using {} distribution\n",
-                 num_values, min_digits, max_digits, distribution_str);
+      if (integer_mode)
+        data = generate_large_set<uint64_t>(num_values, min_digits, max_digits, distribution_mode);
+      else
+        data = generate_large_set<decimal_float>(num_values, min_digits, max_digits, distribution_mode);
+      fmt::print("Generated {} random {} with digits in range [{}, {}] using {} distribution\n",
+                 num_values, integer_mode ? "integers" : "floats",
+                 min_digits, max_digits, distribution_str);
     }
   } catch (const cxxopts::exceptions::exception& e) {
     fmt::print(stderr, "Error parsing arguments: {}\n", e.what());
@@ -248,58 +403,23 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  fmt::print("Data size: {} floats\n", data.size());
-
-  // Print mantissa length distribution
-  std::array<size_t, 17 + 1> mantissaDistrib{};
-  for (const auto &df : data)
-    ++mantissaDistrib[fast_digit_count(df.mantissa)];
-  fmt::print("Mantissa length distribution:\n");
-  for (size_t i = 1; i < mantissaDistrib.size(); ++i)
-    fmt::print("\t{:2}: {}\n", i, mantissaDistrib[i]);
-
-  volatile uint64_t counter = 0;
-  char buffer[128];
-
-#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-  auto avx512l = [&data, &counter, &buffer]() {
-    for (size_t i = 0; i < data.size(); ++i) {
-      char *start = buffer;
-      if (data[i].sign) {
-        buffer[0] = '-';
-        start++;
-      }
-      counter = counter + avx512_to_chars(data[i].mantissa, data[i].exponent, start)
-               + (data[i].sign ? 1 : 0);
+  // Print length distribution
+  std::visit([](auto &vec) {
+    std::array<size_t, 21> lengthDistrib{};
+    for (const auto &v : vec) {
+      uint64_t number = [&] {
+        if constexpr (std::is_same_v<std::decay_t<decltype(v)>, decimal_float>)
+          return v.mantissa;
+        else
+          return v;
+      }();
+      ++lengthDistrib[fast_digit_count(number)];
     }
-  };
-  counter = 0;
-  avx512l();
-  size_t volume512 = counter;
-  fmt::print("Volume 512: {}\n", volume512);
-#endif
-  auto drag = [&data, &counter, &buffer]() {
-    using jkj::dragonbox::detail::to_chars;
-    for (size_t i = 0; i < data.size(); ++i) {
-      char *start = buffer;
-      if (data[i].sign) {
-        buffer[0] = '-';
-        start++;
-      }
-      counter = counter + (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
-               + (data[i].sign ? 1 : 0);
-    }
-  };
-  counter = 0;
-  drag();
-  size_t volume_drag = counter;
-  fmt::print("Volume drag: {}\n", volume_drag);
 
-  for (size_t i = 0; i < 4; i++) {
-    fmt::print("Run {}\n", i + 1);
-#if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-    pretty_print(data.size(), volume512, "avx-512+champagne_lemire", bench(avx512l));
-#endif
-    pretty_print(data.size(), volume_drag, "dragonbox", bench(drag));
-  }
+    fmt::print("length distribution:\n");
+    for (size_t i = 1; i < lengthDistrib.size(); ++i)
+      fmt::print("\t{:2}: {}\n", i, lengthDistrib[i]);
+  }, data);
+
+  std::visit([](auto &vec) { run_benchmark(vec); }, data);
 }

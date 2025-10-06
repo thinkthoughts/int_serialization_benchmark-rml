@@ -8,13 +8,6 @@
 #include <cstdlib>
 #include <sys/types.h>
 
-#ifndef champagne_lemire_likely
-#define champagne_lemire_likely(x) __builtin_expect(!!(x), 1)
-#endif
-#ifndef champagne_lemire_unlikely
-#define champagne_lemire_unlikely(x) __builtin_expect(!!(x), 0)
-#endif
-
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
 
 // It is a SKETCH. It is likely not quite correct, but the spirit is there.
@@ -84,12 +77,44 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   return exp_index;
 }
 
+static inline char* up_to_four_digits_to_chars(uint32_t v, char *result) {
+  if (v >= 100) {
+    uint32_t hi = v / 100;
+    uint32_t lo = v - hi * 100;
+    if (v >= 1000) {
+      digits::write_two_digits(result, hi);
+      digits::write_two_digits(result + 2, lo);
+      return result + 4;
+    } else {
+      *result++ = static_cast<char>('0' + hi);
+      digits::write_two_digits(result, lo);
+      return result + 2;
+    }
+  } else if (v >= 10) {
+    digits::write_two_digits(result, v);
+    return result + 2;
+  } else {
+    *result++ = static_cast<char>('0' + v);
+    return result;
+  }
+}
 
 int avx512_to_chars(uint64_t value, char *const result) {
-  auto digits_15_0 = to_string_avx512ifma(value);
-  const uint32_t number_of_digits = fast_digit_count(value);
-  _mm_mask_storeu_epi8(result - 16 + number_of_digits, (1 << (number_of_digits)) - 1, digits_15_0);
-  return number_of_digits;
+  if (value < 10000000000000000ULL) { // 10^16
+    const __m128i digits_15_0 = to_string_avx512ifma(value);
+    const uint32_t n = fast_digit_count(value);
+    const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
+    _mm_mask_storeu_epi8(result - 16 + n, mask, digits_15_0);
+    return n;
+  }
+
+  const uint64_t q = value / 10000000000000000ULL; // 1..1844
+  const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
+
+  char *p = up_to_four_digits_to_chars(static_cast<uint32_t>(q), result);
+  const __m128i digits_15_0 = to_string_avx512ifma(r);
+  _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
+  return static_cast<int>(p - result + 16);
 }
 
 #endif // CHAMPAGNE_LEMIRE_AVX512
