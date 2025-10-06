@@ -17,3 +17,5 @@ jobs:
           mkdir build &&
           cmake -B build &&
           cmake --build build
+          ./build/benchmark -i -q
+          ./build/benchmark -q
