@@ -77,34 +77,12 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   return exp_index;
 }
 
-static inline char* up_to_four_digits_to_chars(uint32_t v, char *result) {
-  if (v >= 100) {
-    uint32_t hi = v / 100;
-    uint32_t lo = v - hi * 100;
-    if (v >= 1000) {
-      digits::write_two_digits(result, hi);
-      digits::write_two_digits(result + 2, lo);
-      return result + 4;
-    } else {
-      *result++ = static_cast<char>('0' + hi);
-      digits::write_two_digits(result, lo);
-      return result + 2;
-    }
-  } else if (v >= 10) {
-    digits::write_two_digits(result, v);
-    return result + 2;
-  } else {
-    *result++ = static_cast<char>('0' + v);
-    return result;
-  }
-}
-
 int avx512_to_chars(uint64_t value, char *const result) {
   // For small numbers, it seems useful to call faster functions.
   // E.g., try ./build/benchmark -m 1 -M 4 -i
   if( value < 100000000 ) { // 10^8
     if( value < 10000 ) { // 10^4
-      return static_cast<int>(up_to_four_digits_to_chars(static_cast<uint32_t>(value), result) - result);
+      return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
     }
     const __m128i digits_15_0 = to_string_avx512ifma_8digits(value);
     const uint32_t n = fast_digit_count(value);
@@ -112,23 +90,31 @@ int avx512_to_chars(uint64_t value, char *const result) {
     _mm_mask_storeu_epi8(result - 16 + n, mask, digits_15_0);
     return n;
   }
+
+  const uint32_t n = fast_digit_count(value);
   if (value < 10000000000000000ULL) { // 10^16
     const __m128i digits_15_0 = to_string_avx512ifma(value);
-    const uint32_t n = fast_digit_count(value);
     const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
     _mm_mask_storeu_epi8(result - 16 + n, mask, digits_15_0);
     return n;
   }
 
+  // Option A : faster for homogeneous sizes of numbers.
   const uint64_t q = value / 10000000000000000ULL; // 1..1844
   const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
   char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
-  // using write_one_two_three_or_four_digits_10000 instead up_to_four_digits_to_chars saves about
-  // 4 instructions per integer when calling './build/benchmark -m 19 -M 20 -i' so it might be worth it.
-  // char *p = up_to_four_digits_to_chars(static_cast<uint32_t>(q), result);
   const __m128i digits_15_0 = to_string_avx512ifma(r);
   _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
-  return static_cast<int>(p - result + 16);
+  return p - result + 16;
+
+  // Option B : faster for heterogeneous sizes of numbers.
+  // const auto [q, r] = digits::div10000<true>(value);  // full-range correct variant
+  // const uint32_t nq = n - 4;
+  // const __m128i v16 = to_string_avx512ifma(q);
+  // const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - nq));
+  // _mm_mask_storeu_epi8(result - 16 + nq, mask, v16);
+  // digits::write_four_digits_10000(result + nq, r);
+  // return n;
 }
 
 #endif // CHAMPAGNE_LEMIRE_AVX512

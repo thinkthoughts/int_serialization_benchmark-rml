@@ -144,13 +144,13 @@ inline char* write_three_or_four_digits_10000(char *buffer, uint64_t value) {
 
 inline char* write_one_two_three_or_four_digits_10000(char *buffer, uint64_t value) {
   if(value >= 1000) { // four digits
-    auto [high, low] = div100v(value);
+    const auto [high, low] = div100v(value);
     std::memcpy(buffer,     get_two_digits(high).data(), 2);
     std::memcpy(buffer + 2, get_two_digits_v(low).data(), 2);
     return buffer + 4;
   } else if(value >= 100) { // three digits
     // This could be further optimized:
-    auto [high, low] = div100v(value);
+    const auto [high, low] = div100v(value);
     buffer[0] = char('0' + high);
     std::memcpy(buffer + 1, get_two_digits_v(low).data(), 2);
     return buffer + 3;

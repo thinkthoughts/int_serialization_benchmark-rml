@@ -374,10 +374,11 @@ int main(int argc, char **argv) {
         success = test_some_harcoded_floats();
       if(!success) {
         fmt::print("Some tests failed!\n");
-      if(integer_mode) { return EXIT_FAILURE; }
-      //
-      fmt::print("Failures with floats are expected!\n");
-      return EXIT_SUCCESS;
+        if(integer_mode)
+          return EXIT_FAILURE;
+        //
+        fmt::print("Failures with floats are expected!\n");
+        return EXIT_SUCCESS;
 
       }
       fmt::print("All tests passed!\n");
