@@ -16,19 +16,24 @@ namespace digits {
 // In this manner, we go from a number x in [0, 10000) to
 // a pair (div, mod) using a single multiplication.
 constexpr std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
-  uint64_t v = x * uint64_t(0x028f5c29); // ceil(2^32 / 100)
+  const uint64_t v = x * uint64_t(0x028f5c29); // ceil(2^32 / 100)
   return {v >> 32, (v >> 24) & 0xff};
 }
 
 inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
-  auto [high, _] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
-  return {high, x - 100 * high};
+  const uint64_t q = mul64x64_to_128(x, 0x28f5c28f5c28f5d).first; // ceil(2^64 / 100)
+  return {q, x - 100 * q};
 }
 
-// requires x <= 999999999999999 < 10**15
+template <bool maybe_larger_than_10e15>
 inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  auto [high, _] = mul64x64_to_128(x, 0x68db8bac710cc);
-  return {high, x - 10000 * high};
+  const uint64_t q = mul64x64_to_128(x, 0x68db8bac710cc).first; // ceil(2^64 / 10000)
+  const uint64_t r = x - 10000 * q;
+  if constexpr (maybe_larger_than_10e15) {
+    if (r > x)
+      return {q - 1, r + 10000};
+  }
+  return {q, r};
 }
 
 inline std::array<char, 2> get_one_digit_with_dot(uint32_t value) {
@@ -157,7 +162,6 @@ inline char* write_one_two_three_or_four_digits_10000(char *buffer, uint64_t val
     return buffer + 1;
   }
 }
-
 
 } // namespace digits
 
