@@ -20,31 +20,16 @@ constexpr std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
   return {v >> 32, (v >> 24) & 0xff};
 }
 
-#ifdef __aarch64__
 inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
-  return {high, mul64x64_to_128(low, 100).first};
-} // 120 - 174
-#else // x86_64
-inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
+  auto [high, _] = mul64x64_to_128(x, 0x28f5c28f5c28f5d);
   return {high, x - 100 * high};
-} // 128 - 190
-#endif //__aarch64__
+}
 
 // requires x <= 999999999999999 < 10**15
-// return low bits
-#ifdef __aarch64__
 inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
-  return {high, low};
-} // 120 - 174
-#else // x86_64
-inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  auto [high, low] = mul64x64_to_128(x, 0x68db8bac710cc);
-  return {high, low};
-} // 128 - 190
-#endif // __aarch64__
+  auto [high, _] = mul64x64_to_128(x, 0x68db8bac710cc);
+  return {high, x - 10000 * high};
+}
 
 inline std::array<char, 2> get_one_digit_with_dot(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 10> digit_table = []() {
