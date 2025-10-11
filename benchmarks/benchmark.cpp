@@ -200,7 +200,6 @@ bool compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
 }
 
 bool compare_integers_algorithms(uint64_t number) {
-  std::cout << "Comparing number=" << number << "\n";
   fmt::print("\nComparing number={}\n", number);
   char buffer[32];
   std::fill(buffer, buffer + sizeof(buffer), 0);
