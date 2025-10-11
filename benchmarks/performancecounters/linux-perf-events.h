@@ -1,20 +1,18 @@
 #pragma once
 #ifdef __linux__
 
-#include <asm/unistd.h>        // for __NR_perf_event_open
-#include <linux/perf_event.h>  // for perf event constants
-#include <sys/ioctl.h>         // for ioctl
-#include <unistd.h>            // for syscall
+#include <asm/unistd.h>       // for __NR_perf_event_open
+#include <linux/perf_event.h> // for perf event constants
+#include <sys/ioctl.h>        // for ioctl
+#include <unistd.h>           // for syscall
 
-#include <cerrno>   // for errno
-#include <cstring>  // for memset
-#include <stdexcept>
-
-#include <iostream>
+#include <cerrno>  // for errno
+#include <cstring> // for memset
+#include <cstdint> // for uint32_t, uint64_t
+#include <string>
 #include <vector>
 
-template <int TYPE = PERF_TYPE_HARDWARE>
-class LinuxEvents {
+template <int TYPE = PERF_TYPE_HARDWARE> class LinuxEvents {
   int fd;
   bool working;
   perf_event_attr attribs{};
@@ -22,7 +20,7 @@ class LinuxEvents {
   std::vector<uint64_t> temp_result_vec{};
   std::vector<uint64_t> ids{};
 
- public:
+public:
   explicit LinuxEvents(std::vector<int> config_vec) : fd(0), working(true) {
     memset(&attribs, 0, sizeof(attribs));
     attribs.type = TYPE;
@@ -33,11 +31,11 @@ class LinuxEvents {
 
     attribs.sample_period = 0;
     attribs.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID;
-    const int pid = 0;   // the current process
-    const int cpu = -1;  // all CPUs
+    const int pid = 0;  // the current process
+    const int cpu = -1; // all CPUs
     const unsigned long flags = 0;
 
-    int group = -1;  // no group
+    int group = -1; // no group
     num_events = config_vec.size();
     ids.resize(config_vec.size());
     uint32_t i = 0;
@@ -99,7 +97,7 @@ class LinuxEvents {
 
   bool is_working() { return working; }
 
- private:
+private:
   void report_error(const std::string &) { working = false; }
 };
 #endif

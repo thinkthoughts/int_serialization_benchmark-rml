@@ -87,6 +87,9 @@ void pretty_print(size_t volume, size_t bytes, const std::string &name,
                agg.fastest_cycles() / agg.fastest_elapsed_ns());
     fmt::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
     fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
+    fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
+    fmt::print(" {:5.2f} B/d ", agg.branches() / volume);
+    fmt::print(" {:5.2f} BM/d ", agg.branch_misses() / volume);
     fmt::print(" {:5.2f} i/B ", agg.fastest_instructions() / bytes);
     fmt::print(" {:5.2f} i/c ",
                agg.fastest_instructions() / agg.fastest_cycles());
