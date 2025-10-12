@@ -8,6 +8,12 @@
 #include <cstdlib>
 #include <sys/types.h>
 
+enum class Variant {
+  Auto,          // Scan the data to decide the best variant
+  Homogeneous,   // Optimized for Homogeneous digit lengths
+  Heterogeneous  // Optimized for Heterogeneous digit lengths
+};
+
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
 
 // It is a SKETCH. It is likely not quite correct, but the spirit is there.
@@ -77,6 +83,7 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   return exp_index;
 }
 
+template <Variant V>
 int avx512_to_chars(uint64_t value, char *const result) {
   // For small numbers, it seems useful to call faster functions.
   // E.g., try ./build/benchmark -m 1 -M 4 -i
@@ -99,22 +106,22 @@ int avx512_to_chars(uint64_t value, char *const result) {
     return n;
   }
 
-  // Option A : faster for homogeneous sizes of numbers.
-  const uint64_t q = value / 10000000000000000ULL; // 1..1844
-  const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
-  char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
-  const __m128i digits_15_0 = to_string_avx512ifma(r);
-  _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
-  return p - result + 16;
-
-  // Option B : faster for heterogeneous sizes of numbers.
-  // const auto [q, r] = digits::div10000<true>(value);  // full-range correct variant
-  // const uint32_t nq = n - 4;
-  // const __m128i v16 = to_string_avx512ifma(q);
-  // const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - nq));
-  // _mm_mask_storeu_epi8(result - 16 + nq, mask, v16);
-  // digits::write_four_digits_10000(result + nq, r);
-  // return n;
+  if constexpr (V == Variant::Homogeneous) {
+    const uint64_t q = value / 10000000000000000ULL; // 1..1844
+    const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
+    char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
+    const __m128i digits_15_0 = to_string_avx512ifma(r);
+    _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
+    return p - result + 16;
+  } else { // Variant::Heterogeneous
+    const auto [q, r] = digits::div10000<true>(value);  // full-range correct variant
+    const uint32_t nq = n - 4;
+    const __m128i v16 = to_string_avx512ifma(q);
+    const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - nq));
+    _mm_mask_storeu_epi8(result - 16 + nq, mask, v16);
+    digits::write_four_digits_10000(result + nq, r);
+    return n;
+  }
 }
 
 #endif // CHAMPAGNE_LEMIRE_AVX512

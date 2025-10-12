@@ -17,6 +17,9 @@ using std::literals::string_literals::operator""s;
 #include "dragonbox.h"
 
 constexpr size_t Number_Benchmark_Runs = 4;
+constexpr double Ratio_To_Sample = 0.01;
+constexpr double Ratio_Homogeneous = 0.80; // Homogeneous mode if > 80% of
+                                           // numbers have the same digit length
 
 // mantissa * 10^exponent
 struct decimal_float {
@@ -86,7 +89,6 @@ void pretty_print(size_t volume, size_t bytes, const std::string &name,
     fmt::print(" {:5.2f} GHz ",
                agg.fastest_cycles() / agg.fastest_elapsed_ns());
     fmt::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
-    fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
     fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
     fmt::print(" {:5.2f} B/d ", agg.branches() / volume);
     fmt::print(" {:5.2f} BM/d ", agg.branch_misses() / volume);
@@ -209,20 +211,28 @@ bool compare_integers_algorithms(uint64_t number) {
   int n;
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-  n = avx512_to_chars(number, buffer);
+  n = avx512_to_chars<Variant::Homogeneous>(number, buffer);
   buffer[n] = '\0';
-  std::string avx512ans = buffer;
-  fmt::print("AVX-512:       {}\n", buffer);
+  std::string avx512homoans = buffer;
+  fmt::print("AVX-512 Homogeneous:   {}\n", buffer);
+  n = avx512_to_chars<Variant::Heterogeneous>(number, buffer);
+  buffer[n] = '\0';
+  std::string avx512heteroans = buffer;
+  fmt::print("AVX-512 Heterogeneous: {}\n", buffer);
 #endif
-
   n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
   buffer[n] = '\0';
-  fmt::print("std::to_chars: {}\n", buffer);
+  fmt::print("std::to_chars:         {}\n", buffer);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   std::string stdans = buffer;
-  if (avx512ans != stdans) {
-    fmt::print("Mismatch with std::to_chars: {} != {}\n", stdans, avx512ans);
-    fmt::print("=====================================\n");
+  if (avx512homoans != stdans) {
+    fmt::print("Mismatch between AVX-512<Homo> and std::to_chars: {} != {}\n", stdans, avx512homoans);
+    fmt::print("==========================================================\n");
+    return false;
+  }
+  if (avx512heteroans != stdans) {
+    fmt::print("Mismatch between AVX-512<Hetero> and std::to_chars: {} != {}\n", stdans, avx512heteroans);
+    fmt::print("============================================================\n");
     return false;
   }
 #endif
@@ -255,8 +265,32 @@ bool test_some_harcoded_integers() {
 }
 
 template<typename T>
-void run_benchmark(const std::vector<T> &data) {
-  volatile uint64_t counter = 0;
+Variant detect_variant(const std::vector<T> &data) {
+  const size_t sample_size = Ratio_To_Sample * size(data);
+  std::array<size_t, 21> lengthDistrib{};
+  for (size_t i = 0; i < sample_size; ++i) {
+    const T &v = data[i];
+    uint64_t number = [&] {
+      if constexpr (std::is_same_v<std::decay_t<decltype(v)>, decimal_float>)
+        return v.mantissa;
+      else
+        return v;
+    }();
+    ++lengthDistrib[fast_digit_count(number)];
+  }
+
+  const size_t total = std::reduce(lengthDistrib.begin(),
+                                   lengthDistrib.end(), size_t{0});
+  const size_t max_count = *std::max_element(lengthDistrib.begin(), lengthDistrib.end());
+  const double dominant_ratio = static_cast<double>(max_count) / static_cast<double>(total);
+
+  if (dominant_ratio >= Ratio_Homogeneous) return Variant::Homogeneous;
+  return Variant::Heterogeneous;
+}
+
+template<typename T>
+void run_benchmark(const std::vector<T> &data, Variant algo_variant = Variant::Auto) {
+  uint64_t counter = 0;
   char buffer[128];
 
   // --- Helper to pretty-print run results ---
@@ -308,11 +342,21 @@ void run_benchmark(const std::vector<T> &data) {
     run_and_report("dragonbox", drag, volume_drag);
   } else if constexpr (std::is_same_v<T, uint64_t>) {
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-    auto avx512l = [&data, &counter, &buffer]() {
-      for (size_t i = 0; i < data.size(); ++i)
-        counter += avx512_to_chars(data[i], buffer);
+    auto avx512l = [&data, &counter, &buffer, &algo_variant]() {
+      if (algo_variant == Variant::Auto)
+        algo_variant = detect_variant(data);
+      if (algo_variant == Variant::Homogeneous) {
+        for (size_t i = 0; i < data.size(); ++i)
+          counter += avx512_to_chars<Variant::Homogeneous>(data[i], buffer);
+      } else {
+        for (size_t i = 0; i < data.size(); ++i)
+          counter += avx512_to_chars<Variant::Heterogeneous>(data[i], buffer);
+      }
     };
     counter = 0;
+    Variant detected = detect_variant(data);
+    fmt::print("Auto variant would select: {}\n",
+        detected == Variant::Homogeneous ? "Homogeneous" : "Heterogeneous");
     avx512l();
     size_t volume512 = counter;
     fmt::print("Volume 512: {}\n", volume512);
@@ -347,10 +391,13 @@ int main(int argc, char **argv) {
     ("n,num",   "Number of random numbers to generate", cxxopts::value<size_t>()->default_value("1000000"))
     ("m,min",   "Minimum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("1"))
     ("M,max",   "Maximum mantissa digits for random generation (1-17)", cxxopts::value<int>()->default_value("17"))
+    ("v,variant", "Variant of our AVX512 algorithm to benchmark:"
+                  "'homo', 'hetero' or 'auto'", cxxopts::value<std::string>()->default_value("auto"))
     ("d,distribution", "Distribution mode: 'uniform' (equal probability for each digit count)"
                        "or 'natural' (more high-digit numbers)", cxxopts::value<std::string>()->default_value("natural"));
 
   std::variant<std::vector<decimal_float>, std::vector<uint64_t>> data;
+  Variant algo_variant;
   try {
     auto result = options.parse(argc, argv);
 
@@ -359,19 +406,18 @@ int main(int argc, char **argv) {
       fmt::print("\nExamples:\n");
       fmt::print("  {} -n 1000             # Random 1000 numbers with 1-17 digits precision\n", argv[0]);
       fmt::print("  {} -f data/canada.txt  # Use data from file\n", argv[0]);
+      fmt::print("  {} -v homo             # Use the variant optimized for homogeneous digits length\n", argv[0]);
       fmt::print("  {} -m 1 -M 20 -i       # Random uint64_t with 1-20 digits (uniform)\n", argv[0]);
       fmt::print("  {} -m 10 -M 17         # Random floats with 10-17 digit mantissas (uniform)\n", argv[0]);
       fmt::print("  {} -m 5 -M 15 -d natural  # Natural distribution with 5-15 digit range\n", argv[0]);
       return EXIT_SUCCESS;
     }
 
-    bool integer_mode = result.count("int") > 0;
+    const bool integer_mode = result.count("int") > 0;
     if (result.count("quick")) {
-      bool success;
-      if (integer_mode)
-        success = test_some_harcoded_integers();
-      else
-        success = test_some_harcoded_floats();
+      bool success = integer_mode
+                   ? test_some_harcoded_integers()
+                   : test_some_harcoded_floats();
       if(!success) {
         fmt::print("Some tests failed!\n");
         if(integer_mode)
@@ -385,23 +431,22 @@ int main(int argc, char **argv) {
       return EXIT_SUCCESS;
     }
 
-    size_t num_values = result["num"].as<size_t>();
-    int min_digits = result["min"].as<int>();
-    int max_digits = result["max"].as<int>();
-    std::string distribution_str = result["distribution"].as<std::string>();
-
     // Parse distribution mode
-    DistributionMode distribution_mode;
-    if (distribution_str == "uniform") {
-      distribution_mode = DistributionMode::Uniform;
-    } else if (distribution_str == "natural") {
-      distribution_mode = DistributionMode::Natural;
+    const std::string variant_str = result["variant"].as<std::string>();
+    if (variant_str == "auto") {
+      algo_variant = Variant::Auto;
+    } else if (variant_str == "homo") {
+      algo_variant = Variant::Homogeneous;
+    } else if (variant_str == "hetero") {
+      algo_variant = Variant::Heterogeneous;
     } else {
-      fmt::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
+      fmt::print(stderr, "Error: variant must be 'homo', 'hetero' or 'auto'\n");
       return EXIT_FAILURE;
     }
 
     // Validate digit ranges
+    const int min_digits = result["min"].as<int>();
+    const int max_digits = result["max"].as<int>();
     const int max_allowed = integer_mode ? 20 : 17;
     if ((min_digits < 1) | (min_digits > max_allowed) |
         (min_digits < 1) | (max_digits > max_allowed) |
@@ -410,8 +455,7 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    if (result.count("file")) {
-      // Load data from file
+    if (result.count("file")) { // Load data from file
       const std::string filename = result["file"].as<std::string>();
 
       if (integer_mode) {
@@ -436,8 +480,20 @@ int main(int argc, char **argv) {
           floats_as_decimals.push_back(double_to_decimal_float(f));
         data = std::move(floats_as_decimals);
       }
-    } else {
-      // Generate random data
+    } else { // Generate random data
+      // Parse distribution mode
+      const std::string distribution_str = result["distribution"].as<std::string>();
+      DistributionMode distribution_mode;
+      if (distribution_str == "uniform") {
+        distribution_mode = DistributionMode::Uniform;
+      } else if (distribution_str == "natural") {
+        distribution_mode = DistributionMode::Natural;
+      } else {
+        fmt::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
+        return EXIT_FAILURE;
+      }
+
+      const size_t num_values = result["num"].as<size_t>();
       if (integer_mode)
         data = generate_large_set<uint64_t>(num_values, min_digits, max_digits, distribution_mode);
       else
@@ -470,5 +526,7 @@ int main(int argc, char **argv) {
       fmt::print("\t{:2}: {}\n", i, lengthDistrib[i]);
   }, data);
 
-  std::visit([](auto &vec) { run_benchmark(vec); }, data);
+  std::visit([av = algo_variant](auto &vec) {
+      run_benchmark(vec, av);
+  }, data);
 }
