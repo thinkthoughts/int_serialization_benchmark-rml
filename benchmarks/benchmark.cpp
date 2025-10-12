@@ -2,8 +2,8 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <random>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <variant>
