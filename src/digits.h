@@ -15,7 +15,7 @@ namespace digits {
 // In this manner, we go from a number x in [0, 10000) to
 // a pair (div, mod) using a single multiplication.
 constexpr std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
-  const uint64_t v = x * uint64_t(0x028f5c29); // ceil(2^32 / 100)
+  const uint64_t v = x * uint64_t(0x28f5c29); // ceil(2^32 / 100)
   return {v >> 32, (v >> 24) & 0xff};
 }
 
@@ -24,14 +24,23 @@ inline std::pair<uint64_t, uint64_t> div100(uint64_t x) {
   return {q, x - 100 * q};
 }
 
-template <bool maybe_larger_than_10e15>
+template <bool maybe_larger_than_1e15>
 inline std::pair<uint64_t, uint64_t> div10000(uint64_t x) {
-  const uint64_t q = mul64x64_to_128(x, 0x68db8bac710cc).first; // ceil(2^64 / 10000)
-  const uint64_t r = x - 10000 * q;
-  if constexpr (maybe_larger_than_10e15) {
-    if (r > x)
-      return {q - 1, r + 10000};
+  if constexpr (maybe_larger_than_1e15) {
+    const uint64_t q = mul64x64_to_128(x, 0x346dc5d63886594bull).first >> 11;
+    const uint64_t r = x - 10000 * q;
+    return {q, r};
+  } else {
+    const uint64_t q = mul64x64_to_128(x, 0x68db8bac710cc).first; // ceil(2^64 / 10000)
+    const uint64_t r = x - 10000 * q;
+    return {q, r};
   }
+}
+
+// This is the constant g++15 generates (Granlund-Montgomery ?)
+inline std::pair<uint64_t, uint64_t> div10e16(uint64_t x) {
+  const uint64_t q = mul64x64_to_128(x, 0x39A5652FB1137857ull).first >> 51;
+  const uint64_t r = x - 10'000'000'000'000'000ull * q;
   return {q, r};
 }
 

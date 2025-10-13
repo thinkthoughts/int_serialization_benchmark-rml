@@ -89,10 +89,10 @@ champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const r
       // Important: we want write_one_two_three_or_four_digits_10000 to be inlined.
       return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
     }
-    const __m128i digits_15_0 = to_string_avx512ifma_8digits(value);
+    const __m128i digits_7_0 = to_string_avx512ifma_8digits(value);
     const uint32_t n = fast_digit_count(value);
     const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
-    _mm_mask_storeu_epi8(result - 16 + n, mask, digits_15_0);
+    _mm_mask_storeu_epi8(result - 16 + n, mask, digits_7_0);
     return n;
   }
 
@@ -105,9 +105,7 @@ champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const r
   }
 
   if constexpr (V == Variant::Homogeneous) {
-    const uint64_t q = value / 10000000000000000ULL; // 1..1844
-    const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
-    // Important: we want write_one_two_three_or_four_digits_10000 to be inlined.
+    const auto [q, r] = digits::div10e16(value); // 1..1844, 0..(10^16-1)
     char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
     const __m128i digits_15_0 = to_string_avx512ifma(r);
     _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
