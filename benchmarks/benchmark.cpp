@@ -18,7 +18,7 @@ using std::literals::string_literals::operator""s;
 
 constexpr size_t Number_Benchmark_Runs = 4;
 constexpr double Ratio_To_Sample = 0.01;
-constexpr double Ratio_Homogeneous = 0.80; // Homogeneous mode if > 80% of
+constexpr double Ratio_Homogeneous = 0.95; // Homogeneous mode if > 95% of
                                            // numbers have the same digit length
 
 // mantissa * 10^exponent
@@ -117,7 +117,7 @@ std::vector<T> generate_large_set(size_t count = 1'000'000,
   // Create weights that exponentially favor higher digit counts
   std::vector<double> weights;
   double val = 1.0;
-  for (int i = min_digits; i <= max_digits; ++i, val *= 16.0)
+  for (int i = min_digits; i <= max_digits; ++i, val *= 32.0)
     weights.push_back(val);
 
   std::uniform_int_distribution<int> uniform_digit_dist(min_digits, max_digits);
