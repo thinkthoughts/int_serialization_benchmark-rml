@@ -281,10 +281,18 @@ Variant detect_variant(const std::vector<T> &data) {
 
   const size_t total = std::reduce(lengthDistrib.begin(),
                                    lengthDistrib.end(), size_t{0});
-  const size_t max_count = *std::max_element(lengthDistrib.begin(), lengthDistrib.end());
-  const double dominant_ratio = static_cast<double>(max_count) / static_cast<double>(total);
+  const size_t dominant_length = *std::max_element(lengthDistrib.begin(), lengthDistrib.end());
+  const double dominant_ratio = static_cast<double>(dominant_length) / static_cast<double>(total);
 
-  if (dominant_ratio >= Ratio_Homogeneous) return Variant::Homogeneous;
+  if (dominant_ratio >= Ratio_Homogeneous) {
+    // Only treat as homogeneous if length is one of the optimized ones
+    switch (dominant_length) {
+      case 1: case 2: case 3: case 4:
+      case 8: case 16:
+        return Variant::Homogeneous;
+      default: break; // no real benefit — fall through
+    }
+  }
   return Variant::Heterogeneous;
 }
 
