@@ -81,16 +81,20 @@ champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent,
 }
 
 template <Variant V>
-champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const result) {
-  // For small numbers, it seems useful to call faster functions.
-  // E.g., try ./build/benchmark -m 1 -M 4 -i
-  if( value < 100000000 ) { // 10^8
-    if( value < 10000 ) { // 10^4
-      // Important: we want write_one_two_three_or_four_digits_10000 to be inlined.
-      return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
+int avx512_to_chars(uint64_t value, char *const result) {
+  if(value < 100000000) { // 10^8
+    if constexpr (V == Variant::Homogeneous) {
+      if (value < 10000) // 10^4
+        return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
     }
     const __m128i digits_7_0 = to_string_avx512ifma_8digits(value);
     const uint32_t n = fast_digit_count(value);
+    if constexpr (V == Variant::Homogeneous) {
+      if (value >= 10000000) { // number has 8 digits
+        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), digits_7_0);
+        return 8;
+      }
+    }
     const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
     _mm_mask_storeu_epi8(result - 16 + n, mask, digits_7_0);
     return n;
@@ -99,6 +103,12 @@ champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const r
   const uint32_t n = fast_digit_count(value);
   if (value < 10000000000000000ULL) { // 10^16
     const __m128i digits_15_0 = to_string_avx512ifma(value);
+    if constexpr (V == Variant::Homogeneous) {
+      if (value >= 1000000000000000ULL) { // number has 16 digits
+        _mm_storeu_si128(reinterpret_cast<__m128i*>(result), digits_15_0);
+        return 16;
+      }
+    }
     const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
     _mm_mask_storeu_epi8(result - 16 + n, mask, digits_15_0);
     return n;
