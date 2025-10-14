@@ -3,8 +3,9 @@
 
 #include <bit>
 #include <cstdint>
+#include "portabilityutils.h"
 
-inline int int_log2_64(uint64_t x) {
+champagne_lemire_really_inline int int_log2_64(uint64_t x) {
   return 63 - std::countl_zero(x | 1);
 }
 
@@ -14,7 +15,7 @@ inline int int_log2_64(uint64_t x) {
  * in Daniel Lemire's blog, June 3, 2021,
  * https://lemire.me/blog/2021/06/03/computing-the-number-of-digits-of-an-integer-even-faster/.
  */
-inline int fast_digit_count32(uint32_t x) {
+champagne_lemire_really_inline int fast_digit_count32(uint32_t x) {
   static uint64_t table[] = {
     4294967296,  8589934582,  8589934582,  8589934582,  12884901788,
     12884901788, 12884901788, 17179868184, 17179868184, 17179868184,
@@ -32,7 +33,7 @@ inline int fast_digit_count32(uint32_t x) {
  * in Daniel Lemire's blog, January 7, 2025,
  * https://lemire.me/blog/2025/01/07/counting-the-digits-of-64-bit-integers/.
  */
-inline int fast_digit_count64(uint64_t x) {
+champagne_lemire_really_inline int fast_digit_count64(uint64_t x) {
   static uint64_t table[] = {9,
                              99,
                              999,
@@ -58,7 +59,7 @@ inline int fast_digit_count64(uint64_t x) {
 }
 
 template <typename T>
-int fast_digit_count(T x) {
+champagne_lemire_really_inline int fast_digit_count(T x) {
   if constexpr (sizeof(T) == 4) {
     return fast_digit_count32(x);
   } else if constexpr (sizeof(T) == 8) {

@@ -2,14 +2,14 @@
 #define FULLMULTIPLIER_H
 #include <cstdint>
 #include <utility>
-
+#include "portabilityutils.h"
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <intrin.h>
 #elif defined(__SSE2__)
 #include <x86intrin.h>
 #endif // defined(_MSC_VER) && !defined(__clang__)
 
-inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uint64_t a, uint64_t b) {
+champagne_lemire_really_inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uint64_t a, uint64_t b) {
 #if defined(_M_ARM64) && !defined(__MINGW32__)
   // ARM64 has native support for 64-bit multiplications, no need to emulate
   // But MinGW on ARM64 doesn't have native support for 64-bit multiplications

@@ -1,6 +1,7 @@
 #ifndef CHAMPAGNE_LEMIRE_H
 #define CHAMPAGNE_LEMIRE_H
 
+#include "portabilityutils.h"
 #include "digits.h"
 #include "digitcount.h"
 #include "ifma_avx512.h"
@@ -15,12 +16,8 @@ enum class Variant {
 };
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-
-// It is a SKETCH. It is likely not quite correct, but the spirit is there.
-// Important: we inline the function.
 template <typename T>
-inline __attribute__((always_inline))
-int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
+champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
   static_assert(sizeof(T) == 4 || sizeof(T) == 8, "Unsupported type size");
 
   int32_t exp = exponent;
@@ -84,11 +81,12 @@ int avx512_to_chars(T mantissa, int32_t exponent, char *const result) {
 }
 
 template <Variant V>
-int avx512_to_chars(uint64_t value, char *const result) {
+champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const result) {
   // For small numbers, it seems useful to call faster functions.
   // E.g., try ./build/benchmark -m 1 -M 4 -i
   if( value < 100000000 ) { // 10^8
     if( value < 10000 ) { // 10^4
+      // Important: we want write_one_two_three_or_four_digits_10000 to be inlined.
       return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
     }
     const __m128i digits_15_0 = to_string_avx512ifma_8digits(value);
@@ -109,6 +107,7 @@ int avx512_to_chars(uint64_t value, char *const result) {
   if constexpr (V == Variant::Homogeneous) {
     const uint64_t q = value / 10000000000000000ULL; // 1..1844
     const uint64_t r = value % 10000000000000000ULL; // 0..(10^16-1)
+    // Important: we want write_one_two_three_or_four_digits_10000 to be inlined.
     char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
     const __m128i digits_15_0 = to_string_avx512ifma(r);
     _mm_storeu_si128(reinterpret_cast<__m128i*>(p), digits_15_0);
@@ -123,7 +122,6 @@ int avx512_to_chars(uint64_t value, char *const result) {
     return n;
   }
 }
-
 #endif // CHAMPAGNE_LEMIRE_AVX512
 
 #endif // CHAMPAGNE_LEMIRE_H

@@ -9,7 +9,7 @@
 
 #if defined(__AVX512IFMA__) && defined(__AVX512VBMI__)
 #define CHAMPAGNE_LEMIRE_AVX512 1
-
+#include "portabilityutils.h"
 #include <cstdint>
 #include <x86intrin.h>
 
@@ -113,8 +113,7 @@ static const __m512i ifma_const = _mm512_setr_epi64(
   0x000000068db8bac72, 0x0000004189374bc6b, 0x0000028f5c28f5c29, 0x0000199999999999a
 );
 
-__attribute__((always_inline))
-inline __m128i to_string_avx512ifma_8digits(uint64_t n) {
+champagne_lemire_really_inline __m128i to_string_avx512ifma_8digits(uint64_t n) {
   __m512i bcstq_l   = _mm512_set1_epi64(n);
   __m512i zmmzero   = _mm512_castsi128_si512(_mm_cvtsi64_si128(0x01A1A400));
   __m512i zmmTen    = _mm512_set1_epi64(10);
@@ -139,8 +138,7 @@ inline __m128i to_string_avx512ifma_8digits(uint64_t n) {
 // the output is 16 bytes long
 // The value n should be no larger than 9999999999999999
 // That is, it needs to be in [0, 10^16)
-__attribute__((always_inline))
-inline __m128i to_string_avx512ifma(uint64_t n) {
+champagne_lemire_really_inline __m128i to_string_avx512ifma(uint64_t n) {
   uint64_t n_15_08  = n / 100000000;
   uint64_t n_07_00  = n % 100000000;
   __m512i bcstq_h   = _mm512_set1_epi64(n_15_08);

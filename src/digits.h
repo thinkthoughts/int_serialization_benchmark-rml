@@ -9,7 +9,6 @@
 #include "fullmultiplier.h"
 
 namespace digits {
-
 // This will divide by 100 using multiplication and shifts
 // and leave a remainder that is not x%100 but that
 // is still unique to x mod 100
@@ -142,7 +141,7 @@ inline char* write_three_or_four_digits_10000(char *buffer, uint64_t value) {
   }
 }
 
-inline char* write_one_two_three_or_four_digits_10000(char *buffer, uint64_t value) {
+champagne_lemire_really_inline char* write_one_two_three_or_four_digits_10000(char *buffer, uint64_t value) {
   if(value >= 1000) { // four digits
     const auto [high, low] = div100v(value);
     std::memcpy(buffer,     get_two_digits(high).data(), 2);
@@ -162,7 +161,6 @@ inline char* write_one_two_three_or_four_digits_10000(char *buffer, uint64_t val
     return buffer + 1;
   }
 }
-
 } // namespace digits
 
 #endif
