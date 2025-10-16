@@ -270,6 +270,8 @@ bool test_some_harcoded_integers() {
 
 template<typename T>
 Variant detect_variant(const std::vector<T> &data) {
+  const auto start = std::chrono::steady_clock::now();
+
   const size_t sample_size = Ratio_To_Sample * size(data);
   std::array<size_t, 21> lengthDistrib{};
   for (size_t i = 0; i < sample_size; ++i) {
@@ -288,16 +290,13 @@ Variant detect_variant(const std::vector<T> &data) {
   const size_t dominant_length = *std::max_element(lengthDistrib.begin(), lengthDistrib.end());
   const double dominant_ratio = static_cast<double>(dominant_length) / static_cast<double>(total);
 
-  if (dominant_ratio >= Ratio_Homogeneous) {
-    // Only treat as homogeneous if length is one of the optimized ones
-    switch (dominant_length) {
-      case 1: case 2: case 3: case 4:
-      case 8: case 16:
-        return Variant::Homogeneous;
-      default: break; // no real benefit — fall through
-    }
-  }
-  return Variant::Heterogeneous;
+  const auto end = std::chrono::steady_clock::now();
+  const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  fmt::print("Variant detection took {} µs\n", elapsed);
+
+  return dominant_ratio >= Ratio_Homogeneous
+         ? Variant::Homogeneous  // currently optimized for 1-4, 8, 16-20
+         : Variant::Heterogeneous;
 }
 
 template<typename T>
