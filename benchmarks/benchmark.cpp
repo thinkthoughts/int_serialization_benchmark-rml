@@ -132,7 +132,11 @@ std::vector<T> generate_large_set(size_t count = 1'000'000,
     std::uniform_real_distribution<double> value_dist(-1e10, 1e10);
     for (size_t i = 0; i < count; ++i) {
       int mantissa_size = pick_digits(mode);
-      result.emplace_back(double_to_decimal_float(value_dist(gen), mantissa_size));
+      decimal_float df;
+      do {
+        df = double_to_decimal_float(value_dist(gen), mantissa_size);
+      } while (fast_digit_count(df.mantissa) != mantissa_size);
+      result.emplace_back(df);
     }
   } else if constexpr (std::is_same_v<T, uint64_t>) {
     std::array<uint64_t, 20 + 1> pow10;
