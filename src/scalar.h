@@ -5,6 +5,7 @@
 #include "digits.h"
 #include "portabilityutils.h"
 #include <type_traits>
+#include <tuple>
 
 template <typename T>
 champagne_lemire_really_inline int scalar_to_chars(T mantissa, int32_t exponent,

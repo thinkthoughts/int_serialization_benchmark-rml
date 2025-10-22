@@ -29,7 +29,6 @@ champagne_lemire_really_inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uin
       static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
   return {static_cast<uint64_t>(result >> 64), static_cast<uint64_t>(result)};
 #else
-fdsfsd
   auto emulu = [](uint32_t x, uint32_t y) -> uint64_t {
     return x * (uint64_t)y;
   };
