@@ -8,9 +8,9 @@
 #elif defined(__SSE2__)
 #include <x86intrin.h>
 #endif // defined(_MSC_VER) && !defined(__clang__)
-
+namespace multiplier {
 champagne_lemire_really_inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uint64_t a, uint64_t b) {
-#if defined(_M_ARM64) && !defined(__MINGW32__)
+#if defined(_M_ARM64)  && !defined(__MINGW32__)
   // ARM64 has native support for 64-bit multiplications, no need to emulate
   // But MinGW on ARM64 doesn't have native support for 64-bit multiplications
   return {__umulh(a, b), a * b};
@@ -29,6 +29,7 @@ champagne_lemire_really_inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uin
       static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
   return {static_cast<uint64_t>(result >> 64), static_cast<uint64_t>(result)};
 #else
+fdsfsd
   auto emulu = [](uint32_t x, uint32_t y) -> uint64_t {
     return x * (uint64_t)y;
   };
@@ -54,5 +55,5 @@ champagne_lemire_really_inline std::pair<uint64_t, uint64_t> mul64x64_to_128(uin
   return {high, low};
 #endif
 }
-
+} // namespace multiplier
 #endif // FULLMULTIPLIER_H

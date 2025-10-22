@@ -15,6 +15,7 @@ using std::literals::string_literals::operator""s;
 #include "performancecounters/benchmarker.h"
 #include "champagne_lemire.h"
 #include "dragonbox.h"
+#include "scalar.h"
 
 constexpr size_t Number_Benchmark_Runs = 4;
 constexpr double Ratio_To_Sample = 0.01;
@@ -176,7 +177,11 @@ bool compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
   char buffer[32];
   std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
+  n = scalar_to_chars(mantissa, exponent, buffer);
+  buffer[n] = '\0';
+  std::string fastans = buffer;
 
+  fmt::print("fast: {}\n", fastans);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   n = avx512_to_chars(mantissa, exponent, buffer);
   buffer[n] = '\0';
@@ -246,8 +251,20 @@ bool compare_integers_algorithms(uint64_t number) {
 bool test_some_harcoded_floats() {
   bool result = true;
   result &= compare_decimal_floats_algorithms(12345678901234567ul, 20); // 17
-  result &= compare_decimal_floats_algorithms(123456789, 8); // 9
-  result &= compare_decimal_floats_algorithms(123456, 8); // 6
+  result &= compare_decimal_floats_algorithms(1234567890123456ul, 19); // 16
+  result &= compare_decimal_floats_algorithms(123456789012345ul, 18); // 15
+  result &= compare_decimal_floats_algorithms(12345678901234ul, 17); // 14
+  result &= compare_decimal_floats_algorithms(1234567890123ul, 16); // 13
+  result &= compare_decimal_floats_algorithms(123456789012ul, 15); // 12
+  result &= compare_decimal_floats_algorithms(12345678901ul, 14); // 11
+  result &= compare_decimal_floats_algorithms(1234567890ul, 13); // 10
+  result &= compare_decimal_floats_algorithms(123456789, 9); // 9
+  result &= compare_decimal_floats_algorithms(123456, 6);
+  result &= compare_decimal_floats_algorithms(12345, 5);
+  result &= compare_decimal_floats_algorithms(1236, 4);
+  result &= compare_decimal_floats_algorithms(123, 3);
+  result &= compare_decimal_floats_algorithms(12, 2);
+  result &= compare_decimal_floats_algorithms(1, 1);
   result &= compare_decimal_floats_algorithms(0, 1);
   result &= compare_decimal_floats_algorithms(1, 1);
   return result;
@@ -300,7 +317,7 @@ Variant detect_variant(const std::vector<T> &data) {
 }
 
 template<typename T>
-void run_benchmark(const std::vector<T> &data, Variant algo_variant = Variant::Auto) {
+void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_variant = Variant::Auto) {
   uint64_t counter = 0;
   char buffer[128];
 
@@ -329,6 +346,21 @@ void run_benchmark(const std::vector<T> &data, Variant algo_variant = Variant::A
     size_t volume512 = counter;
     fmt::print("Volume 512: {}\n", volume512);
 #endif
+    auto scalar = [&data, &counter, &buffer]() {
+      for (size_t i = 0; i < data.size(); ++i) {
+        char *start = buffer;
+        if (data[i].sign) {
+          buffer[0] = '-';
+          start++;
+        }
+        counter += scalar_to_chars(data[i].mantissa, data[i].exponent, start)
+                 + (data[i].sign ? 1 : 0);
+      }
+    };
+    counter = 0;
+    scalar();
+    size_t volume_scalar = counter;
+    fmt::print("Volume scalar: {}\n", volume_scalar);
 
     auto drag = [&data, &counter, &buffer]() {
       using jkj::dragonbox::detail::to_chars;
@@ -346,7 +378,7 @@ void run_benchmark(const std::vector<T> &data, Variant algo_variant = Variant::A
     drag();
     size_t volume_drag = counter;
     fmt::print("Volume drag: {}\n", volume_drag);
-
+    run_and_report("scalar", scalar, volume_scalar);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
