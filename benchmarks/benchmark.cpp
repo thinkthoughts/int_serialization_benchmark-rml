@@ -7,8 +7,8 @@
 #include <sstream>
 #include <string>
 #include <variant>
-#include <vector>
-#include <fmt/core.h>
+#include  <vector>
+#include <print>
 #include <cxxopts.hpp>
 using std::literals::string_literals::operator""s;
 
@@ -84,20 +84,20 @@ decimal_float double_to_decimal_float(double value, int mantissa_size = 17) {
 
 void pretty_print(size_t volume, size_t bytes, const std::string &name,
                   event_aggregate agg) {
-  fmt::print("{:<50} : ", name);
-  fmt::print(" {:5.2f} ns/d ", agg.fastest_elapsed_ns() / volume);
+  std::print("{:<50} : ", name);
+  std::print(" {:5.2f} ns/d ", agg.fastest_elapsed_ns() / volume);
   if (collector.has_events()) {
-    fmt::print(" {:5.2f} GHz ",
+    std::print(" {:5.2f} GHz ",
                agg.fastest_cycles() / agg.fastest_elapsed_ns());
-    fmt::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
-    fmt::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
-    fmt::print(" {:5.2f} B/d ", agg.branches() / volume);
-    fmt::print(" {:5.2f} BM/d ", agg.branch_misses() / volume);
-    fmt::print(" {:5.2f} i/B ", agg.fastest_instructions() / bytes);
-    fmt::print(" {:5.2f} i/c ",
+    std::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
+    std::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
+    std::print(" {:5.2f} B/d ", agg.branches() / volume);
+    std::print(" {:5.2f} BM/d ", agg.branch_misses() / volume);
+    std::print(" {:5.2f} i/B ", agg.fastest_instructions() / bytes);
+    std::print(" {:5.2f} i/c ",
                agg.fastest_instructions() / agg.fastest_cycles());
   }
-  fmt::print("\n");
+  std::print("\n");
 }
 
 enum class DistributionMode {
@@ -173,7 +173,7 @@ std::vector<T> read_from_file(const std::string &filename) {
 }
 
 bool compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
-  fmt::print("\nComparing mantissa={} exponent={}\n", mantissa, exponent);
+  std::print("\nComparing mantissa={} exponent={}\n", mantissa, exponent);
   char buffer[32];
   std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
@@ -181,30 +181,30 @@ bool compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
   buffer[n] = '\0';
   std::string fastans = buffer;
 
-  fmt::print("fast: {}\n", fastans);
+  std::print("fast:      {}\n", fastans);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   n = avx512_to_chars(mantissa, exponent, buffer);
   buffer[n] = '\0';
   std::string avx512ans = buffer;
   // Short normalization: remove a single '0' after E/e and optional sign (E09 -> E9)
-  fmt::print("AVX-512:   {}\n", avx512ans);
+  std::print("AVX-512:   {}\n", avx512ans);
 
 #endif
 
   n = jkj::dragonbox::detail::to_chars(mantissa, exponent, buffer) - buffer;
   buffer[n] = '\0';
-  fmt::print("Dragonbox: {}\n", buffer);
+  std::print("Dragonbox: {}\n", buffer);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   std::string dragonans = buffer;
   if (avx512ans != dragonans) {
-    fmt::print("Mismatch with Dragonbox: {}\n", dragonans);
+    std::print("Mismatch with Dragonbox: {}\n", dragonans);
     // allow an extra 0 after E if the exponent is one digit
     if (auto pos = avx512ans.find_first_of("Ee"); pos != std::string::npos) {
       size_t j = pos + 1;
       if (j < avx512ans.size() && (avx512ans[j] == '+' || avx512ans[j] == '-')) ++j;
       if (j + 1 < avx512ans.size() && avx512ans[j] == '0' && isdigit(static_cast<unsigned char>(avx512ans[j+1]))) {
         avx512ans.erase(j, 1);
-        fmt::print("AVX-512:   {}\n", avx512ans);
+        std::print("AVX-512:   {}\n", avx512ans);
       }
     }
     return avx512ans == dragonans;
@@ -214,7 +214,7 @@ bool compare_decimal_floats_algorithms(uint64_t mantissa, int32_t exponent) {
 }
 
 bool compare_integers_algorithms(uint64_t number) {
-  fmt::print("\nComparing number={}\n", number);
+  std::print("\nComparing number={}\n", number);
   char buffer[32];
   std::fill(buffer, buffer + sizeof(buffer), 0);
   int n;
@@ -223,25 +223,25 @@ bool compare_integers_algorithms(uint64_t number) {
   n = avx512_to_chars<Variant::Homogeneous>(number, buffer);
   buffer[n] = '\0';
   std::string avx512homoans = buffer;
-  fmt::print("AVX-512 Homogeneous:   {}\n", buffer);
+  std::print("AVX-512 Homogeneous:   {}\n", buffer);
   n = avx512_to_chars<Variant::Heterogeneous>(number, buffer);
   buffer[n] = '\0';
   std::string avx512heteroans = buffer;
-  fmt::print("AVX-512 Heterogeneous: {}\n", buffer);
+  std::print("AVX-512 Heterogeneous: {}\n", buffer);
 #endif
   n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
   buffer[n] = '\0';
-  fmt::print("std::to_chars:         {}\n", buffer);
+  std::print("std::to_chars:         {}\n", buffer);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   std::string stdans = buffer;
   if (avx512homoans != stdans) {
-    fmt::print("Mismatch between AVX-512<Homo> and std::to_chars: {} != {}\n", stdans, avx512homoans);
-    fmt::print("==========================================================\n");
+    std::print("Mismatch between AVX-512<Homo> and std::to_chars: {} != {}\n", stdans, avx512homoans);
+    std::print("==========================================================\n");
     return false;
   }
   if (avx512heteroans != stdans) {
-    fmt::print("Mismatch between AVX-512<Hetero> and std::to_chars: {} != {}\n", stdans, avx512heteroans);
-    fmt::print("============================================================\n");
+    std::print("Mismatch between AVX-512<Hetero> and std::to_chars: {} != {}\n", stdans, avx512heteroans);
+    std::print("============================================================\n");
     return false;
   }
 #endif
@@ -259,6 +259,8 @@ bool test_some_harcoded_floats() {
   result &= compare_decimal_floats_algorithms(12345678901ul, 14); // 11
   result &= compare_decimal_floats_algorithms(1234567890ul, 13); // 10
   result &= compare_decimal_floats_algorithms(123456789, 9); // 9
+  result &= compare_decimal_floats_algorithms(12345678, 8);
+  result &= compare_decimal_floats_algorithms(1234567, 7);
   result &= compare_decimal_floats_algorithms(123456, 6);
   result &= compare_decimal_floats_algorithms(12345, 5);
   result &= compare_decimal_floats_algorithms(1236, 4);
@@ -309,7 +311,7 @@ Variant detect_variant(const std::vector<T> &data) {
 
   const auto end = std::chrono::steady_clock::now();
   const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  fmt::print("Variant detection took {} µs\n", elapsed);
+  std::print("Variant detection took {} µs\n", elapsed);
 
   return dominant_ratio >= Ratio_Homogeneous
          ? Variant::Homogeneous  // currently optimized for 1-4, 8, 16-20
@@ -323,7 +325,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
 
   // --- Helper to pretty-print run results ---
   auto run_and_report = [&](auto&& name, auto&& func, size_t volume) {
-    fmt::print("\n");
+    std::print("\n");
     for (size_t i = 0; i < Number_Benchmark_Runs; ++i)
       pretty_print(data.size(), volume, name, bench(func));
   };
@@ -333,10 +335,8 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     auto avx512l = [&data, &counter, &buffer]() {
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
-        if (data[i].sign) {
-          buffer[0] = '-';
-          start++;
-        }
+        buffer[0] = '-';
+        start += data[i].sign ? 1 : 0;
         counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
                  + (data[i].sign ? 1 : 0);
       }
@@ -344,15 +344,13 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     counter = 0;
     avx512l();
     size_t volume512 = counter;
-    fmt::print("Volume 512: {}\n", volume512);
+    std::print("Volume 512: {}\n", volume512);
 #endif
     auto scalar = [&data, &counter, &buffer]() {
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
-        if (data[i].sign) {
-          buffer[0] = '-';
-          start++;
-        }
+        buffer[0] = '-';
+        start += data[i].sign ? 1 : 0;
         counter += scalar_to_chars(data[i].mantissa, data[i].exponent, start)
                  + (data[i].sign ? 1 : 0);
       }
@@ -360,16 +358,14 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     counter = 0;
     scalar();
     size_t volume_scalar = counter;
-    fmt::print("Volume scalar: {}\n", volume_scalar);
+    std::print("Volume scalar: {}\n", volume_scalar);
 
     auto drag = [&data, &counter, &buffer]() {
       using jkj::dragonbox::detail::to_chars;
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
-        if (data[i].sign) {
-          buffer[0] = '-';
-          start++;
-        }
+        buffer[0] = '-';
+        start += data[i].sign ? 1 : 0;
         counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
                  + (data[i].sign ? 1 : 0);
       }
@@ -377,12 +373,12 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     counter = 0;
     drag();
     size_t volume_drag = counter;
-    fmt::print("Volume drag: {}\n", volume_drag);
-    run_and_report("scalar", scalar, volume_scalar);
+    std::print("Volume drag: {}\n", volume_drag);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
     run_and_report("dragonbox", drag, volume_drag);
+    run_and_report("scalar", scalar, volume_scalar);
   } else if constexpr (std::is_same_v<T, uint64_t>) {
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     auto avx512l = [&data, &counter, &buffer, &algo_variant]() {
@@ -398,11 +394,11 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     };
     counter = 0;
     Variant detected = detect_variant(data);
-    fmt::print("Auto variant would select: {}\n",
+    std::print("Auto variant would select: {}\n",
         detected == Variant::Homogeneous ? "Homogeneous" : "Heterogeneous");
     avx512l();
     size_t volume512 = counter;
-    fmt::print("Volume 512: {}\n", volume512);
+    std::print("Volume 512: {}\n", volume512);
 #endif
 
     auto standard_to_chars = [&]() {
@@ -412,7 +408,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     counter = 0;
     standard_to_chars();
     size_t volume_standard = counter;
-    fmt::print("Volume std::to_chars: {}\n", volume_standard);
+    std::print("Volume std::to_chars: {}\n", volume_standard);
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
@@ -424,6 +420,21 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
 }
 
 int main(int argc, char **argv) {
+#ifdef __clang__
+  std::print("Clang version: {}.{}.{}\n", __clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(__GNUC__)
+  std::print("GCC version: {}.{}.{}\n", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#endif
+  std::print("==============================================================\n");
+  std::print("Warning: the results are sensitive to the compiler being used.\n");
+  std::print("Try with GCC and LLVM.\n");
+  std::print("==============================================================\n");
+
+
+#ifndef __OPTIMIZE__
+  std::print("Warning: Build is not optimized. Performance may be poor.\n");
+#endif
+
   cxxopts::Options options("benchmark", "Float to string conversion benchmark");
 
   options.add_options()
@@ -445,14 +456,14 @@ int main(int argc, char **argv) {
     auto result = options.parse(argc, argv);
 
     if (result.count("help")) {
-      fmt::print("{}\n", options.help());
-      fmt::print("\nExamples:\n");
-      fmt::print("  {} -n 1000             # Random 1000 numbers with 1-17 digits precision\n", argv[0]);
-      fmt::print("  {} -f data/canada.txt  # Use data from file\n", argv[0]);
-      fmt::print("  {} -v homo             # Use the variant optimized for homogeneous digits length\n", argv[0]);
-      fmt::print("  {} -m 1 -M 20 -i       # Random uint64_t with 1-20 digits (uniform)\n", argv[0]);
-      fmt::print("  {} -m 10 -M 17         # Random floats with 10-17 digit mantissas (uniform)\n", argv[0]);
-      fmt::print("  {} -m 5 -M 15 -d natural  # Natural distribution with 5-15 digit range\n", argv[0]);
+      std::print("{}\n", options.help());
+      std::print("\nExamples:\n");
+      std::print("  {} -n 1000             # Random 1000 numbers with 1-17 digits precision\n", argv[0]);
+      std::print("  {} -f data/canada.txt  # Use data from file\n", argv[0]);
+      std::print("  {} -v homo             # Use the variant optimized for homogeneous digits length\n", argv[0]);
+      std::print("  {} -m 1 -M 20 -i       # Random uint64_t with 1-20 digits (uniform)\n", argv[0]);
+      std::print("  {} -m 10 -M 17         # Random floats with 10-17 digit mantissas (uniform)\n", argv[0]);
+      std::print("  {} -m 5 -M 15 -d natural  # Natural distribution with 5-15 digit range\n", argv[0]);
       return EXIT_SUCCESS;
     }
 
@@ -462,15 +473,15 @@ int main(int argc, char **argv) {
                    ? test_some_harcoded_integers()
                    : test_some_harcoded_floats();
       if(!success) {
-        fmt::print("Some tests failed!\n");
+        std::print("Some tests failed!\n");
         if(integer_mode)
           return EXIT_FAILURE;
         //
-        fmt::print("Failures with floats are expected!\n");
+        std::print("Failures with floats are expected!\n");
         return EXIT_SUCCESS;
 
       }
-      fmt::print("All tests passed!\n");
+      std::print("All tests passed!\n");
       return EXIT_SUCCESS;
     }
 
@@ -483,7 +494,7 @@ int main(int argc, char **argv) {
     } else if (variant_str == "hetero") {
       algo_variant = Variant::Heterogeneous;
     } else {
-      fmt::print(stderr, "Error: variant must be 'homo', 'hetero' or 'auto'\n");
+      std::print(stderr, "Error: variant must be 'homo', 'hetero' or 'auto'\n");
       return EXIT_FAILURE;
     }
 
@@ -494,7 +505,7 @@ int main(int argc, char **argv) {
     if ((min_digits < 1) | (min_digits > max_allowed) |
         (min_digits < 1) | (max_digits > max_allowed) |
         (min_digits > max_digits)) {
-      fmt::print(stderr, "Error: invalid digit range [{}, {}]\n", min_digits, max_digits);
+      std::print(stderr, "Error: invalid digit range [{}, {}]\n", min_digits, max_digits);
       return EXIT_FAILURE;
     }
 
@@ -504,18 +515,18 @@ int main(int argc, char **argv) {
       if (integer_mode) {
         const auto ints = read_from_file<uint64_t>(filename);
         if (ints.empty()) {
-          fmt::print(stderr, "No valid integers found in the file: {}\n", filename);
+          std::print(stderr, "No valid integers found in the file: {}\n", filename);
           return EXIT_FAILURE;
         }
-        fmt::print("Loaded {} integers from file: {}\n", ints.size(), filename);
+        std::print("Loaded {} integers from file: {}\n", ints.size(), filename);
         data = std::move(ints);
       } else {
         const auto floats = read_from_file<double>(filename);
         if (floats.empty()) {
-          fmt::print(stderr, "No valid floats found in the file: {}\n", filename);
+          std::print(stderr, "No valid floats found in the file: {}\n", filename);
           return EXIT_FAILURE;
         }
-        fmt::print("Loaded {} floats from file: {}\n", floats.size(), filename);
+        std::print("Loaded {} floats from file: {}\n", floats.size(), filename);
 
         std::vector<decimal_float> floats_as_decimals;
         floats_as_decimals.reserve(floats.size());
@@ -532,7 +543,7 @@ int main(int argc, char **argv) {
       } else if (distribution_str == "natural") {
         distribution_mode = DistributionMode::Natural;
       } else {
-        fmt::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
+        std::print(stderr, "Error: distribution must be 'uniform' or 'natural'\n");
         return EXIT_FAILURE;
       }
 
@@ -541,13 +552,13 @@ int main(int argc, char **argv) {
         data = generate_large_set<uint64_t>(num_values, min_digits, max_digits, distribution_mode);
       else
         data = generate_large_set<decimal_float>(num_values, min_digits, max_digits, distribution_mode);
-      fmt::print("Generated {} random {} with digits in range [{}, {}] using {} distribution\n",
+      std::print("Generated {} random {} with digits in range [{}, {}] using {} distribution\n",
                  num_values, integer_mode ? "integers" : "floats",
                  min_digits, max_digits, distribution_str);
     }
   } catch (const cxxopts::exceptions::exception& e) {
-    fmt::print(stderr, "Error parsing arguments: {}\n", e.what());
-    fmt::print(stderr, "Use -h or --help for usage information.\n");
+    std::print(stderr, "Error parsing arguments: {}\n", e.what());
+    std::print(stderr, "Use -h or --help for usage information.\n");
     return EXIT_FAILURE;
   }
 
@@ -564,9 +575,9 @@ int main(int argc, char **argv) {
       ++lengthDistrib[fast_digit_count(number)];
     }
 
-    fmt::print("length distribution:\n");
+    std::print("length distribution:\n");
     for (size_t i = 1; i < lengthDistrib.size(); ++i)
-      fmt::print("\t{:2}: {}\n", i, lengthDistrib[i]);
+      std::print("\t{:2}: {}\n", i, lengthDistrib[i]);
   }, data);
 
   std::visit([av = algo_variant](auto &vec) {

@@ -1,10 +1,10 @@
 #include <array>
 #include <cmath>
-#include <fmt/core.h>
 #include <iostream>
 #include <optional>
 #include <ranges>
 #include <tuple>
+#include <print>
 
 #if ((defined(_WIN32) || defined(_WIN64)) && !defined(__clang__)) ||           \
     (defined(_M_ARM64) && !defined(__MINGW32__))
@@ -13,14 +13,14 @@
 
 template <typename T, std::size_t N>
 void print_array(const std::array<T, N> &arr) {
-  fmt::print("[");
+  std::print("[");
   for (std::size_t i = 0; i < N; ++i) {
-    fmt::print("{}", arr[i]);
+    std::print("{}", arr[i]);
     if (i < N - 1) {
-      fmt::print(", ");
+      std::print(", ");
     }
   }
-  fmt::print("]\n");
+  std::print("]\n");
 }
 
 // Templated to_digits function, temp should be in [0, 10**number_digits)
@@ -305,16 +305,16 @@ struct mistake {
 
   // Convert mistake to string representation using fmt
   std::string to_string() const {
-    std::string result = fmt::format("Input: {}, Output: {{", input);
+    std::string result = std::format("Input: {}, Output: {{", input);
     for (size_t i = 0; i < number_digits; ++i) {
-      result += fmt::format("{}", output[i]);
+      result += std::format("{}", output[i]);
       if (i < number_digits - 1) {
         result += ", ";
       }
     }
     result += "}, Expected: {";
     for (size_t i = 0; i < number_digits; ++i) {
-      result += fmt::format("{}", expected[i]);
+      result += std::format("{}", expected[i]);
       if (i < number_digits - 1) {
         result += ", ";
       }
@@ -453,102 +453,102 @@ find_first_centi_mistake_non_zero_lead() {
 }
 
 int test_digits() {
-  fmt::print("Testing digits 1...\n");
+  std::print("Testing digits 1...\n");
   if (auto m = find_first_mistake<1>(); m) {
     std::cout << "1:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 2...\n");
+  std::print("Testing digits 2...\n");
   if (auto m = find_first_mistake<2>(); m) {
     std::cout << "2:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 3...\n");
+  std::print("Testing digits 3...\n");
   if (auto m = find_first_mistake<3>(); m) {
     std::cout << "3:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 4...\n");
+  std::print("Testing digits 4...\n");
   if (auto m = find_first_mistake<4>(); m) {
     std::cout << "4:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 5...\n");
+  std::print("Testing digits 5...\n");
   if (auto m = find_first_mistake<5>(); m) {
     std::cout << "5:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 6...\n");
+  std::print("Testing digits 6...\n");
   if (auto m = find_first_mistake<6>(); m) {
     std::cout << "6:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 7...\n");
+  std::print("Testing digits 7...\n");
   if (auto m = find_first_mistake<7>(); m) {
     std::cout << "7:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 8...\n");
+  std::print("Testing digits 8...\n");
   if (auto m = find_first_mistake<8>(); m) {
     std::cout << "8:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits 9...\n");
+  std::print("Testing digits 9...\n");
   if (auto m = find_first_mistake<9>(); m) {
     std::cout << "9:" << m->to_string() << std::endl;
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing digits...ok\n");
+  std::print("Testing digits...ok\n");
   return EXIT_SUCCESS; // No mistakes found
 }
 
 int test_centi_digits() {
-  fmt::print("Testing dragon...\n");
+  std::print("Testing dragon...\n");
   if (auto m = find_first_centi_mistake_dragon(); m) {
-    fmt::print("dragon:{}\n", m->to_string());
+    std::print("dragon:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing centi 1...\n");
+  std::print("Testing centi 1...\n");
   if (auto m = find_first_centi_mistake<1>(); m) {
-    fmt::print("1:{}\n", m->to_string());
+    std::print("1:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing centi 2...\n");
+  std::print("Testing centi 2...\n");
   if (auto m = find_first_centi_mistake<2>(); m) {
-    fmt::print("2:{}\n", m->to_string());
+    std::print("2:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing centi 3...\n");
+  std::print("Testing centi 3...\n");
   if (auto m = find_first_centi_mistake<3>(); m) {
-    fmt::print("3:{}\n", m->to_string());
+    std::print("3:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing centi 4...\n");
+  std::print("Testing centi 4...\n");
   if (auto m = find_first_centi_mistake<4>(); m) {
-    fmt::print("4:{}\n", m->to_string());
+    std::print("4:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing find_first_centi_mistake_non_zero_lead...\n");
+  std::print("Testing find_first_centi_mistake_non_zero_lead...\n");
   if (auto m = find_first_centi_mistake_non_zero_lead<8>(); m) {
-    fmt::print("8:{}\n", m->to_string());
+    std::print("8:{}\n", m->to_string());
     return EXIT_FAILURE; // Found a mistake
   }
 
-  fmt::print("Testing find_first_centi_mistake_non_zero_leads...ok\n");
+  std::print("Testing find_first_centi_mistake_non_zero_leads...ok\n");
   return EXIT_SUCCESS; // No mistakes found
 }
 

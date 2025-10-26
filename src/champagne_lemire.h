@@ -27,6 +27,8 @@ champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent,
     // digits exceeds 16 digits, and we handle it separately.
     // The mantissa is in [10^16, 10^17)
     // Ok, so we have to write 17 digits.
+    //
+    // We need to write a digit, a dot and 16 digits.
     uint64_t top_digit = mantissa / 10'000'000'000'000'000;
     digits::write_one_digit_with_dot(result, top_digit);
 
@@ -36,6 +38,16 @@ champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent,
     _mm_storeu_si128((__m128i *)(result + 2), digits_15_0);
     exp += 16;
     exp_index = 18; // 17 digits + dot
+  } else if ( mantissa >= 1'000'000'000'000'000) {
+    // We need to write a digit, a dot and 15 digits.
+    uint64_t top_digit = mantissa / 1'000'000'000'000'000;
+    digits::write_one_digit_with_dot(result, top_digit);
+    // The call to to_string_avx512ifma and its storage amount to about
+    // 25 instructions, and that can be about a third of the processing time.
+    __m128i digits_15_0 = to_string_avx512ifma(mantissa % 1'000'000'000'000'000);
+    _mm_mask_storeu_epi8((__m128i *)(result + 1), 0xfffe, digits_15_0);
+    exp += 15;
+    exp_index = 17; // 16 digits + dot
   } else {
     __m128i digits_15_0 = mantissa <= 99'999'999 ?
         to_string_avx512ifma_8digits(mantissa) :

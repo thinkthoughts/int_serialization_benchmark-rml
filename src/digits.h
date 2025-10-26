@@ -14,6 +14,9 @@ namespace digits {
 // is still unique to x mod 100
 // In this manner, we go from a number x in [0, 10000) to
 // a pair (div, mod) using a single multiplication.
+//
+// So div100v returns (x / 100, x % 100) but the second
+// value is not exactly x % 100, it is a value unique to x mod 100
 constexpr champagne_lemire_really_inline std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
   const uint64_t v = x * uint64_t(0x28f5c29); // ceil(2^32 / 100)
   return {v >> 32, (v >> 24) & 0xff};
@@ -75,6 +78,21 @@ champagne_lemire_really_inline std::array<char, 3> get_two_digits_with_dot(uint3
   return hundreds_digit_table[value];
 }
 
+
+
+champagne_lemire_really_inline std::array<char, 4> get_two_digits_with_dot_with_one_pad(uint32_t value) {
+  constexpr static std::array<std::array<char, 4>, 100> hundreds_digit_table =
+    []() {
+      std::array<std::array<char, 4>, 100> table{};
+      for (int i = 0; i < 100; ++i) {
+        table[i] = {static_cast<char>((i / 10) % 10 + '0'), '.',
+                    static_cast<char>((i % 10) + '0'), '0'}; // extra pad
+      }
+      return table;
+    }();
+  return hundreds_digit_table[value];
+}
+
 champagne_lemire_really_inline std::array<char, 2> get_two_digits_v(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 256> hundreds_digit_table =
     []() {
@@ -128,8 +146,18 @@ champagne_lemire_really_inline void write_two_digits_with_dot(char *buffer, uint
   std::memcpy(buffer, get_two_digits_with_dot(value).data(), 3);
 }
 
+// writes two digits, a dot, and a padding zero, why the padding zero? because
+// it is faster to copy four bytes than three bytes on most architectures.
+champagne_lemire_really_inline void write_two_digits_with_dot_with_one_pad(char *buffer, uint32_t value) {
+  std::memcpy(buffer, get_two_digits_with_dot_with_one_pad(value).data(), 4);
+}
+
 champagne_lemire_really_inline void write_two_digits(char *buffer, uint32_t value) {
   std::memcpy(buffer, get_two_digits(value).data(), 2);
+}
+
+champagne_lemire_really_inline void write_two_digits_v(char *buffer, uint32_t value) {
+  std::memcpy(buffer, get_two_digits_v(value).data(), 2);
 }
 
 champagne_lemire_really_inline void write_three_digits(char *buffer, uint32_t value) {
