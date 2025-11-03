@@ -250,6 +250,8 @@ bool compare_integers_algorithms(uint64_t number) {
 
 bool test_some_harcoded_floats() {
   bool result = true;
+
+  result &= compare_decimal_floats_algorithms(789789974432, 20);
   result &= compare_decimal_floats_algorithms(12345678901234567ul, 20); // 17
   result &= compare_decimal_floats_algorithms(1234567890123456ul, 19); // 16
   result &= compare_decimal_floats_algorithms(123456789012345ul, 18); // 15
