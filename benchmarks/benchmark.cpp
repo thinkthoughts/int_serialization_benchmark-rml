@@ -29,6 +29,61 @@ struct decimal_float {
   bool sign;
 };
 
+// return the exponent and mantissa of the decimal representation of num_str
+// should be a non-negative number.
+std::pair<uint64_t,int64_t> find_mantissa_exponent(std::string_view num_str) {
+  uint64_t mantissa = 0;
+  size_t after_dot = 0;
+  bool found_dot = false;
+
+
+  size_t idx = 0;
+
+  for (; idx < num_str.size(); ++idx) {
+    const char c = num_str[idx];
+    if (c == '.' && !found_dot) {
+      found_dot = true;
+      continue;
+    }
+    if (std::isdigit(static_cast<unsigned char>(c))) {
+      mantissa = mantissa * 10 + (c - '0');
+      if(found_dot) {
+        after_dot++;
+      }
+    } else {
+      break;
+    }
+  }
+  int64_t exponent_part = -static_cast<int64_t>(after_dot);
+  if (idx < num_str.size() && (num_str[idx] == 'e' || num_str[idx] == 'E')) {
+    ++idx;
+    bool negative_exponent = false;
+    if (idx < num_str.size() && (num_str[idx] == '+' || num_str[idx] == '-')) {
+      negative_exponent = (num_str[idx] == '-');
+      ++idx;
+    }
+    for (; idx < num_str.size(); ++idx) {
+      const char c = num_str[idx];
+      if (std::isdigit(static_cast<unsigned char>(c))) {
+        exponent_part = exponent_part * 10 + (c - '0');
+      } else {
+        break;
+      }
+    }
+    if (negative_exponent) {
+      exponent_part = -exponent_part;
+    }
+  }
+  if(mantissa == 0 ) {
+    exponent_part = 0;
+  }
+  while(mantissa % 10 == 0 && mantissa != 0) {
+    mantissa /= 10;
+    exponent_part++;
+  }
+  return {mantissa, exponent_part};
+}
+
 decimal_float double_to_decimal_float(double value, int mantissa_size = 17) {
   decimal_float result = {0, 0, false};
 
@@ -48,37 +103,26 @@ decimal_float double_to_decimal_float(double value, int mantissa_size = 17) {
     return result;
   }
 
-  // Get exponent in base 10
-  int exp10 = std::floor(std::log10(value));
-  // Normalize value to [1, 10)
-  double normalized = value / std::pow(10.0, exp10);
-  // Adjust if normalized is 10 due to floating-point rounding
-  if (normalized >= 10.0) {
-    normalized /= 10.0;
-    exp10++;
+  char buf[32]{};
+  auto from_char_result = std::to_chars(buf, buf + sizeof(buf), value);
+  if (from_char_result.ec != std::errc()) {
+    // Handle error
+    throw std::runtime_error("Error converting double to chars");
   }
-
-  // Convert to mantissa with up to 17 digits (max for uint64_t)
-  uint64_t mantissa =
-      static_cast<uint64_t>(normalized * 100'000'000'000'000'000.0 + 0.5);
-  exp10 -= 17; // Adjust exponent to account for the scaling factor
-
-  // Remove trailing zeros
-  while (mantissa % 10 == 0 && mantissa != 0) {
-    mantissa /= 10;
-    exp10++;
-  }
+  auto [mantissa, exponent_part] = find_mantissa_exponent(std::string_view(buf, from_char_result.ptr - buf));
 
   // If mantissa has more digits than mantissa_size, scale it down
   int current_digits = fast_digit_count(mantissa);
+  if(current_digits > 17) {
+    std::println("Warning: mantissa has more than 17 digits: {}", mantissa);
+  }
   while (current_digits > mantissa_size) {
     mantissa = (mantissa / 10) + (mantissa % 10 >= 5 ? 1 : 0); // naive rounding
-    exp10++;
+    exponent_part++;
     current_digits--;
   }
-
   result.mantissa = mantissa;
-  result.exponent = static_cast<int32_t>(exp10);
+  result.exponent = static_cast<int32_t>(exponent_part);
   return result;
 }
 
