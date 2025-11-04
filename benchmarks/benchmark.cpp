@@ -421,9 +421,9 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_drag = counter;
     std::print("Volume drag: {}\n", volume_drag);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
-    run_and_report("avx-512+champagne_lemire", avx512l, volume512);
+//    run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
-    run_and_report("dragonbox", drag, volume_drag);
+  //  run_and_report("dragonbox", drag, volume_drag);
     run_and_report("scalar", scalar, volume_scalar);
   } else if constexpr (std::is_same_v<T, uint64_t>) {
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
