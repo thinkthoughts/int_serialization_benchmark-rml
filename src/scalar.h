@@ -178,9 +178,9 @@ champagne_lemire_really_inline int scalar_to_chars(T mantissa, int32_t exponent,
       // We divide by 10^4 to get the first digits
       auto [xdiv10_10, low10_12] = multiplier::mul64x64_to_128(xdiv10_6, 1844674407370956ULL);
       digits::write_two_digits_with_dot_with_one_pad(result, xdiv10_10);
-      auto [digits89, unused] = multiplier::mul64x64_to_128(low10_12, 100);
+      auto [digits89, low10_12_1] = multiplier::mul64x64_to_128(low10_12, 100);
       digits::write_two_digits(result + 3, digits89);
-      auto [digits67, unused1] = multiplier::mul64x64_to_128(low10_12, 100);
+      auto [digits67, unused1] = multiplier::mul64x64_to_128(low10_12_1, 100);
       digits::write_two_digits(result + 5, digits67);
     } break;
 
@@ -196,9 +196,9 @@ champagne_lemire_really_inline int scalar_to_chars(T mantissa, int32_t exponent,
       // We divide by 10^4 to get the first digits
       auto [xdiv10_10, low10_12] = multiplier::mul64x64_to_128(xdiv10_6, 1844674407370956);
       digits::write_one_digit_with_dot(result, xdiv10_10);
-      auto [digits89, unused] = multiplier::mul64x64_to_128(low10_12, 100);
+      auto [digits89, low10_12_1] = multiplier::mul64x64_to_128(low10_12, 100);
       digits::write_two_digits(result + 2, digits89);
-      auto [digits67, unused1] = multiplier::mul64x64_to_128(low10_12, 100);
+      auto [digits67, unused1] = multiplier::mul64x64_to_128(low10_12_1, 100);
       digits::write_two_digits(result + 4, digits67);
     } break;
     case 10: {
