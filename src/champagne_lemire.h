@@ -103,7 +103,8 @@ int avx512_to_chars(uint64_t value, char *const result) {
     const uint32_t n = fast_digit_count(value);
     if constexpr (V == Variant::Homogeneous) {
       if (value >= 10000000) { // number has 8 digits
-        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), digits_7_0);
+        const __m128i hi = _mm_srli_si128(digits_7_0, 8);
+        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), hi);
         return 8;
       }
     }
