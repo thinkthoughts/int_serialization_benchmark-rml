@@ -274,13 +274,17 @@ bool compare_integers_algorithms(uint64_t number) {
   std::string avx512heteroans = buffer;
   std::print("AVX-512 Heterogeneous: {}\n", buffer);
 #endif
-  n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
-  buffer[n] = '\0';
-  std::print("std::to_chars:         {}\n", buffer);
-
   n = baselines_int::naive(number, buffer);
   buffer[n] = '\0';
   std::print("naive_onepass:         {}\n", buffer);
+
+  n = baselines_int::hopman_fast(number, buffer);
+  buffer[n] = '\0';
+  std::print("hopman_fast:           {}\n", buffer);
+
+  n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
+  buffer[n] = '\0';
+  std::print("std::to_chars:         {}\n", buffer);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   std::string stdans = buffer;
   if (avx512homoans != stdans) {
@@ -473,6 +477,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_standard = counter;
     std::print("Volume std::to_chars: {}\n", volume_standard);
 
+    auto hopman = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::hopman_fast(data[i], buffer);
+    };
+    counter = 0;
+    hopman();
+    size_t volume_hopman_fast = counter;
+    std::print("Volume hopman_fast: {}\n", volume_hopman_fast);
+
     auto naive_onepass = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::naive(data[i], buffer);
@@ -486,6 +499,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
+    run_and_report("hopman_fast", hopman, volume_hopman_fast);
     run_and_report("naive_onepass", naive_onepass, volume_naive_onepass);
   } else {
     static_assert(false, "Unsupported type");
