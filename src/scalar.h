@@ -18,13 +18,11 @@ champagne_lemire_really_inline int scalar_to_chars(T mantissa, int32_t exponent,
   // For the math behind the multipliers, see:
   // scripts/optimal_bound.py
   ////////
-  constexpr bool is_double = sizeof(T) == 8;
   static_assert(std::is_same_v<T, uint64_t> || std::is_same_v<T, uint32_t>,
                 "Only integers are supported");
   static_assert(sizeof(T) == 8 || sizeof(T) == 4, "Unsupported type size");
   int32_t exp = exponent;
-  const uint32_t number_of_digits = 
-    is_double ? fast_digit_count64(mantissa) : fast_digit_count32(mantissa);
+  const uint32_t number_of_digits = fast_digit_count(mantissa);
   size_t exp_index;
   if (mantissa >= 100'00'00'00'00'00'00'00) {
     // The mantissa is in [10^16, 10^17)

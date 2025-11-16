@@ -16,8 +16,9 @@ using std::literals::string_literals::operator""s;
 #include "champagne_lemire.h"
 #include "dragonbox.h"
 #include "scalar.h"
+#include "integer_conv_baselines.h"
 
-constexpr size_t Number_Benchmark_Runs = 4;
+constexpr size_t Number_Benchmark_Runs = 1;
 constexpr double Ratio_To_Sample = 0.01;
 constexpr double Ratio_Homogeneous = 0.95; // Homogeneous mode if > 95% of
                                            // numbers have the same digit length
@@ -276,6 +277,10 @@ bool compare_integers_algorithms(uint64_t number) {
   n = std::to_chars(buffer, buffer + sizeof(buffer), number).ptr - buffer;
   buffer[n] = '\0';
   std::print("std::to_chars:         {}\n", buffer);
+
+  n = baselines_int::naive(number, buffer);
+  buffer[n] = '\0';
+  std::print("naive_onepass:         {}\n", buffer);
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
   std::string stdans = buffer;
   if (avx512homoans != stdans) {
@@ -326,10 +331,22 @@ bool test_some_harcoded_integers() {
   result &= compare_integers_algorithms(123456789012345678ull); // 18
   result &= compare_integers_algorithms(12345678901234567ull); // 17
   result &= compare_integers_algorithms(1234567890123456ull); // 16
+  result &= compare_integers_algorithms(123456789012345ull); // 15
+  result &= compare_integers_algorithms(12345678901234ull); // 14
+  result &= compare_integers_algorithms(1234567890123ull); // 13
+  result &= compare_integers_algorithms(123456789012ull); // 12
+  result &= compare_integers_algorithms(12345678901ull); // 11
+  result &= compare_integers_algorithms(1234567890ull); // 10
   result &= compare_integers_algorithms(123456789ull); // 9
+  result &= compare_integers_algorithms(12345678ull); // 8
+  result &= compare_integers_algorithms(1234567ull); // 7
   result &= compare_integers_algorithms(123456ull); // 6
+  result &= compare_integers_algorithms(12345ull); // 5
+  result &= compare_integers_algorithms(1234ull); // 4
+  result &= compare_integers_algorithms(123ull); // 3
+  result &= compare_integers_algorithms(12ull); // 2
+  result &= compare_integers_algorithms(1ull); // 1
   result &= compare_integers_algorithms(0);
-  result &= compare_integers_algorithms(1);
   return result;
 }
 
@@ -456,10 +473,20 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_standard = counter;
     std::print("Volume std::to_chars: {}\n", volume_standard);
 
+    auto naive_onepass = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::naive(data[i], buffer);
+    };
+    counter = 0;
+    naive_onepass();
+    size_t volume_naive_onepass = counter;
+    std::print("Volume naive_onepass: {}\n", volume_naive_onepass);
+
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
+    run_and_report("naive_onepass", naive_onepass, volume_naive_onepass);
   } else {
     static_assert(false, "Unsupported type");
   }
