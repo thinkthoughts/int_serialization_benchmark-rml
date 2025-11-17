@@ -278,6 +278,10 @@ bool compare_integers_algorithms(uint64_t number) {
   buffer[n] = '\0';
   std::print("naive_onepass:         {}\n", buffer);
 
+  n = baselines_int::mathisen_sse(number, buffer);
+  buffer[n] = '\0';
+  std::print("mathisen_sse:          {}\n", buffer);
+
   n = baselines_int::hopman_fast(number, buffer);
   buffer[n] = '\0';
   std::print("hopman_fast:           {}\n", buffer);
@@ -477,6 +481,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_standard = counter;
     std::print("Volume std::to_chars: {}\n", volume_standard);
 
+    auto mathisen_sse = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::mathisen_sse(data[i], buffer);
+    };
+    counter = 0;
+    mathisen_sse();
+    size_t volume_mathisen = counter;
+    std::print("Volume mathisen_sse: {}\n", volume_mathisen);
+
     auto hopman = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::hopman_fast(data[i], buffer);
@@ -499,6 +512,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
+    run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);
     run_and_report("naive_onepass", naive_onepass, volume_naive_onepass);
   } else {
@@ -516,7 +530,6 @@ int main(int argc, char **argv) {
   std::print("Warning: the results are sensitive to the compiler being used.\n");
   std::print("Try with GCC and LLVM.\n");
   std::print("==============================================================\n");
-
 
 #ifndef __OPTIMIZE__
   std::print("Warning: Build is not optimized. Performance may be poor.\n");
