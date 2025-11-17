@@ -46,12 +46,6 @@ constexpr auto hopman_table = []() {
 }();
 
 champagne_lemire_really_inline int hopman_fast(uint64_t value, char *const result) {
-  // Special case: zero
-  if (value == 0) {
-    result[0] = '0';
-    return 1;
-  }
-
   // Split into 5 blocks of 4 decimal digits (base 10000)
   // max uint64 = 18446744073709551615 (20 digits) → fits 5 blocks
   uint32_t b[5];
@@ -217,11 +211,6 @@ champagne_lemire_really_inline int u32_to_1to9digits_scalar(uint32_t v, char *co
 champagne_lemire_really_inline int mathisen_sse(uint64_t value,
                                                 char *const result) {
   using namespace mathisen_sse41_detail;
-
-  if (value == 0) {
-    result[0] = '0';
-    return 1;
-  }
 
   // 1e9 per chunk
   // max uint64 = 18446744073709551615 (20 digits)
