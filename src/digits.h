@@ -203,6 +203,7 @@ champagne_lemire_really_inline char* write_one_two_three_or_four_digits_10000(ch
     return buffer + 1;
   }
 }
+
 } // namespace digits
 
 #endif

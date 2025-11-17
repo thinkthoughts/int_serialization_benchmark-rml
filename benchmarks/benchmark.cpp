@@ -282,6 +282,10 @@ bool compare_integers_algorithms(uint64_t number) {
   buffer[n] = '\0';
   std::print("mathisen_sse:          {}\n", buffer);
 
+  n = baselines_int::mula_sse64(number, buffer);
+  buffer[n] = '\0';
+  std::print("mula_sse64:            {}\n", buffer);
+
   n = baselines_int::hopman_fast(number, buffer);
   buffer[n] = '\0';
   std::print("hopman_fast:           {}\n", buffer);
@@ -490,6 +494,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_mathisen = counter;
     std::print("Volume mathisen_sse: {}\n", volume_mathisen);
 
+    auto mula_sse64 = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::mula_sse64(data[i], buffer);
+    };
+    counter = 0;
+    mula_sse64();
+    size_t volume_mula_sse64 = counter;
+    std::print("Volume mula_sse64: {}\n", volume_mula_sse64);
+
     auto hopman = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::hopman_fast(data[i], buffer);
@@ -513,6 +526,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
     run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
+    run_and_report("mula_sse64", mula_sse64, volume_mula_sse64);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);
     run_and_report("naive_onepass", naive_onepass, volume_naive_onepass);
   } else {

@@ -2,8 +2,10 @@
 #define INTEGER_CONV_BASELINES_H
 
 #include <array>
+#include <cstring>
 #include <immintrin.h>
 #include "digitcount.h"
+#include "digits.h"
 
 namespace baselines_int {
 
@@ -156,7 +158,7 @@ champagne_lemire_really_inline void groups3_to_ascii_sse41(
 }
 
 // v < 1e9, write exactly 9-digits (zero-padded) in dst[0..8]
-champagne_lemire_really_inline void u32_to_9digits_fixed_sse41(uint32_t v, char* dst) {
+champagne_lemire_really_inline void u32_to_9digits_fixed_sse41(uint32_t v, char *const dst) {
   // Split in 3 groups of 3 digits:
   // v = g2 * 10^6 + g1 * 10^3 + g0
   uint32_t g2  = v / 1'000'000;
@@ -171,7 +173,7 @@ champagne_lemire_really_inline void u32_to_9digits_fixed_sse41(uint32_t v, char*
 
 // v < 1e9, write 1–9 chiffres unpadded.
 // return number of digits
-champagne_lemire_really_inline int u32_to_1to9digits_scalar(uint32_t v, char* dst) {
+champagne_lemire_really_inline int u32_to_1to9digits_scalar(uint32_t v, char *const dst) {
   // simple scalar for 1,2,3 digits
   if (v < 10) {
     dst[0] = char('0' + v);
@@ -213,7 +215,7 @@ champagne_lemire_really_inline int u32_to_1to9digits_scalar(uint32_t v, char* ds
 } // namespace mathisen_sse41_detail
 
 champagne_lemire_really_inline int mathisen_sse(uint64_t value,
-                                                char* const result) {
+                                                char *const result) {
   using namespace mathisen_sse41_detail;
 
   if (value == 0) {
@@ -246,6 +248,101 @@ champagne_lemire_really_inline int mathisen_sse(uint64_t value,
   }
 
   return int(out - result);
+}
+
+// Mula's utoa64_sse function (Algorithm 1 in http://0x80.pl/notesen/2011-10-21-sse-itoa.html)
+//
+// DISCLAIMER:
+//   - Mula's implementation (https://raw.githubusercontent.com/WojciechMula/toys/7731566/sse-utoa/sse64-intrin.c)
+//     only supports up to 16-digit values;
+//   - Therefore, we added a scalar path for prefix of values >= 1e16.
+//   - Original returns a pointer to the middle of the buffer (to skip leading zeros).
+//   - Here, we have to copy to the output buffer after removing leading zeros.
+
+champagne_lemire_really_inline void mula_sse64_16digits(uint64_t v, char* out) {
+  // v must be < 1e16
+  constexpr uint32_t DIV_10000 = 3518437209u;
+  constexpr uint16_t DIV_100   = 5243u;      // floor(2^19 / 100)
+  constexpr uint16_t DIV_10    = 52429u;     // floor(2^19 / 10)
+
+  const __m128i div_10000 = _mm_set1_epi32(DIV_10000);
+  const __m128i mul_10000 = _mm_set1_epi32(10000);
+  const int     div_10000_shift = 45;
+
+  const __m128i div_100   = _mm_set1_epi16(DIV_100);
+  const __m128i mul_100   = _mm_set1_epi16(100);
+  const int     div_100_shift = 3;
+
+  const __m128i div_10  = _mm_set1_epi16(DIV_10);
+  const __m128i mul_10  = _mm_set1_epi16(10);
+
+  const __m128i ascii0 = _mm_set1_epi8('0');
+
+  // Split into two 8-digit halves
+  uint32_t a = uint32_t(v / 100000000);  // high 8 digits
+  uint32_t b = uint32_t(v % 100000000);  // low  8 digits
+
+  __m128i x = _mm_set_epi64x(b, a);
+
+  // x div 10^4
+  __m128i x_div_10000 = _mm_mul_epu32(x, div_10000);
+  x_div_10000 = _mm_srli_epi64(x_div_10000, div_10000_shift);
+
+  __m128i x_mod_10000 = _mm_mul_epu32(x_div_10000, mul_10000);
+  x_mod_10000 = _mm_sub_epi32(x, x_mod_10000);
+
+  // [mnop][ijkl][efgh][abcd]
+  __m128i y = _mm_or_si128(x_div_10000, _mm_slli_epi64(x_mod_10000, 32));
+
+  // y / 100
+  __m128i y_div_100 = _mm_mulhi_epu16(y, div_100);
+  y_div_100 = _mm_srli_epi16(y_div_100, div_100_shift);
+
+  __m128i y_mod_100 = _mm_mullo_epi16(y_div_100, mul_100);
+  y_mod_100 = _mm_sub_epi16(y, y_mod_100);
+
+  // (AB,CD) pairs
+  __m128i z = _mm_or_si128(y_div_100, _mm_slli_epi32(y_mod_100, 16));
+
+  // z / 10
+  __m128i z_div_10 = _mm_mulhi_epu16(z, div_10);
+  z_div_10 = _mm_srli_epi16(z_div_10, 3);
+
+  __m128i z_mod_10 = _mm_mullo_epi16(z_div_10, mul_10);
+  z_mod_10 = _mm_sub_epi16(z, z_mod_10);
+
+  __m128i tmp = _mm_or_si128(z_div_10, _mm_slli_epi16(z_mod_10, 8));
+  tmp = _mm_add_epi8(tmp, ascii0);
+
+  _mm_storeu_si128(reinterpret_cast<__m128i*>(out), tmp);
+}
+
+champagne_lemire_really_inline int mula_sse64(uint64_t v, char *const result) {
+  // 17–20 digits: 1–4 digits prefix + 16 digits suffix
+  if (v >= 10000000000000000ULL) { // 1e16
+    const uint64_t hi = v / 10000000000000000ULL;
+    const uint64_t lo = v % 10000000000000000ULL;
+
+    char* out = digits::write_one_two_three_or_four_digits_10000(result, hi);
+    mula_sse64_16digits(lo, out);
+    return int(out - result + 16);
+  }
+
+  if (v == 0) {
+    result[0] = '0';
+    return 1;
+  }
+
+  alignas(16) char buf[16];
+  mula_sse64_16digits(v, buf);
+
+  int offset = 0;
+  while (offset < 16 && buf[offset] == '0')
+    ++offset;
+
+  const int len = 16 - offset;
+  std::memcpy(result, buf + offset, size_t(len));
+  return len;
 }
 
 } // namespace baselines_int

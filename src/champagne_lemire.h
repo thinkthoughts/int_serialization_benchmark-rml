@@ -143,6 +143,7 @@ int avx512_to_chars(uint64_t value, char *const result) {
     return n;
   }
 }
+
 #endif // CHAMPAGNE_LEMIRE_AVX512
 
 #endif // CHAMPAGNE_LEMIRE_H
