@@ -61,6 +61,31 @@ add_executable(benchmark benchmarks/benchmark.cpp)
 target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE cxxopts)
 
+if (NOT CYGWIN)
+  set(ABSL_PROPAGATE_CXX_STD ON)
+  set(ABSL_ENABLE_INSTALL OFF)
+  set(ABSL_RUN_TEST OFF CACHE INTERNAL "")
+  set(ABSL_USE_GOOGLETEST_HEAD OFF CACHE INTERNAL "")
+
+  FetchContent_Declare(abseil
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+    GIT_TAG "d7aaad8"
+    GIT_SHALLOW TRUE
+  )
+  FetchContent_GetProperties(abseil)
+  if(NOT abseil_POPULATED)
+    set(BUILD_TESTING OFF)
+    FetchContent_MakeAvailable(abseil)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${abseil_SOURCE_DIR}/absl/copts)
+    include(${abseil_SOURCE_DIR}/absl/copts/AbseilConfigureCopts.cmake)
+  endif()
+
+  target_link_libraries(benchmark PRIVATE absl::strings)
+  target_compile_definitions(benchmark PRIVATE ABSEIL_SUPPORTED=1)
+else()
+  target_compile_definitions(benchmark PRIVATE ABSEIL_SUPPORTED=0)
+endif()
+
 add_executable(tester src/tester.cpp)
 target_compile_options(tester PRIVATE ${PROJECT_WARNINGS})
 

@@ -4,6 +4,7 @@
 #include <array>
 #include <cstring>
 #include <immintrin.h>
+#include <absl/strings/numbers.h>
 #include "digitcount.h"
 #include "digits.h"
 
@@ -18,6 +19,13 @@ champagne_lemire_really_inline int naive(uint64_t value, char *const result) {
     result[i] = '0' + digit;
   }
   return number_of_digits;
+}
+
+// FastIntToBuffer writes into result and returns pointer to '\0'
+champagne_lemire_really_inline int absl_fastint(uint64_t value,
+                                                char *const result) {
+  const char* end = absl::numbers_internal::FastIntToBuffer(value, result);
+  return int(end - result);
 }
 
 // Implementation of hopman_fast from

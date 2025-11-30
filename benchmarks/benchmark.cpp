@@ -274,6 +274,10 @@ bool compare_integers_algorithms(uint64_t number) {
   std::string avx512heteroans = buffer;
   std::print("AVX-512 Heterogeneous: {}\n", buffer);
 #endif
+  n = baselines_int::absl_fastint(number, buffer);
+  // buffer[n] = '\0'; // absl_fastint already null-terminates
+  std::print("absl_fastint:          {}\n", buffer);
+
   n = baselines_int::naive(number, buffer);
   buffer[n] = '\0';
   std::print("naive_onepass:         {}\n", buffer);
@@ -331,7 +335,6 @@ bool test_some_harcoded_floats() {
   result &= compare_decimal_floats_algorithms(12, 2);
   result &= compare_decimal_floats_algorithms(1, 1);
   result &= compare_decimal_floats_algorithms(0, 1);
-  result &= compare_decimal_floats_algorithms(1, 1);
   return result;
 }
 
@@ -485,6 +488,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_standard = counter;
     std::print("Volume std::to_chars: {}\n", volume_standard);
 
+    auto absl_fastint = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::absl_fastint(data[i], buffer);
+    };
+    counter = 0;
+    absl_fastint();
+    size_t volume_absl_fastint = counter;
+    std::print("Volume absl_fastint: {}\n", volume_absl_fastint);
+
     auto mathisen_sse = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::mathisen_sse(data[i], buffer);
@@ -525,6 +537,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     run_and_report("avx-512+champagne_lemire", avx512l, volume512);
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
+    run_and_report("absl_fastint", absl_fastint, volume_absl_fastint);
     run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
     run_and_report("mula_sse64", mula_sse64, volume_mula_sse64);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);
