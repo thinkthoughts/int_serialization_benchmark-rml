@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 #include <variant>
-#include  <vector>
+#include <vector>
 #include <print>
 #include <cxxopts.hpp>
 using std::literals::string_literals::operator""s;
@@ -274,13 +274,17 @@ bool compare_integers_algorithms(uint64_t number) {
   std::string avx512heteroans = buffer;
   std::print("AVX-512 Heterogeneous: {}\n", buffer);
 #endif
+  n = baselines_int::naive(number, buffer);
+  buffer[n] = '\0';
+  std::print("naive_onepass:         {}\n", buffer);
+
   n = baselines_int::absl_fastint(number, buffer);
   // buffer[n] = '\0'; // absl_fastint already null-terminates
   std::print("absl_fastint:          {}\n", buffer);
 
-  n = baselines_int::naive(number, buffer);
+  n = baselines_int::jeaiii_fast_uint64(number, buffer);
   buffer[n] = '\0';
-  std::print("naive_onepass:         {}\n", buffer);
+  std::print("jeaiii_fast_uint64:    {}\n", buffer);
 
   n = baselines_int::mathisen_sse(number, buffer);
   buffer[n] = '\0';
@@ -497,6 +501,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_absl_fastint = counter;
     std::print("Volume absl_fastint: {}\n", volume_absl_fastint);
 
+    auto jeaiii_fast = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::jeaiii_fast_uint64(data[i], buffer);
+    };
+    counter = 0;
+    jeaiii_fast();
+    size_t volume_jeaiii_fast = counter;
+    std::print("Volume jeaiii_fast_uint64: {}\n", volume_jeaiii_fast);
+
     auto mathisen_sse = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::mathisen_sse(data[i], buffer);
@@ -538,6 +551,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
 #endif
     run_and_report("std::to_chars", standard_to_chars, volume_standard);
     run_and_report("absl_fastint", absl_fastint, volume_absl_fastint);
+    run_and_report("jeaiii_fast_uint64", jeaiii_fast, volume_jeaiii_fast);
     run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
     run_and_report("mula_sse64", mula_sse64, volume_mula_sse64);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);

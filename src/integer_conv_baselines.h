@@ -5,6 +5,7 @@
 #include <cstring>
 #include <immintrin.h>
 #include <absl/strings/numbers.h>
+#include "third_party/jeaiii_to_text.h"
 #include "digitcount.h"
 #include "digits.h"
 
@@ -25,6 +26,12 @@ champagne_lemire_really_inline int naive(uint64_t value, char *const result) {
 champagne_lemire_really_inline int absl_fastint(uint64_t value,
                                                 char *const result) {
   const char* end = absl::numbers_internal::FastIntToBuffer(value, result);
+  return int(end - result);
+}
+
+champagne_lemire_really_inline int jeaiii_fast_uint64(uint64_t v,
+                                                      char *const result) {
+  const char* end = jeaiii::to_text_from_integer(result, v);
   return int(end - result);
 }
 
