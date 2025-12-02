@@ -9,6 +9,10 @@
 #include "digitcount.h"
 #include "digits.h"
 
+// Declaration for the function we need in itoa_an.c
+// Can't be in a namespace because of C linkage :(
+extern "C" char *itoa_u64_an(uint64_t val, char *buf);
+
 namespace baselines_int {
 
 champagne_lemire_really_inline int naive(uint64_t value, char *const result) {
@@ -32,6 +36,11 @@ champagne_lemire_really_inline int absl_fastint(uint64_t value,
 champagne_lemire_really_inline int jeaiii_fast_uint64(uint64_t v,
                                                       char *const result) {
   const char* end = jeaiii::to_text_from_integer(result, v);
+  return int(end - result);
+}
+
+champagne_lemire_really_inline int itoa_an_64(uint64_t v, char *result) {
+  const char* end = ::itoa_u64_an(v, result);
   return int(end - result);
 }
 

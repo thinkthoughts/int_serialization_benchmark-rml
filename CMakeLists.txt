@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
-project(BenchmarkProject VERSION 1.0 LANGUAGES CXX)
+project(BenchmarkProject VERSION 1.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_C_STANDARD_23)
+set(CMAKE_C_STANDARD_REQUIRED True)
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
 function(check_avx512_support result_var)
   if(UNIX AND NOT APPLE) # Linux
@@ -57,7 +61,10 @@ CPMAddPackage(
 
 include_directories(benchmarks src)
 
-add_executable(benchmark benchmarks/benchmark.cpp)
+add_executable(benchmark
+  benchmarks/benchmark.cpp
+  src/third_party/itoa_an.c
+)
 target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE cxxopts)
 
