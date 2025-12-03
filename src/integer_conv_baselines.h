@@ -77,6 +77,11 @@ constexpr auto hopman_table = []() {
 }();
 
 champagne_lemire_really_inline int hopman_fast(uint64_t value, char *const result) {
+  if (value == 0) {
+    result[0] = '0';
+    return 1;
+  }
+
   // Split into 5 blocks of 4 decimal digits (base 10000)
   // max uint64 = 18446744073709551615 (20 digits) → fits 5 blocks
   uint32_t b[5];
@@ -92,7 +97,6 @@ champagne_lemire_really_inline int hopman_fast(uint64_t value, char *const resul
     first++;
 
   char* out = result;
-
   {
     const char* c = hopman_table[b[first]].data();
     const unsigned mask = uint8_t(c[0]) >> 4; // 0..3
