@@ -9,9 +9,11 @@
 #include "digitcount.h"
 #include "digits.h"
 
-// Declaration for the function we need in itoa_an.c
+// Declaration for the function we need are in
+// third_party/itoa_an.c and third_party/itoa_yy.c
 // Can't be in a namespace because of C linkage :(
 extern "C" char *itoa_u64_an(uint64_t val, char *buf);
+extern "C" char *itoa_u64_yy(uint64_t val, char *buf);
 
 namespace baselines_int {
 
@@ -41,6 +43,11 @@ champagne_lemire_really_inline int jeaiii_fast_uint64(uint64_t v,
 
 champagne_lemire_really_inline int itoa_an_64(uint64_t v, char *result) {
   const char* end = ::itoa_u64_an(v, result);
+  return int(end - result);
+}
+
+champagne_lemire_really_inline int itoa_yy_64(uint64_t v, char *result) {
+  const char* end = ::itoa_u64_yy(v, result);
   return int(end - result);
 }
 

@@ -64,6 +64,7 @@ include_directories(benchmarks src)
 add_executable(benchmark
   benchmarks/benchmark.cpp
   src/third_party/itoa_an.c
+  src/third_party/itoa_yy.c
 )
 target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE cxxopts)

@@ -37,7 +37,6 @@ std::pair<uint64_t,int64_t> find_mantissa_exponent(std::string_view num_str) {
   size_t after_dot = 0;
   bool found_dot = false;
 
-
   size_t idx = 0;
 
   for (; idx < num_str.size(); ++idx) {
@@ -290,6 +289,10 @@ bool compare_integers_algorithms(uint64_t number) {
   buffer[n] = '\0';
   std::print("itoa_an_64:            {}\n", buffer);
 
+  n = baselines_int::itoa_yy_64(number, buffer);
+  buffer[n] = '\0';
+  std::print("itoa_yy_64:            {}\n", buffer);
+
   n = baselines_int::mathisen_sse(number, buffer);
   buffer[n] = '\0';
   std::print("mathisen_sse:          {}\n", buffer);
@@ -523,6 +526,15 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     size_t volume_itoa_an_64 = counter;
     std::print("Volume itoa_an_64: {}\n", volume_itoa_an_64);
 
+    auto itoa_yy_64 = [&]() {
+      for (size_t i = 0; i < data.size(); ++i)
+        counter += baselines_int::itoa_yy_64(data[i], buffer);
+    };
+    counter = 0;
+    itoa_yy_64();
+    size_t volume_itoa_yy_64 = counter;
+    std::print("Volume itoa_yy_64: {}\n", volume_itoa_yy_64);
+
     auto mathisen_sse = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::mathisen_sse(data[i], buffer);
@@ -566,6 +578,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     run_and_report("absl_fastint", absl_fastint, volume_absl_fastint);
     run_and_report("jeaiii_fast_uint64", jeaiii_fast, volume_jeaiii_fast);
     run_and_report("itoa_an_64", itoa_an_64, volume_itoa_an_64);
+    run_and_report("itoa_yy_64", itoa_yy_64, volume_itoa_yy_64);
     run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
     run_and_report("mula_sse64", mula_sse64, volume_mula_sse64);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);
