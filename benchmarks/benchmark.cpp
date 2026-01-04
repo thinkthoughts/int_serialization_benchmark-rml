@@ -19,7 +19,7 @@ using std::literals::string_literals::operator""s;
 #include "integer_conv_baselines.h"
 
 constexpr size_t Number_Benchmark_Runs = 1;
-constexpr double Ratio_To_Sample = 0.01;
+constexpr double Ratio_To_Sample = 1.0;
 constexpr double Ratio_Homogeneous = 0.95; // Homogeneous mode if > 95% of
                                            // numbers have the same digit length
 
@@ -384,7 +384,7 @@ Variant detect_variant(const std::vector<T> &data) {
   std::array<size_t, 21> lengthDistrib{};
   for (size_t i = 0; i < sample_size; ++i) {
     const T &v = data[i];
-    uint64_t number = [&] {
+    const uint64_t number = [&] {
       if constexpr (std::is_same_v<std::decay_t<decltype(v)>, decimal_float>)
         return v.mantissa;
       else
