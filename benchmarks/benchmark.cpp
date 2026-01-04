@@ -19,7 +19,7 @@ using std::literals::string_literals::operator""s;
 #include "integer_conv_baselines.h"
 
 constexpr size_t Number_Benchmark_Runs = 1;
-constexpr double Ratio_To_Sample = 1.0;
+constexpr double Ratio_To_Sample = 0.01;
 constexpr double Ratio_Homogeneous = 0.95; // Homogeneous mode if > 95% of
                                            // numbers have the same digit length
 

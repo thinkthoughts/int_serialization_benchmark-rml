@@ -1,12 +1,12 @@
 import math
 
 
-# Compute m and c such that:# division(n, d) = division(c ∗n, m) and remainder(n, d) = division(remainder(c ∗n, m) ∗d, m) 
+# Compute m and c such that:# division(n, d) = division(c ∗n, m) and remainder(n, d) = division(remainder(c ∗n, m) ∗d, m)
 # for all n ∈[0, N ]
 # condition: 1/d ≤c/m < (1 + 1/N)/d
-# 1 <= c * d /m < (1 + 1/N) 
+# 1 <= c * d /m < (1 + 1/N)
 # m <= c * d < m + m //N
-# See Daniel Lemire, Colin Bartlett, Owen Kaser,  
+# See Daniel Lemire, Colin Bartlett, Owen Kaser,
 # [Integer Division by Constants: Optimal Bounds](https://arxiv.org/abs/2012.12369),  Heliyon 7 (6), 2021
 def find_m_c(N, d, m = 1, cmax = 2**64):
     while True:
@@ -65,45 +65,45 @@ print(recompose(x))
 
 
 
-find_m_c(10**17 - 1, 10**8) 
+find_m_c(10**17 - 1, 10**8)
 find_m_c(10**9 - 1, 10**8, 2**64)
 
 print("----")
 
 
-find_m_c(10**16 - 1, 10**8) 
+find_m_c(10**16 - 1, 10**8)
 find_m_c(10**8 - 1, 10**6, 2**64)
 
 print("----")
 
 
-find_m_c(10**14 - 1, 10**8) 
+find_m_c(10**14 - 1, 10**8)
 find_m_c(10**6 - 1, 10**4, 2**64)
 
 
 print("----")
 
 
-find_m_c(10**13 - 1, 10**8) 
+find_m_c(10**13 - 1, 10**8)
 find_m_c(10**5 - 1, 10**4, 2**64)
 
 print("----12")
-find_m_c(10**12 - 1, 10**6, 2**64) 
+find_m_c(10**12 - 1, 10**6, 2**64)
 find_m_c(10**6 - 1, 10**4, 2**64)
 
 
 print("----")
-find_m_c(10**11 - 1, 10**6, 2**64) 
+find_m_c(10**11 - 1, 10**6, 2**64)
 find_m_c(10**5 - 1, 10**4, 2**64)
 
 
 
 print("----")
-find_m_c(10**10 - 1, 10**8, 2**64) 
+find_m_c(10**10 - 1, 10**8, 2**64)
 
 print("----")
-find_m_c(10**8 - 1, 10**6, 2**64) 
+find_m_c(10**8 - 1, 10**6, 2**64)
 
 
 print("----")
-find_m_c(10**6 - 1, 10**4, 2**64) 
+find_m_c(10**6 - 1, 10**4, 2**64)

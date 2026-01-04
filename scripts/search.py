@@ -1,4 +1,3 @@
-
 # This script uses Z3, install it with:
 # pip install z3-solver
 from z3 import *

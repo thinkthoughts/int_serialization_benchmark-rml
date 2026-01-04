@@ -4,4 +4,5 @@
 outputs
 build*
 **/tags
+**/__pycache__
 compile_commands.json
