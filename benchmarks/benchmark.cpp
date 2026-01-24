@@ -416,7 +416,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
   auto run_and_report = [&](auto&& name, auto&& func, size_t volume) {
     std::print("\n");
     for (size_t i = 0; i < Number_Benchmark_Runs; ++i)
-      pretty_print(data.size(), volume, name, bench(func));
+      pretty_print(volume, data.size() * sizeof(T), name, bench(func));
   };
 
   if constexpr (std::is_same_v<T, decimal_float>) {
