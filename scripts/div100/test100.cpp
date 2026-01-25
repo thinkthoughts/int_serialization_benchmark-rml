@@ -1,9 +1,8 @@
-
 #include <cstdio>
+#include <cstdlib>
 #include <array>
 #include <cstring>
 #include <utility>
-#include <vector>
 #include <cstdint>
 
 // This will divide by 100 using multiplication and shifts
@@ -15,8 +14,6 @@ constexpr std::pair<uint64_t, uint64_t> div100v(uint64_t x) {
     uint64_t v = x * uint64_t(0x28f5c29);
     return {v>>32, (v>>24)&0xff};
 }
-
-
 
 std::array<char, 2> get_two_digits(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 100> hundreds_digit_table =

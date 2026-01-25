@@ -9,6 +9,8 @@ outputs.
 - **`generate_raw_outputs.py`**: Compiles the benchmark with specified compiler(s) and runs multiple configurations, saving raw outputs
 - **`generate_variant_comparison_table.py`**: Parses raw outputs and generates LaTeX table comparing homogeneous vs heterogeneous variants
 - **`generate_algorithm_comparison_table.py`**: Parses raw outputs and generates LaTeX table comparing all integer-to-string algorithms
+- **`generate_digit_length_figure.py`**: Parses raw outputs and generates a figure comparing algorithms across digit lengths
+- **`generate_bar_chart.py`**: Parses raw outputs and generates bar chart figures comparing algorithms across datasets
 - **`utils.py`**: Shared utility functions used by all scripts
 
 ## Prerequisites
@@ -135,32 +137,41 @@ Parse the raw outputs and create a table comparing the two AVX-512 variants:
 ./scripts/generate_variant_comparison_table.py [OPTIONS]
 
 Optional arguments:
-  --compiler COMPILER   Compiler to use for finding output files (default: g++)
+  -h, --help            Show help message and exit
+  --compiler COMPILER   Compiler to use for finding output files. If not specified,
+                        generates tables for all available compilers (g++ and clang++).
   --input-dir DIR       Directory containing raw benchmark files (default: ./outputs)
-  --output-file FILE    Output LaTeX file name (default: table_homogeneous_vs_heterogeneous.tex)
+  --output-file FILE    Output LaTeX file base name without extension
+                        (default: table_homogeneous_vs_heterogeneous)
 ```
 
 **Examples:**
 
 ```bash
-# Generate table from g++ results (default)
+# Generate tables for ALL available compilers (default behavior)
+# Creates: table_homogeneous_vs_heterogeneous_g++.tex
+#          table_homogeneous_vs_heterogeneous_clang++.tex
 ./scripts/generate_variant_comparison_table.py
 
-# Generate table from clang++ results
+# Generate table from g++ results only
+./scripts/generate_variant_comparison_table.py --compiler g++
+
+# Generate table from clang++ results only
 ./scripts/generate_variant_comparison_table.py --compiler clang++
 
 # Read from custom directory
 ./scripts/generate_variant_comparison_table.py --input-dir my_results
 
-# Custom output file name
-./scripts/generate_variant_comparison_table.py --output-file my_variant_table.tex
+# Custom output file base name
+./scripts/generate_variant_comparison_table.py --output-file my_variant_table
 ```
 
 This will:
-- Parse all `outputs/*.raw` files for the specified compiler
+- Auto-detect available compilers if `--compiler` not specified
+- Parse all `outputs/*.raw` files for each compiler
 - Extract timing information (ns/d - nanoseconds per digit/character)
 - Determine which variant was auto-selected for each dataset
-- Generate a LaTeX table file
+- Generate LaTeX table file(s) with compiler name in filename
 - Print a preview of the table
 
 #### Algorithm Comparison Table (All Algorithms)
@@ -177,18 +188,26 @@ Generate a comprehensive table comparing all integer-to-string algorithms:
 ./scripts/generate_algorithm_comparison_table.py [OPTIONS]
 
 Optional arguments:
-  --compiler COMPILER   Compiler to use for finding output files (default: g++)
+  -h, --help            Show help message and exit
+  --compiler COMPILER   Compiler to use for finding output files. If not specified,
+                        generates tables for all available compilers (g++ and clang++).
   --input-dir DIR       Directory containing raw benchmark files (default: ./outputs)
-  --output-file FILE    Output LaTeX file name (default: table_algorithm_comparison.tex)
+  --output-file FILE    Output LaTeX file base name without extension
+                        (default: table_algorithm_comparison)
 ```
 
 **Examples:**
 
 ```bash
-# Generate algorithm comparison table from g++ results (default)
+# Generate tables for ALL available compilers (default behavior)
+# Creates: table_algorithm_comparison_g++.tex
+#          table_algorithm_comparison_clang++.tex
 ./scripts/generate_algorithm_comparison_table.py
 
-# Generate from clang++ results
+# Generate from g++ results only
+./scripts/generate_algorithm_comparison_table.py --compiler g++
+
+# Generate from clang++ results only
 ./scripts/generate_algorithm_comparison_table.py --compiler clang++
 
 # Read from custom directory
@@ -196,41 +215,136 @@ Optional arguments:
 ```
 
 This will:
+- Auto-detect available compilers if `--compiler` not specified
 - Parse benchmark outputs for all algorithms
 - Extract multiple metrics: ns/d (nanoseconds per character), i/d (instructions per character), c/d (cycles per character)
 - Calculate speedup percentages relative to AVX-512 for each metric
 - Compare 10 different algorithms across 5 real-world and synthetic datasets
 - Bold the best (lowest) value for each metric
-- Generate a comprehensive LaTeX table (uses `table` for single-column width)
+- Generate comprehensive LaTeX table(s) with compiler name in filename
 
 #### Digit-Length Comparison Figure
 
 Generate a figure comparing algorithm performance across different digit lengths:
 
 ```bash
-./scripts/generate_digit_length_figure.py [compiler] [cpu_model]
+./scripts/generate_digit_length_figure.py
 ```
 
-**Arguments:**
-- `compiler`: Compiler used for benchmarks (g++ or clang++, default: g++)
-- `cpu_model`: Optional CPU model prefix in filenames (auto-detected if not provided)
+**Command-line options:**
+
+```bash
+./scripts/generate_digit_length_figure.py [OPTIONS]
+
+Optional arguments:
+  -h, --help            Show help message and exit
+  --compiler COMPILER   Compiler to use for finding output files. If not specified,
+                        generates figures for all available compilers (g++ and clang++).
+  --cpu-model MODEL     CPU model prefix in filenames (auto-detected if not provided)
+  --input-dir DIR       Directory containing raw benchmark files (default: ./outputs)
+  --output-dir DIR      Directory to save generated figure (default: ./outputs)
+```
 
 **Examples:**
 
 ```bash
-# Generate figure from g++ results (auto-detects CPU model)
-./scripts/generate_digit_length_figure.py g++
+# Generate figures for ALL available compilers (default behavior)
+# Creates: figure_digit_length_comparison_g++.pdf
+#          figure_digit_length_comparison_clang++.pdf
+./scripts/generate_digit_length_figure.py
+
+# Generate figure from g++ results only
+./scripts/generate_digit_length_figure.py --compiler g++
+
+# Generate from clang++ results only
+./scripts/generate_digit_length_figure.py --compiler clang++
 
 # Explicitly specify CPU model prefix
-./scripts/generate_digit_length_figure.py g++ "AMD_Ryzen_9_9900X_12-Core_Processor"
-
-# Generate from clang++ results
-./scripts/generate_digit_length_figure.py clang++
+./scripts/generate_digit_length_figure.py --cpu-model "AMD_Ryzen_9_9900X_12-Core_Processor"
 ```
 
 This will:
+- Auto-detect available compilers if `--compiler` not specified
 - Auto-detect CPU model from existing .raw files if not specified
 - Parse benchmark outputs for uniform-Ndigit-1M datasets (N=1 to 20)
 - Extract ns/d metrics for all algorithms
-- Generate a line plot showing performance vs digit length
-- Save as PDF in the outputs directory
+- Generate line plot(s) showing performance vs digit length
+- Save as PDF in the outputs directory with compiler name in filename
+
+#### Bar Chart Figure (Algorithm Comparison)
+
+Generate bar chart figures comparing algorithm performance across key datasets:
+
+```bash
+./scripts/generate_bar_chart.py
+```
+
+**Command-line options:**
+
+```bash
+./scripts/generate_bar_chart.py [OPTIONS]
+
+Optional arguments:
+  -h, --help            Show help message and exit
+  --compiler COMPILER   Compiler to use for finding output files. If not specified,
+                        generates figures for all available compilers (g++ and clang++).
+  --input-dir DIR       Directory containing raw benchmark files (default: ./outputs)
+  --output-dir DIR      Directory to save generated figures (default: ./outputs)
+  --simplified          Generate simplified figure with 5 key algorithms for main paper
+  --separate            Generate separate figures for each dataset instead of combined
+```
+
+**Examples:**
+
+```bash
+# Generate bar charts for ALL available compilers (default behavior)
+# Creates: figure_bar_chart_g++.pdf
+#          figure_bar_chart_clang++.pdf
+./scripts/generate_bar_chart.py
+
+# Generate simplified version with 5 key algorithms (for main paper)
+# Creates: figure_bar_chart_g++_simplified.pdf
+./scripts/generate_bar_chart.py --simplified
+
+# Generate from g++ results only
+./scripts/generate_bar_chart.py --compiler g++
+
+# Generate separate figures for each dataset
+./scripts/generate_bar_chart.py --separate
+```
+
+This will:
+- Auto-detect available compilers if `--compiler` not specified
+- Parse benchmark outputs for Twitter JSON, CIT Patents, and Natural 1-8 datasets
+- Extract ns/d metrics for all (or 5 simplified) algorithms
+- Generate combined bar chart (3 subplots) or separate figures per dataset
+- Save as PDF in the outputs directory with compiler name in filename
+
+**Simplified mode (`--simplified`):**
+For main paper figures, use `--simplified` to show only 5 key algorithms:
+- Champagne--Lemire (ours)
+- jeaiii
+- yy
+- std::to_chars
+- Mula SSE64
+
+### Simplified Figures for Main Paper
+
+For the main paper, use the `--simplified` flag to generate cleaner figures with fewer algorithms:
+
+```bash
+# Simplified digit-length figure (5 algorithms)
+./scripts/generate_digit_length_figure.py --simplified
+
+# Simplified bar chart (5 algorithms)
+./scripts/generate_bar_chart.py --simplified
+```
+
+The simplified versions include only the 5 most relevant algorithms for comparison:
+- **Champagne--Lemire** (our AVX-512 implementation)
+- **jeaiii** (state-of-the-art scalar)
+- **yy** (competitive scalar)
+- **std::to_chars** (standard library baseline)
+- **Mula SSE64** (previous SIMD approach)
+
+Full versions (all 10 algorithms) can be generated for supplementary materials by omitting the `--simplified` flag

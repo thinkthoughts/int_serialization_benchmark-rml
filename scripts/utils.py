@@ -1,7 +1,6 @@
 """
 Shared utility functions for benchmark scripts.
 """
-
 import subprocess
 import platform
 import os
