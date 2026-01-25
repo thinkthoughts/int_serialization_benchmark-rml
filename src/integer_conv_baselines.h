@@ -2,7 +2,6 @@
 #define INTEGER_CONV_BASELINES_H
 
 #include <array>
-#include <cstring>
 #include <immintrin.h>
 #include <absl/strings/numbers.h>
 #include "third_party/jeaiii_to_text.h"
@@ -280,11 +279,13 @@ champagne_lemire_really_inline int mathisen_sse(uint64_t value,
 //   - Mula's implementation (https://raw.githubusercontent.com/WojciechMula/toys/7731566/sse-utoa/sse64-intrin.c)
 //     only supports up to 16-digit values;
 //   - Therefore, we added a scalar path for prefix of values >= 1e16.
-//   - Original returns a pointer to the middle of the buffer (to skip leading zeros).
-//   - Here, we have to copy to the output buffer after removing leading zeros.
+//   - Original returns a pointer to the middle of a static buffer (to skip leading zeros).
+//   - Here, we copy to the output buffer after removing leading zeros, using the original's
+//     O(1) movemask/ctz technique for leading-zero detection.
 
-champagne_lemire_really_inline void mula_sse64_16digits(uint64_t v, char* out) {
-  // v must be < 1e16
+// Returns the 16-digit vector before ASCII conversion
+champagne_lemire_really_inline __m128i mula_sse64_16digits_raw(uint64_t v) {
+  // v must be < 1e16; returns digit values 0-9
   constexpr uint32_t DIV_10000 = 3518437209u;
   constexpr uint16_t DIV_100   = 5243u;      // floor(2^19 / 100)
   constexpr uint16_t DIV_10    = 52429u;     // floor(2^19 / 10)
@@ -299,8 +300,6 @@ champagne_lemire_really_inline void mula_sse64_16digits(uint64_t v, char* out) {
 
   const __m128i div_10  = _mm_set1_epi16(DIV_10);
   const __m128i mul_10  = _mm_set1_epi16(10);
-
-  const __m128i ascii0 = _mm_set1_epi8('0');
 
   // Split into two 8-digit halves
   uint32_t a = uint32_t(v / 100000000);  // high 8 digits
@@ -335,10 +334,7 @@ champagne_lemire_really_inline void mula_sse64_16digits(uint64_t v, char* out) {
   __m128i z_mod_10 = _mm_mullo_epi16(z_div_10, mul_10);
   z_mod_10 = _mm_sub_epi16(z, z_mod_10);
 
-  __m128i tmp = _mm_or_si128(z_div_10, _mm_slli_epi16(z_mod_10, 8));
-  tmp = _mm_add_epi8(tmp, ascii0);
-
-  _mm_storeu_si128(reinterpret_cast<__m128i*>(out), tmp);
+  return _mm_or_si128(z_div_10, _mm_slli_epi16(z_mod_10, 8));
 }
 
 champagne_lemire_really_inline int mula_sse64(uint64_t v, char *const result) {
@@ -348,7 +344,9 @@ champagne_lemire_really_inline int mula_sse64(uint64_t v, char *const result) {
     const uint64_t lo = v % 10000000000000000ULL;
 
     char* out = digits::write_one_two_three_or_four_digits_10000(result, hi);
-    mula_sse64_16digits(lo, out);
+    __m128i raw = mula_sse64_16digits_raw(lo);
+    const __m128i ascii0 = _mm_set1_epi8('0');
+    _mm_storeu_si128(reinterpret_cast<__m128i*>(out), _mm_add_epi8(raw, ascii0));
     return int(out - result + 16);
   }
 
@@ -357,16 +355,19 @@ champagne_lemire_really_inline int mula_sse64(uint64_t v, char *const result) {
     return 1;
   }
 
-  alignas(16) char buf[16];
-  mula_sse64_16digits(v, buf);
+  __m128i raw = mula_sse64_16digits_raw(v);
 
-  int offset = 0;
-  while (offset < 16 && buf[offset] == '0')
-    ++offset;
+  // Leading-zero detection using movemask + ctz (from original Mula)
+  // Compare each byte to zero; movemask gives a bit per byte; ctz finds first non-zero
+  uint16_t mask = static_cast<uint16_t>(
+      ~_mm_movemask_epi8(_mm_cmpeq_epi8(raw, _mm_setzero_si128())));
+  int offset = __builtin_ctz(mask | 0x8000);
 
-  const int len = 16 - offset;
-  std::memcpy(result, buf + offset, size_t(len));
-  return len;
+  // Convert to ASCII and store directly at result - offset
+  const __m128i ascii0 = _mm_set1_epi8('0');
+  __m128i ascii = _mm_add_epi8(raw, ascii0);
+  _mm_storeu_si128(reinterpret_cast<__m128i*>(result - offset), ascii);
+  return 16 - offset;
 }
 
 } // namespace baselines_int
