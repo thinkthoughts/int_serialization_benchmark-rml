@@ -534,15 +534,17 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     itoa_yy_64();
     size_t volume_itoa_yy_64 = counter;
     std::print("Volume itoa_yy_64: {}\n", volume_itoa_yy_64);
-
-    auto mathisen_sse = [&]() {
-      for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::mathisen_sse(data[i], buffer);
-    };
+    // Daniel: mathisen_sse is causing severe memory corruption
+    // overwriting local variables and messing with the benchmark
+    // results
+    //auto mathisen_sse = [&]() {
+    //for (size_t i = 0; i < data.size(); ++i)
+    //  counter += baselines_int::mathisen_sse(data[i], buffer);
+    //};
     counter = 0;
-    mathisen_sse();
-    size_t volume_mathisen = counter;
-    std::print("Volume mathisen_sse: {}\n", volume_mathisen);
+    // mathisen_sse();
+    // size_t volume_mathisen = counter;
+    //std::print("Volume mathisen_sse: {}\n", volume_mathisen);
 
     auto mula_sse64 = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
@@ -579,7 +581,7 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     run_and_report("jeaiii_fast_uint64", jeaiii_fast, volume_jeaiii_fast);
     run_and_report("itoa_an_64", itoa_an_64, volume_itoa_an_64);
     run_and_report("itoa_yy_64", itoa_yy_64, volume_itoa_yy_64);
-    run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
+    //run_and_report("mathisen_sse_u64", mathisen_sse, volume_mathisen);
     run_and_report("mula_sse64", mula_sse64, volume_mula_sse64);
     run_and_report("hopman_fast", hopman, volume_hopman_fast);
     run_and_report("naive_onepass", naive_onepass, volume_naive_onepass);
