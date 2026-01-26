@@ -93,7 +93,7 @@ champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent,
 }
 
 template <Variant V>
-int avx512_to_chars(uint64_t value, char *const result) {
+champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const result) {
   if(value < 100000000) { // 10^8
     if constexpr (V == Variant::Homogeneous) {
       if (value < 10000) // 10^4
@@ -103,13 +103,12 @@ int avx512_to_chars(uint64_t value, char *const result) {
     const uint32_t n = fast_digit_count(value);
     if constexpr (V == Variant::Homogeneous) {
       if (value >= 10000000) { // number has 8 digits
-        const __m128i hi = _mm_srli_si128(digits_7_0, 8);
-        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), hi);
+        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), digits_7_0);
         return 8;
       }
     }
-    const __mmask16 mask = (__mmask16)(0xFFFFu << (16 - n));
-    _mm_mask_storeu_epi8(result - 16 + n, mask, digits_7_0);
+    const __mmask16 mask = (__mmask16)((0xFF00u >> n)&0xFF);
+    _mm_mask_storeu_epi8(result - 8 + n, mask, digits_7_0);
     return n;
   }
 
@@ -127,6 +126,7 @@ int avx512_to_chars(uint64_t value, char *const result) {
     return n;
   }
 
+  // Only numbers >= 10^16 go to this path
   if constexpr (V == Variant::Homogeneous) {
     const auto [q, r] = digits::div10e16(value); // 1..1844, 0..(10^16-1)
     char *p = digits::write_one_two_three_or_four_digits_10000(result, q);
