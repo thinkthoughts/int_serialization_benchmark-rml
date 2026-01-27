@@ -357,17 +357,13 @@ champagne_lemire_really_inline int mula_sse64(uint64_t v, char *const result) {
 
   __m128i raw = mula_sse64_16digits_raw(v);
 
-  // Leading-zero detection using movemask + ctz (from original Mula)
-  // Compare each byte to zero; movemask gives a bit per byte; ctz finds first non-zero
-  uint16_t mask = static_cast<uint16_t>(
-      ~_mm_movemask_epi8(_mm_cmpeq_epi8(raw, _mm_setzero_si128())));
-  int offset = __builtin_ctz(mask | 0x8000);
-
-  // Convert to ASCII and store directly at result - offset
+  // Count digits using fast_digit_count, then use AVX-512 masked store
+  const uint32_t n = fast_digit_count(v);
   const __m128i ascii0 = _mm_set1_epi8('0');
   __m128i ascii = _mm_add_epi8(raw, ascii0);
-  _mm_storeu_si128(reinterpret_cast<__m128i*>(result - offset), ascii);
-  return 16 - offset;
+  const __mmask16 store_mask = (__mmask16)(0xFFFFu << (16 - n));
+  _mm_mask_storeu_epi8(result - 16 + n, store_mask, ascii);
+  return n;
 }
 
 } // namespace baselines_int
