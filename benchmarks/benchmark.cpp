@@ -1,3 +1,5 @@
+
+#if defined(__x86_64__) || defined(_M_X64)
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -542,7 +544,6 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     mathisen_sse();
     size_t volume_mathisen = counter;
     std::print("Volume mathisen_sse: {}\n", volume_mathisen);
-
     auto mula_sse64 = [&]() {
       for (size_t i = 0; i < data.size(); ++i)
         counter += baselines_int::mula_sse64(data[i], buffer);
@@ -751,3 +752,12 @@ int main(int argc, char **argv) {
       run_benchmark(vec, av);
   }, data);
 }
+
+#else // defined(__x86_64__) || defined(_M_X64)
+#include <cstdlib>
+#include <print>
+int main() {
+  std::print("This benchmark requires an x86-64 architecture with AVX2 support.\n");
+  return EXIT_FAILURE;
+}
+#endif // defined(__x86_64__) || defined(_M_X64)

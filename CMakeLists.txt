@@ -69,7 +69,7 @@ add_executable(benchmark
 target_compile_options(benchmark PRIVATE ${PROJECT_WARNINGS})
 target_link_libraries(benchmark PRIVATE cxxopts)
 
-if (NOT CYGWIN)
+if (NOT CYGWIN AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   set(ABSL_PROPAGATE_CXX_STD ON)
   set(ABSL_ENABLE_INSTALL OFF)
   set(ABSL_RUN_TEST OFF CACHE INTERNAL "")
@@ -94,9 +94,21 @@ else()
   target_compile_definitions(benchmark PRIVATE ABSEIL_SUPPORTED=0)
 endif()
 
+option(BENCHMARK_SANITIZE "Sanitize memory" OFF)
+
+
+
 add_executable(tester src/tester.cpp)
 target_compile_options(tester PRIVATE ${PROJECT_WARNINGS})
 
-if(NOT CMAKE_BUILD_TYPE)
+
+if(BENCHMARK_SANITIZE)
+  message(STATUS "Enabling AddressSanitizer")
+  target_compile_options(benchmark PUBLIC -fsanitize=address  -fno-omit-frame-pointer -fno-sanitize-recover=all)
+  target_compile_definitions(benchmark PUBLIC ASAN_OPTIONS=detect_leaks=1)
+  target_link_libraries(benchmark PUBLIC -fsanitize=address  -fno-omit-frame-pointer -fno-sanitize-recover=all)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES AND NOT BENCHMARK_SANITIZE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
