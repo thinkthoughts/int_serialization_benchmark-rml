@@ -757,7 +757,7 @@ int main(int argc, char **argv) {
 #include <cstdlib>
 #include <print>
 int main() {
-  std::print("This benchmark requires an x86-64 architecture with AVX2 support.\n");
+  std::print("This benchmark requires an x86-64 architecture.\n");
   return EXIT_FAILURE;
 }
 #endif // defined(__x86_64__) || defined(_M_X64)
