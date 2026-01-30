@@ -161,7 +161,7 @@ champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const r
         return to_chars_small<V>(value, result);
     }
 
-    if (value >= 10000000000000000ULL) [[unlikely]] {
+    if (value >= 10000000000000000ULL) {
         return to_chars_large<V>(value, result);
     }
 
