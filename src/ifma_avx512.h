@@ -113,24 +113,14 @@ static const __m512i ifma_const = _mm512_setr_epi64(
   0x000000068db8bac72, 0x0000004189374bc6b, 0x0000028f5c28f5c29, 0x0000199999999999a
 );
 
-champagne_lemire_really_inline __m128i to_string_avx512ifma_8digits(uint64_t n) {
+champagne_lemire_really_inline __m512i to_string_avx512ifma_8digits(uint64_t n) {
   __m512i bcstq_l   = _mm512_set1_epi64(n);
   __m512i zmmzero   = _mm512_castsi128_si512(_mm_cvtsi64_si128(0x01A1A400));
   __m512i zmmTen    = _mm512_set1_epi64(10);
   __m512i asciiZero = _mm512_set1_epi64('0');
-
   __m512i lowbits_l  = _mm512_madd52lo_epu64(zmmzero, bcstq_l, ifma_const);
   __m512i highbits_l = _mm512_madd52hi_epu64(asciiZero, zmmTen, lowbits_l);
-
-  __m128i bytes = _mm512_cvtepi64_epi8(highbits_l); // q0..q7 -> bytes[0..7]
-  __m128i digits_7_0 = _mm_shuffle_epi8(bytes,
-      _mm_setr_epi8(
-          0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,  // zero out bytes 8..15
-          0, 1, 2, 3, 4, 5, 6, 7                   // out[7..0] = in[0..7] → reverse
-      )
-  );
-
-  return digits_7_0;
+  return highbits_l;
 }
 
 // caller is responsible for providing a buffer of at least 16 bytes
