@@ -50,7 +50,7 @@ champagne_lemire_really_inline int avx512_to_chars(T mantissa, int32_t exponent,
     exp_index = 17; // 16 digits + dot
   } else {
     __m128i digits_15_0 = mantissa <= 99'999'999 ?
-        to_string_avx512ifma_8digits(mantissa) :
+        _mm512_cvtusepi64_epi8(to_string_avx512ifma_8digits(mantissa)) :
         to_string_avx512ifma(mantissa);
 
     const uint32_t number_of_digits = fast_digit_count(mantissa);
@@ -99,16 +99,16 @@ champagne_lemire_really_inline int avx512_to_chars(uint64_t value, char *const r
       if (value < 10000) // 10^4
         return digits::write_one_two_three_or_four_digits_10000(result, value) - result;
     }
-    const __m128i digits_7_0 = to_string_avx512ifma_8digits(value);
+    const __m512i digits_7_0 = to_string_avx512ifma_8digits(value);
     const uint32_t n = fast_digit_count(value);
     if constexpr (V == Variant::Homogeneous) {
       if (value >= 10000000) { // number has 8 digits
-        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), digits_7_0);
+        _mm_storeu_si64(reinterpret_cast<__m128i*>(result), _mm512_cvtusepi64_epi8(digits_7_0));
         return 8;
       }
     }
-    const __mmask16 mask = (__mmask16)((0xFF00u >> n)&0xFF);
-    _mm_mask_storeu_epi8(result - 8 + n, mask, digits_7_0);
+    const __mmask8 mask = (__mmask8)(0xFF00u >> n);
+    _mm512_mask_cvtusepi64_storeu_epi8(result - 8 + n, mask, digits_7_0);
     return n;
   }
 
