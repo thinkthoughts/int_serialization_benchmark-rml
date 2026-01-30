@@ -6,15 +6,16 @@ Similar to the itoa-u64-fixed-length.png figure in ibireme/c_numconv_benchmark.
 
 import sys
 import re
+import argparse
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 
 # Algorithm list - same as table script
 ALGORITHMS = [
-    ('avx-512\\+champagne_lemire', 'AVX-512 (ours)'),
+    ('avx-512\\+champagne_lemire', 'Champagne--Lemire'),
     ('jeaiii_fast_uint64', 'jeaiii'),
     ('itoa_yy_64', 'yy'),
     ('itoa_an_64', 'AppNexus'),
@@ -24,6 +25,15 @@ ALGORITHMS = [
     ('mathisen_sse_u64', 'Mathisen SSE'),
     ('hopman_fast', 'Hopman'),
     ('naive_onepass', 'Naive'),
+]
+
+# Simplified algorithm list for main paper (5 key algorithms)
+ALGORITHMS_SIMPLIFIED = [
+    ('avx-512\\+champagne_lemire', 'Champagne--Lemire'),
+    ('jeaiii_fast_uint64', 'jeaiii'),
+    ('itoa_yy_64', 'yy'),
+    ('std::to_chars', 'std::to_chars'),
+    ('mula_sse64', 'Mula SSE64'),
 ]
 
 # Digit lengths to include (1-20 digits for uint64_t)
@@ -107,7 +117,17 @@ def auto_detect_cpu_model(output_dir: Path, compiler: str) -> Optional[str]:
     return None
 
 
-def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Optional[str]) -> Dict[int, Dict[str, float]]:
+def get_available_compilers(output_dir: Path) -> List[str]:
+    """Detect which compilers have data available."""
+    compilers = []
+    for compiler in ["g++", "clang++"]:
+        pattern = f"*_{compiler}_*.raw"
+        if list(output_dir.glob(pattern)):
+            compilers.append(compiler)
+    return compilers
+
+
+def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Optional[str], algorithms: List[Tuple[str, str]]) -> Dict[int, Dict[str, float]]:
     """
     Collect performance data for all digit lengths.
     Returns: {digit_length: {algorithm_name: ns/d_value}}
@@ -139,7 +159,7 @@ def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Opt
 
         # Extract metrics for all algorithms
         digit_data = {}
-        for algo_pattern, algo_display in ALGORITHMS:
+        for algo_pattern, algo_display in algorithms:
             metrics = parse_algorithm_metrics(selected_file, algo_pattern)
             if metrics and 'ns/d' in metrics:
                 digit_data[algo_display] = metrics['ns/d']
@@ -206,43 +226,108 @@ def generate_figure(data: Dict[int, Dict[str, float]], output_path: Path, metric
     plt.close()
 
 
-def main():
-    compiler = sys.argv[1] if len(sys.argv) > 1 else "g++"
-    cpu_model = sys.argv[2] if len(sys.argv) > 2 else None
+def parse_args():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Generate digit length comparison figure from benchmark outputs")
+    parser.add_argument(
+        "--compiler",
+        default=None,
+        help="Compiler to use for finding output files. If not specified, generates figures for all available compilers.")
+    parser.add_argument(
+        "--cpu-model",
+        default=None,
+        help="CPU model prefix in filenames (auto-detected if not specified)")
+    parser.add_argument(
+        "--input-dir",
+        default="./outputs",
+        help="Directory containing raw benchmark files (default: ./outputs)")
+    parser.add_argument(
+        "--output-dir",
+        default="./outputs",
+        help="Directory to save generated figure (default: ./outputs)")
+    parser.add_argument(
+        "--simplified",
+        action="store_true",
+        help="Generate simplified figure with 5 key algorithms for main paper")
+    return parser.parse_args()
 
-    output_dir = Path("./outputs")
-    figure_path = output_dir / f"figure_digit_length_comparison_{compiler}.pdf"
 
-    if not output_dir.exists():
-        print(f"ERROR: Output directory not found: {output_dir}")
-        sys.exit(1)
+def process_compiler(compiler: str, cpu_model: Optional[str], input_dir: Path, output_dir: Path, simplified: bool = False):
+    """Process data and generate figure for a single compiler."""
+    suffix = "_simplified" if simplified else ""
+    figure_path = output_dir / f"figure_digit_length_comparison_{compiler}{suffix}.pdf"
 
     # Auto-detect CPU model if not provided
-    if cpu_model is None:
-        cpu_model = auto_detect_cpu_model(output_dir, compiler)
-        if cpu_model:
-            print(f"Auto-detected CPU model: {cpu_model}")
+    detected_cpu = cpu_model
+    if detected_cpu is None:
+        detected_cpu = auto_detect_cpu_model(input_dir, compiler)
+        if detected_cpu:
+            print(f"Auto-detected CPU model: {detected_cpu}")
 
-    print("Collecting data for digit-length comparison...")
-    print(f"Reading from: {output_dir}")
+    print(f"Reading from: {input_dir}")
     print(f"Compiler: {compiler}")
-    if cpu_model:
-        print(f"CPU model: {cpu_model}")
+    if detected_cpu:
+        print(f"CPU model: {detected_cpu}")
     else:
         print("No CPU model (looking for files without CPU prefix)")
     print()
 
     # Collect data
-    data = collect_data_by_digit_length(output_dir, compiler, cpu_model)
+    algorithms = ALGORITHMS_SIMPLIFIED if simplified else ALGORITHMS
+    data = collect_data_by_digit_length(input_dir, compiler, detected_cpu, algorithms)
 
     if not data:
-        print("ERROR: No data collected. Make sure benchmark outputs exist for uniform-Ndigit-1M datasets.")
-        sys.exit(1)
+        print(f"ERROR: No data collected for {compiler}. Make sure benchmark outputs exist for uniform-Ndigit-1M datasets.")
+        return False
 
-    print(f"\nCollected data for {len(data)} digit lengths")
+    algo_count = len(algorithms)
+    print(f"Collected data for {len(data)} digit lengths ({algo_count} algorithms)")
 
     # Generate figure
     generate_figure(data, figure_path)
+    return True
+
+
+def main():
+    args = parse_args()
+
+    input_dir = Path(args.input_dir)
+    output_dir = Path(args.output_dir)
+
+    if not input_dir.exists():
+        print(f"ERROR: Input directory not found: {input_dir}")
+        sys.exit(1)
+
+    # Determine which compilers to process
+    if args.compiler:
+        compilers = [args.compiler]
+    else:
+        compilers = get_available_compilers(input_dir)
+        if not compilers:
+            print("ERROR: No compiler data found in output directory.")
+            print("Run benchmarks first or specify --compiler explicitly.")
+            sys.exit(1)
+        print(f"Auto-detected compilers with data: {', '.join(compilers)}\n")
+
+    print("Generating digit-length comparison figures...")
+    if args.simplified:
+        print("Mode: SIMPLIFIED (5 algorithms for main paper)")
+    else:
+        print("Mode: FULL (all 10 algorithms)")
+
+    success_count = 0
+    for compiler in compilers:
+        print(f"\n{'='*60}")
+        print(f"Processing compiler: {compiler}")
+        print('='*60)
+        if process_compiler(compiler, args.cpu_model, input_dir, output_dir, args.simplified):
+            success_count += 1
+
+    if success_count == 0:
+        sys.exit(1)
+
+    print(f"\nGenerated {success_count} figure(s) successfully.")
 
 
 if __name__ == "__main__":

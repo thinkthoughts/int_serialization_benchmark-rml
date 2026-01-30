@@ -9,7 +9,7 @@ generate_raw_outputs.py and creates a LaTeX table for the paper.
 
 import re
 from pathlib import Path
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, List, Tuple
 import sys
 import argparse
 from utils import get_cpu_model
@@ -139,8 +139,8 @@ def get_dataset_results(base_name: str, compiler: str,
 
 
 def format_time_cell(time: float, is_winner: bool) -> str:
-    """Format a time value for LaTeX table, bolding if winner."""
-    formatted = f"{time:.2f}"
+    """Format a time value for LaTeX table with 3 significant digits, bolding if winner."""
+    formatted = f"{time:.3g}"
     if is_winner:
         return f"\\textbf{{{formatted}}}"
     return formatted
@@ -213,24 +213,58 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
     return "\n".join(lines)
 
 
+def get_available_compilers(output_dir: Path) -> List[str]:
+    """Detect which compilers have data available."""
+    compilers = []
+    for compiler in ["g++", "clang++"]:
+        pattern = f"*_{compiler}_*.raw"
+        if list(output_dir.glob(pattern)):
+            compilers.append(compiler)
+    return compilers
+
+
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Generate LaTeX table from benchmark outputs")
     parser.add_argument(
         "--compiler",
-        default="g++",
-        help="Compiler to use for finding output files (default: g++)")
+        default=None,
+        help="Compiler to use for finding output files. If not specified, generates tables for all available compilers.")
     parser.add_argument(
         "--input-dir",
         default="./outputs",
         help="Directory containing raw benchmark files (default: ./outputs)")
     parser.add_argument(
         "--output-file",
-        default="table_homogeneous_vs_heterogeneous.tex",
-        help="Output LaTeX file name (default: table_homogeneous_vs_heterogeneous.tex)"
+        default="table_homogeneous_vs_heterogeneous",
+        help="Output LaTeX file base name without extension (default: table_homogeneous_vs_heterogeneous)"
     )
     return parser.parse_args()
+
+
+def process_compiler(compiler: str, input_dir: str, output_base: str) -> bool:
+    """Process data and generate table for a single compiler."""
+    print(f"Reading from: {input_dir}/")
+    print(f"Compiler: {compiler}\n")
+
+    # Generate table
+    latex_table = generate_latex_table(compiler, input_dir)
+
+    # Save to file in input directory
+    output_path = Path(input_dir) / f"{output_base}_{compiler}.tex"
+    with open(output_path, 'w') as f:
+        f.write(latex_table)
+
+    print(f"\nLaTeX table generated: {output_path}")
+    print("\nTable preview:")
+    print("=" * 80)
+    print(latex_table)
+    print("=" * 80)
+
+    print("\nYou can include this table in your LaTeX document with:")
+    print(f"  \\input{{{output_path}}}")
+    return True
 
 
 def main():
@@ -245,26 +279,31 @@ def main():
         )
         sys.exit(1)
 
+    # Determine which compilers to process
+    if args.compiler:
+        compilers = [args.compiler]
+    else:
+        compilers = get_available_compilers(Path(args.input_dir))
+        if not compilers:
+            print("ERROR: No compiler data found in output directory.")
+            print("Run benchmarks first or specify --compiler explicitly.")
+            sys.exit(1)
+        print(f"Auto-detected compilers with data: {', '.join(compilers)}\n")
+
     print("Parsing benchmark outputs...")
-    print(f"Reading from: {args.input_dir}/")
-    print(f"Compiler: {args.compiler}\n")
 
-    # Generate table
-    latex_table = generate_latex_table(args.compiler, args.input_dir)
+    success_count = 0
+    for compiler in compilers:
+        print(f"\n{'='*60}")
+        print(f"Processing compiler: {compiler}")
+        print('='*60)
+        if process_compiler(compiler, args.input_dir, args.output_file):
+            success_count += 1
 
-    # Save to file in input directory
-    output_path = Path(args.input_dir) / args.output_file
-    with open(output_path, 'w') as f:
-        f.write(latex_table)
+    if success_count == 0:
+        sys.exit(1)
 
-    print(f"\nLaTeX table generated: {output_path}")
-    print("\nTable preview:")
-    print("=" * 80)
-    print(latex_table)
-    print("=" * 80)
-
-    print("\nYou can include this table in your LaTeX document with:")
-    print(f"  \\input{{{output_path}}}")
+    print(f"\nGenerated {success_count} table(s) successfully.")
 
 
 if __name__ == "__main__":

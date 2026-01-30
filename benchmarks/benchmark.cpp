@@ -1,3 +1,5 @@
+
+#if defined(__x86_64__) || defined(_M_X64)
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -416,50 +418,53 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
   auto run_and_report = [&](auto&& name, auto&& func, size_t volume) {
     std::print("\n");
     for (size_t i = 0; i < Number_Benchmark_Runs; ++i)
-      pretty_print(data.size(), volume, name, bench(func));
+      pretty_print(volume, data.size() * sizeof(T), name, bench(func));
   };
 
   if constexpr (std::is_same_v<T, decimal_float>) {
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
     auto avx512l = [&data, &counter, &buffer]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
         buffer[0] = '-';
         start += data[i].sign ? 1 : 0;
-        counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
+        local_counter += avx512_to_chars(data[i].mantissa, data[i].exponent, start)
                  + (data[i].sign ? 1 : 0);
       }
+      counter = local_counter;
     };
-    counter = 0;
     avx512l();
     size_t volume512 = counter;
     std::print("Volume 512: {}\n", volume512);
 #endif
     auto scalar = [&data, &counter, &buffer]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
         buffer[0] = '-';
         start += data[i].sign ? 1 : 0;
-        counter += scalar_to_chars(data[i].mantissa, data[i].exponent, start)
+        local_counter += scalar_to_chars(data[i].mantissa, data[i].exponent, start)
                  + (data[i].sign ? 1 : 0);
       }
+      counter = local_counter;
     };
-    counter = 0;
     scalar();
     size_t volume_scalar = counter;
     std::print("Volume scalar: {}\n", volume_scalar);
 
     auto drag = [&data, &counter, &buffer]() {
       using jkj::dragonbox::detail::to_chars;
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i) {
         char *start = buffer;
         buffer[0] = '-';
         start += data[i].sign ? 1 : 0;
-        counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
+        local_counter += (to_chars(data[i].mantissa, data[i].exponent, start) - buffer)
                  + (data[i].sign ? 1 : 0);
       }
+      counter = local_counter;
     };
-    counter = 0;
     drag();
     size_t volume_drag = counter;
     std::print("Volume drag: {}\n", volume_drag);
@@ -473,15 +478,16 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
     auto avx512l = [&data, &counter, &buffer, &algo_variant]() {
       if (algo_variant == Variant::Auto)
         algo_variant = detect_variant(data);
+      uint64_t local_counter = 0;
       if (algo_variant == Variant::Homogeneous) {
         for (size_t i = 0; i < data.size(); ++i)
-          counter += avx512_to_chars<Variant::Homogeneous>(data[i], buffer);
+          local_counter += avx512_to_chars<Variant::Homogeneous>(data[i], buffer);
       } else {
         for (size_t i = 0; i < data.size(); ++i)
-          counter += avx512_to_chars<Variant::Heterogeneous>(data[i], buffer);
+          local_counter += avx512_to_chars<Variant::Heterogeneous>(data[i], buffer);
       }
+      counter = local_counter;
     };
-    counter = 0;
     Variant detected = detect_variant(data);
     std::print("Auto variant would select: {}\n",
         detected == Variant::Homogeneous ? "Homogeneous" : "Heterogeneous");
@@ -491,82 +497,89 @@ void run_benchmark(const std::vector<T> &data, [[maybe_unused]] Variant algo_var
 #endif
 
     auto standard_to_chars = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += std::to_chars(buffer, buffer + sizeof(buffer), data[i]).ptr - buffer;
+        local_counter += std::to_chars(buffer, buffer + sizeof(buffer), data[i]).ptr - buffer;
+      counter = local_counter;
     };
-    counter = 0;
     standard_to_chars();
     size_t volume_standard = counter;
     std::print("Volume std::to_chars: {}\n", volume_standard);
 
     auto absl_fastint = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::absl_fastint(data[i], buffer);
+        local_counter += baselines_int::absl_fastint(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     absl_fastint();
     size_t volume_absl_fastint = counter;
     std::print("Volume absl_fastint: {}\n", volume_absl_fastint);
 
     auto jeaiii_fast = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::jeaiii_fast_uint64(data[i], buffer);
+        local_counter += baselines_int::jeaiii_fast_uint64(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     jeaiii_fast();
     size_t volume_jeaiii_fast = counter;
     std::print("Volume jeaiii_fast_uint64: {}\n", volume_jeaiii_fast);
 
     auto itoa_an_64 = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::itoa_an_64(data[i], buffer);
+        local_counter += baselines_int::itoa_an_64(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     itoa_an_64();
     size_t volume_itoa_an_64 = counter;
     std::print("Volume itoa_an_64: {}\n", volume_itoa_an_64);
 
     auto itoa_yy_64 = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::itoa_yy_64(data[i], buffer);
+        local_counter += baselines_int::itoa_yy_64(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     itoa_yy_64();
     size_t volume_itoa_yy_64 = counter;
     std::print("Volume itoa_yy_64: {}\n", volume_itoa_yy_64);
-
     auto mathisen_sse = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::mathisen_sse(data[i], buffer);
+        local_counter += baselines_int::mathisen_sse(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     mathisen_sse();
     size_t volume_mathisen = counter;
     std::print("Volume mathisen_sse: {}\n", volume_mathisen);
-
     auto mula_sse64 = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::mula_sse64(data[i], buffer);
+        local_counter += baselines_int::mula_sse64(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     mula_sse64();
     size_t volume_mula_sse64 = counter;
     std::print("Volume mula_sse64: {}\n", volume_mula_sse64);
 
     auto hopman = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::hopman_fast(data[i], buffer);
+        local_counter += baselines_int::hopman_fast(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     hopman();
     size_t volume_hopman_fast = counter;
     std::print("Volume hopman_fast: {}\n", volume_hopman_fast);
 
     auto naive_onepass = [&]() {
+      uint64_t local_counter = 0;
       for (size_t i = 0; i < data.size(); ++i)
-        counter += baselines_int::naive(data[i], buffer);
+        local_counter += baselines_int::naive(data[i], buffer);
+      counter = local_counter;
     };
-    counter = 0;
     naive_onepass();
     size_t volume_naive_onepass = counter;
     std::print("Volume naive_onepass: {}\n", volume_naive_onepass);
@@ -752,3 +765,12 @@ int main(int argc, char **argv) {
       run_benchmark(vec, av);
   }, data);
 }
+
+#else // defined(__x86_64__) || defined(_M_X64)
+#include <cstdlib>
+#include <print>
+int main() {
+  std::print("This benchmark requires an x86-64 architecture.\n");
+  return EXIT_FAILURE;
+}
+#endif // defined(__x86_64__) || defined(_M_X64)

@@ -8,7 +8,7 @@ table showing all algorithms across multiple datasets with key performance metri
 
 import re
 from pathlib import Path
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, List, Tuple
 import argparse
 from utils import get_cpu_model
 import sys
@@ -17,7 +17,7 @@ import sys
 # Format: (pattern_in_output, display_name)
 # Ordered: ours first, most competitive next, then by approximate performance
 ALGORITHMS = [
-    ('avx-512\\+champagne_lemire', 'AVX-512 (ours)'),
+    ('avx-512\\+champagne_lemire', 'Champagne--Lemire'),
     ('jeaiii_fast_uint64', 'jeaiii'),
     ('itoa_yy_64', 'yy'),
     ('itoa_an_64', 'AppNexus'),
@@ -158,11 +158,12 @@ def get_algorithm_results_for_dataset(dataset_name: str, compiler: str,
 
 
 def format_metric_cell(value: Optional[float], is_best: bool = False) -> str:
-    """Format a metric value for LaTeX table, bolding if best."""
+    """Format a metric value for LaTeX table with 3 significant digits, bolding if best."""
     if value is None:
         return "---"
 
-    formatted = f"{value:.2f}"
+    # Format to 3 significant digits
+    formatted = f"{value:.3g}"
     if is_best:
         return f"\\textbf{{{formatted}}}"
     return formatted
@@ -184,14 +185,14 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
         else:
             all_data[dataset_display] = results
 
-    # Get AVX-512 (ours) baseline values for speedup calculation
-    avx512_display = ALGORITHMS[0][1]  # "AVX-512 (ours)"
-    avx512_values: Dict[Tuple[str, str], float] = {}  # (dataset, metric) -> value
+    # Get Champagne--Lemire baseline values for speedup calculation
+    baseline_display = ALGORITHMS[0][1]  # "Champagne--Lemire"
+    baseline_values: Dict[Tuple[str, str], float] = {}  # (dataset, metric) -> value
     for dataset_display, dataset_results in all_data.items():
-        avx512_metrics = dataset_results.get(avx512_display, {})
+        baseline_metrics = dataset_results.get(baseline_display, {})
         for metric_key, _, _ in METRICS:
-            if metric_key in avx512_metrics:
-                avx512_values[(dataset_display, metric_key)] = avx512_metrics[metric_key]
+            if metric_key in baseline_metrics:
+                baseline_values[(dataset_display, metric_key)] = baseline_metrics[metric_key]
 
     # Find best values for each (dataset, metric) combination
     best_values: Dict[Tuple[str, str], float] = {}
@@ -206,7 +207,7 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
     lines.append(r"\begin{table}")
     lines.append(r"  \caption{Performance comparison of integer-to-string algorithms across datasets.")
     lines.append(r"  Metrics: ns/d = nanoseconds, i/d = instructions, c/d = cycles per character.")
-    lines.append(r"  \textbf{Bold} indicates fastest; \% shows difference vs AVX-512 (positive = slower).}%")
+    lines.append(r"  \textbf{Bold} indicates fastest; \% shows difference vs Champagne--Lemire (positive = slower).}%")
     lines.append(r"  \label{tab:algorithm_comparison}")
     lines.append(r"  \centering")
     lines.append(r"  \small")
@@ -248,12 +249,12 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
                 value = algo_metrics.get(metric_key)
                 row_parts.append(format_metric_cell(value, is_best=False))
 
-                # Calculate speedup percentage vs AVX-512
-                avx512_value = avx512_values.get((dataset_display, metric_key))
-                if value is not None and avx512_value is not None and avx512_value > 0:
-                    # Positive % = slower than AVX-512, negative % = faster than AVX-512
-                    speedup_pct = ((value - avx512_value) / avx512_value) * 100
-                    if algo_idx == 0:  # AVX-512 itself
+                # Calculate speedup percentage vs Champagne--Lemire
+                baseline_value = baseline_values.get((dataset_display, metric_key))
+                if value is not None and baseline_value is not None and baseline_value > 0:
+                    # Positive % = slower than baseline, negative % = faster than baseline
+                    speedup_pct = ((value - baseline_value) / baseline_value) * 100
+                    if algo_idx == 0:  # Champagne--Lemire itself
                         row_parts.append("-")  # No speedup comparison for baseline
                     else:
                         row_parts.append(f"{speedup_pct:+.1f}")
@@ -278,23 +279,57 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
     return "\n".join(lines)
 
 
+def get_available_compilers(output_dir: Path) -> List[str]:
+    """Detect which compilers have data available."""
+    compilers = []
+    for compiler in ["g++", "clang++"]:
+        pattern = f"*_{compiler}_*.raw"
+        if list(output_dir.glob(pattern)):
+            compilers.append(compiler)
+    return compilers
+
+
 def parse_args():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Generate algorithm comparison LaTeX table from benchmark outputs")
     parser.add_argument(
         "--compiler",
-        default="g++",
-        help="Compiler to use for finding output files (default: g++)")
+        default=None,
+        help="Compiler to use for finding output files. If not specified, generates tables for all available compilers.")
     parser.add_argument(
         "--input-dir",
         default="./outputs",
         help="Directory containing raw benchmark files (default: ./outputs)")
     parser.add_argument(
         "--output-file",
-        default="table_algorithm_comparison.tex",
-        help="Output LaTeX file name (default: table_algorithm_comparison.tex)")
+        default="table_algorithm_comparison",
+        help="Output LaTeX file base name without extension (default: table_algorithm_comparison)")
     return parser.parse_args()
+
+
+def process_compiler(compiler: str, input_dir: str, output_base: str) -> bool:
+    """Process data and generate table for a single compiler."""
+    print(f"Reading from: {input_dir}/")
+    print(f"Compiler: {compiler}\n")
+
+    # Generate table
+    latex_table = generate_latex_table(compiler, input_dir)
+
+    # Save to file in input directory
+    output_path = Path(input_dir) / f"{output_base}_{compiler}.tex"
+    with open(output_path, 'w') as f:
+        f.write(latex_table)
+
+    print(f"\nLaTeX table generated: {output_path}")
+    print("\nTable preview:")
+    print("=" * 80)
+    print(latex_table)
+    print("=" * 80)
+
+    print("\nYou can include this table in your LaTeX document with:")
+    print(f"  \\input{{{output_path}}}")
+    return True
 
 
 def main():
@@ -307,26 +342,31 @@ def main():
         print("Please run benchmarks and save outputs first.")
         sys.exit(1)
 
+    # Determine which compilers to process
+    if args.compiler:
+        compilers = [args.compiler]
+    else:
+        compilers = get_available_compilers(Path(args.input_dir))
+        if not compilers:
+            print("ERROR: No compiler data found in output directory.")
+            print("Run benchmarks first or specify --compiler explicitly.")
+            sys.exit(1)
+        print(f"Auto-detected compilers with data: {', '.join(compilers)}\n")
+
     print("Parsing benchmark outputs for algorithm comparison...")
-    print(f"Reading from: {args.input_dir}/")
-    print(f"Compiler: {args.compiler}\n")
 
-    # Generate table
-    latex_table = generate_latex_table(args.compiler, args.input_dir)
+    success_count = 0
+    for compiler in compilers:
+        print(f"\n{'='*60}")
+        print(f"Processing compiler: {compiler}")
+        print('='*60)
+        if process_compiler(compiler, args.input_dir, args.output_file):
+            success_count += 1
 
-    # Save to file in input directory
-    output_path = Path(args.input_dir) / args.output_file
-    with open(output_path, 'w') as f:
-        f.write(latex_table)
+    if success_count == 0:
+        sys.exit(1)
 
-    print(f"\nLaTeX table generated: {output_path}")
-    print("\nTable preview:")
-    print("=" * 80)
-    print(latex_table)
-    print("=" * 80)
-
-    print("\nYou can include this table in your LaTeX document with:")
-    print(f"  \\input{{{output_path}}}")
+    print(f"\nGenerated {success_count} table(s) successfully.")
 
 
 if __name__ == "__main__":
