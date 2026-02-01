@@ -22,7 +22,7 @@ Python 3.8+ installed
 **Important**: All scripts should be run from the project root directory, not from within the `scripts/` folder.
 
 ```bash
-cd /path/to/float_string_chars-gen_bench
+cd /path/to/int_serialization_bench
 ./scripts/generate_raw_outputs.py [compiler]
 ```
 
