@@ -42,9 +42,9 @@ DATASETS = [
 # Metrics to extract
 # Format: (pattern_suffix, column_header, latex_unit)
 METRICS = [
-    ('ns/d', 'ns/d', 'ns/d'),  # nanoseconds per digit (character)
-    ('i/d', 'i/d', 'ins/d'),   # instructions per digit
-    ('c/d', 'c/d', 'cyc/d'),   # cycles per digit
+    ('ns/n', 'ns/n', 'ns/n'),  # nanoseconds per number
+    ('i/n', 'i/n', 'ins/n'),   # instructions per number
+    ('c/n', 'c/n', 'cyc/n'),   # cycles per number
 ]
 
 
@@ -62,17 +62,17 @@ def parse_algorithm_metrics(file_path: Path, algorithm_pattern: str) -> Optional
         return None
 
     # Build regex pattern to capture the full line for this algorithm
-    # Example: "avx-512+champagne_lemire  :   1.94 ns/d   5.48 GHz  10.64 c/d ..."
+    # Example: "avx-512+champagne_lemire  :   1.94 ns/n   5.48 GHz  10.64 c/n ..."
     escaped_pattern = algorithm_pattern
-    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/d\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/d\s*([\d.]+)\s*i/d'
+    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/n\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/n\s*([\d.]+)\s*i/n'
 
     match = re.search(pattern, content)
     if not match:
         return None
     return {
-        'ns/d': float(match.group(1)),
-        'c/d': float(match.group(2)),
-        'i/d': float(match.group(3)),
+        'ns/n': float(match.group(1)),
+        'c/n': float(match.group(2)),
+        'i/n': float(match.group(3)),
     }
 
 
@@ -206,14 +206,14 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
     # Table header
     lines.append(r"\begin{table}")
     lines.append(r"  \caption{Performance comparison of integer-to-string algorithms across datasets.")
-    lines.append(r"  Metrics: ns/d = nanoseconds, i/d = instructions, c/d = cycles per character.")
+    lines.append(r"  Metrics: ns/n = nanoseconds, i/n = instructions, c/n = cycles per number.")
     lines.append(r"  \textbf{Bold} indicates fastest; \% shows difference vs Champagne--Lemire (positive = slower).}%")
     lines.append(r"  \label{tab:algorithm_comparison}")
     lines.append(r"  \centering")
     lines.append(r"  \small")
     lines.append(r"  \begin{tabular}{llrrrrrr}")
     lines.append(r"    \toprule")
-    lines.append(r"    Algorithm & Dataset & ns/d & \% & i/d & \% & c/d & \% \\")
+    lines.append(r"    Algorithm & Dataset & ns/n & \% & i/n & \% & c/n & \% \\")
     lines.append(r"    \midrule")
 
     # Data rows - outer loop: algorithms, inner loop: datasets
@@ -232,9 +232,9 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
             else:
                 row_parts.append("")
 
-            # Check if this algorithm has the best ns/d for this dataset
-            value_nsd = algo_metrics.get('ns/d')
-            best_nsd = best_values.get((dataset_display, 'ns/d'))
+            # Check if this algorithm has the best ns/n for this dataset
+            value_nsd = algo_metrics.get('ns/n')
+            best_nsd = best_values.get((dataset_display, 'ns/n'))
             is_best_algo = (value_nsd is not None and best_nsd is not None and
                             abs(value_nsd - best_nsd) < 0.01)
 

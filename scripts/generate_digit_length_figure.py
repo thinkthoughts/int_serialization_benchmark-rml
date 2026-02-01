@@ -55,15 +55,15 @@ def parse_algorithm_metrics(file_path: Path, algorithm_pattern: str) -> Optional
         return None
 
     escaped_pattern = algorithm_pattern
-    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/d\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/d\s*([\d.]+)\s*i/d'
+    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/n\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/n\s*([\d.]+)\s*i/n'
 
     match = re.search(pattern, content)
     if not match:
         return None
     return {
-        'ns/d': float(match.group(1)),
-        'c/d': float(match.group(2)),
-        'i/d': float(match.group(3)),
+        'ns/n': float(match.group(1)),
+        'c/n': float(match.group(2)),
+        'i/n': float(match.group(3)),
     }
 
 
@@ -130,7 +130,7 @@ def get_available_compilers(output_dir: Path) -> List[str]:
 def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Optional[str], algorithms: List[Tuple[str, str]]) -> Dict[int, Dict[str, float]]:
     """
     Collect performance data for all digit lengths.
-    Returns: {digit_length: {algorithm_name: ns/d_value}}
+    Returns: {digit_length: {algorithm_name: ns/n_value}}
     """
     data = {}
     for digit_length in DIGIT_LENGTHS:
@@ -161,8 +161,8 @@ def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Opt
         digit_data = {}
         for algo_pattern, algo_display in algorithms:
             metrics = parse_algorithm_metrics(selected_file, algo_pattern)
-            if metrics and 'ns/d' in metrics:
-                digit_data[algo_display] = metrics['ns/d']
+            if metrics and 'ns/n' in metrics:
+                digit_data[algo_display] = metrics['ns/n']
 
         if digit_data:
             data[digit_length] = digit_data
@@ -170,7 +170,7 @@ def collect_data_by_digit_length(output_dir: Path, compiler: str, cpu_model: Opt
     return data
 
 
-def generate_figure(data: Dict[int, Dict[str, float]], output_path: Path, metric_name: str = "ns/d"):
+def generate_figure(data: Dict[int, Dict[str, float]], output_path: Path, metric_name: str = "ns/n"):
     """Generate a line plot comparing algorithms across digit lengths."""
     if not data:
         print("ERROR: No data to plot")
