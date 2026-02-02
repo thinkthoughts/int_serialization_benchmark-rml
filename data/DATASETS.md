@@ -1,3 +1,5 @@
+# Integer Datasets
+
 ### stackoverflow_unix_timestamps_integers.txt
 - **Source:** Stack Overflow answers-to-questions temporal network from SNAP (Stanford Network Analysis Project)
 - **URL:** https://snap.stanford.edu/data/sx-stackoverflow-a2q.txt.gz
@@ -20,7 +22,7 @@
 - **Date Downloaded:** January 2026
 - **License:** Available for research use (SNAP datasets, original data from NBER)
 
-### twitter.json
+### twitterjson_integers.txt
 - **Source:** Export of data from Twitter's API
 - **Domain:** Social media data
 - **Digit Length Distribution:** Heterogeneous:
@@ -38,7 +40,7 @@
 - **Count:** 2,108 integers
 - **Description:** JSON file commonly used for benchmarking; integers extracted from Twitter API data; exhibits heterogeneous distribution with significant proportions of small integers (principally 1–3 digits) as well as larger integers (10 and 18 digits)
 
-### citm_catalog.json
+### citm_catalog_integers.txt
 - **Source:** Catalog of events that occurred in a venue part of CitM (Cité de la Musique) in Paris
 - **Domain:** Cultural event catalog
 - **Digit Length Distribution:** Homogeneous:

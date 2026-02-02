@@ -34,7 +34,7 @@ def parse_benchmark_output(file_path: Path) -> Optional[Dict[str, float]]:
     """
     Parse a benchmark output file and extract timing information.
 
-    Returns a dict with algorithm names as keys and ns/d (ns per item) as values.
+    Returns a dict with algorithm names as keys and ns/n (ns per number) as values.
     Returns None if parsing fails.
     """
     try:
@@ -47,8 +47,8 @@ def parse_benchmark_output(file_path: Path) -> Optional[Dict[str, float]]:
     results = {}
 
     # Parse the AVX-512+champagne_lemire line(s)
-    # Format: "avx-512+champagne_lemire              :  X.XX ns/d ..."
-    pattern = r'avx-512\+champagne_lemire\s*:\s*(\d+\.\d+)\s*ns/d'
+    # Format: "avx-512+champagne_lemire              :  X.XX ns/n ..."
+    pattern = r'avx-512\+champagne_lemire\s*:\s*(\d+\.\d+)\s*ns/n'
     matches = re.findall(pattern, content)
 
     if matches:

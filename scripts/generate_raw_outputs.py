@@ -23,26 +23,23 @@ input_files = [
     'data/cit_patents_citing_integers.txt',
 ]
 
-# Synthetic data models to test (comment out to disable)
-# Format: (name, description, args_list)
-synthetic_models = []
-
 # Generate all 20 digit-length datasets for figure (1-digit through 20-digit)
+synthetic_models = []
 for digit_len in range(1, 21):
+    # Format: (name, description, args_list)
     synthetic_models.append((
         f'uniform-{digit_len}digit-1M',
         f'Uniform {digit_len}-digit distribution (1M samples)',
-        ['-i', '-n', '1000000', '-d', 'uniform', '-m', str(digit_len), '-M', str(digit_len)]
+        ['-n', '1000000', '-d', 'uniform', '-m', str(digit_len), '-M', str(digit_len)]
     ))
 
-# Add other synthetic models
 synthetic_models.extend([
     ('uniform-1to20-1M', 'Uniform 1-20 digits distribution (1M samples)',
-     ['-i', '-n', '1000000', '-d', 'uniform']),
+     ['-n', '1000000', '-d', 'uniform']),
     ('natural-8-1M', 'Natural distribution 1-8 digits (1M samples)',
-     ['-i', '-n', '1000000', '-d', 'natural', '-m', '1', '-M', '8']),
+     ['-n', '1000000', '-d', 'natural', '-m', '1', '-M', '8']),
     ('natural-16-1M', 'Natural distribution 1-16 digits (1M samples)',
-     ['-i', '-n', '1000000', '-d', 'natural', '-m', '1', '-M', '16']),
+     ['-n', '1000000', '-d', 'natural', '-m', '1', '-M', '16']),
 ])
 
 # Variant flags to test (comment out to disable)
@@ -51,9 +48,9 @@ variants = [
     'hetero',
 ]
 
-# ============================================================================
-# END CONFIGURATION
-# ============================================================================
+# ====================
+#  END CONFIGURATION
+# ====================
 
 # Dataset categories for selective generation
 # TABLE_DATASETS: used for variant comparison table (homogeneous vs heterogeneous)
@@ -73,13 +70,11 @@ def should_generate_dataset(dataset_base_name, args):
     """Determine if dataset should be generated based on flags."""
     if not args.table and not args.figure:
         return True  # No flags = generate all (backward compatible)
-
-    should = False
     if args.table and dataset_base_name in TABLE_DATASETS:
-        should = True
+        return True
     if args.figure and dataset_base_name in FIGURE_DATASETS:
-        should = True
-    return should
+        return True
+    return False
 
 
 def parse_args():
@@ -122,7 +117,20 @@ def compile_benchmarks(compiler, build_dir, clean=False):
     """Compile the benchmark code with the specified compiler."""
     print(f"Compiling benchmarks with {compiler}...")
 
-    # Clean build directory if requested
+    # Check if we need to clean due to compiler change
+    cmake_cache = os.path.join(build_dir, "CMakeCache.txt")
+    if os.path.exists(cmake_cache):
+        with open(cmake_cache, 'r') as f:
+            cache_content = f.read()
+        # Detect current compiler in cache
+        if compiler == "g++" and "clang++" in cache_content:
+            print(f"Compiler change detected (clang++ -> g++), cleaning build directory")
+            clean = True
+        elif compiler == "clang++" and "/g++" in cache_content and "clang" not in cache_content:
+            print(f"Compiler change detected (g++ -> clang++), cleaning build directory")
+            clean = True
+
+    # Clean build directory if requested or needed
     if clean and os.path.exists(build_dir):
         print(f"Cleaning build directory: {build_dir}")
         shutil.rmtree(build_dir)
@@ -271,7 +279,7 @@ def run_all_benchmarks(compiler, build_dir, output_dir, timeout, args):
         try:
             for variant in variants:
                 label = f"{file_label}-{variant}"
-                cmd_args = ['-i', '-f', actual_path, '-v', variant]
+                cmd_args = ['-f', actual_path, '-v', variant]
                 total_count += 1
                 if run_benchmark(benchmark_executable=benchmark_executable,
                                  output_dir=output_dir,

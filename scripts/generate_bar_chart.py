@@ -65,15 +65,15 @@ def parse_algorithm_metrics(file_path: Path, algorithm_pattern: str) -> Optional
         return None
 
     escaped_pattern = algorithm_pattern
-    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/d\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/d\s*([\d.]+)\s*i/d'
+    pattern = rf'{escaped_pattern}\s*:\s*([\d.]+)\s*ns/n\s*[\d.]+\s*GHz\s*([\d.]+)\s*c/n\s*([\d.]+)\s*i/n'
 
     match = re.search(pattern, content)
     if not match:
         return None
     return {
-        'ns/d': float(match.group(1)),
-        'c/d': float(match.group(2)),
-        'i/d': float(match.group(3)),
+        'ns/n': float(match.group(1)),
+        'c/n': float(match.group(2)),
+        'i/n': float(match.group(3)),
     }
 
 
@@ -153,14 +153,14 @@ def get_available_compilers(output_dir: Path) -> List[str]:
 
 def collect_data(output_dir: Path, compiler: str, algorithms: List[Tuple[str, str]]) -> Dict[str, Dict[str, float]]:
     """
-    Collect ns/d data for all datasets and algorithms.
-    Returns: {dataset_display: {algorithm_name: ns/d_value}}
+    Collect ns/n data for all datasets and algorithms.
+    Returns: {dataset_display: {algorithm_name: ns/n_value}}
     """
     data = {}
     for dataset_base, dataset_display in DATASETS:
         results = get_algorithm_results_for_dataset(dataset_base, compiler, output_dir, algorithms)
         if results:
-            data[dataset_display] = {algo: metrics['ns/d'] for algo, metrics in results.items()}
+            data[dataset_display] = {algo: metrics['ns/n'] for algo, metrics in results.items()}
         else:
             print(f"  WARNING: No data found for dataset {dataset_display}")
     return data
