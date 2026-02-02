@@ -98,3 +98,18 @@ See `data/DATASETS.md` for descriptions of the included integer datasets:
 - `twitterjson_integers.txt` - Twitter API integers (heterogeneous distribution)
 - `cit_patents_citing_integers.txt.gz` - US patent numbers (7-digit, homogeneous)
 - `stackoverflow_unix_timestamps_integers.txt.gz` - Unix timestamps (10-digit, homogeneous)
+
+## Benchmark Metrics
+
+The benchmark reports the following metrics:
+
+| Metric   | Description                      |
+| -------- | -------------                    |
+| `ns/n`   | Nanoseconds per number (integer) |
+| `GHz`    | CPU frequency during benchmark   |
+| `c/n`    | CPU cycles per number            |
+| `i/n`    | Instructions per number          |
+| `B/n`    | Branches per number              |
+| `BM/n`   | Branch misses per number         |
+| `i/d`    | Instructions per output digit    |
+| `i/c`    | Instructions per cycle (IPC)     |

@@ -169,7 +169,7 @@ Optional arguments:
 This will:
 - Auto-detect available compilers if `--compiler` not specified
 - Parse all `outputs/*.raw` files for each compiler
-- Extract timing information (ns/d - nanoseconds per digit/character)
+- Extract timing information (ns/n - nanoseconds per number)
 - Determine which variant was auto-selected for each dataset
 - Generate LaTeX table file(s) with compiler name in filename
 - Print a preview of the table
@@ -217,7 +217,7 @@ Optional arguments:
 This will:
 - Auto-detect available compilers if `--compiler` not specified
 - Parse benchmark outputs for all algorithms
-- Extract multiple metrics: ns/d (nanoseconds per character), i/d (instructions per character), c/d (cycles per character)
+- Extract multiple metrics: ns/n (nanoseconds per number), i/n (instructions per number), c/n (cycles per number)
 - Calculate speedup percentages relative to AVX-512 for each metric
 - Compare 10 different algorithms across 5 real-world and synthetic datasets
 - Bold the best (lowest) value for each metric
@@ -267,7 +267,7 @@ This will:
 - Auto-detect available compilers if `--compiler` not specified
 - Auto-detect CPU model from existing .raw files if not specified
 - Parse benchmark outputs for uniform-Ndigit-1M datasets (N=1 to 20)
-- Extract ns/d metrics for all algorithms
+- Extract ns/n metrics for all algorithms
 - Generate line plot(s) showing performance vs digit length
 - Save as PDF in the outputs directory with compiler name in filename
 
@@ -316,7 +316,7 @@ Optional arguments:
 This will:
 - Auto-detect available compilers if `--compiler` not specified
 - Parse benchmark outputs for Twitter JSON, CIT Patents, and Natural 1-8 datasets
-- Extract ns/d metrics for all (or 5 simplified) algorithms
+- Extract ns/n metrics for all (or 5 simplified) algorithms
 - Generate combined bar chart (3 subplots) or separate figures per dataset
 - Save as PDF in the outputs directory with compiler name in filename
 

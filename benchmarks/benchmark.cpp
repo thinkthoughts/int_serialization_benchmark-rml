@@ -22,18 +22,18 @@ constexpr double Ratio_To_Sample = 0.01;
 constexpr double Ratio_Homogeneous = 0.95; // Homogeneous mode if > 95% of
                                            // numbers have the same digit length
 
-void pretty_print(size_t volume, size_t bytes, const std::string &name,
+void pretty_print(size_t num_integers, size_t volume, const std::string &name,
                   event_aggregate agg) {
   std::print("{:<50} : ", name);
-  std::print(" {:5.2f} ns/d ", agg.fastest_elapsed_ns() / volume);
+  std::print(" {:5.2f} ns/n ", agg.fastest_elapsed_ns() / num_integers);
   if (collector.has_events()) {
     std::print(" {:5.2f} GHz ",
                agg.fastest_cycles() / agg.fastest_elapsed_ns());
-    std::print(" {:5.2f} c/d ", agg.fastest_cycles() / volume);
+    std::print(" {:5.2f} c/n ", agg.fastest_cycles() / num_integers);
+    std::print(" {:5.2f} i/n ", agg.fastest_instructions() / num_integers);
+    std::print(" {:5.2f} B/n ", agg.branches() / num_integers);
+    std::print(" {:5.2f} BM/n ", agg.branch_misses() / num_integers);
     std::print(" {:5.2f} i/d ", agg.fastest_instructions() / volume);
-    std::print(" {:5.2f} B/d ", agg.branches() / volume);
-    std::print(" {:5.2f} BM/d ", agg.branch_misses() / volume);
-    std::print(" {:5.2f} i/B ", agg.fastest_instructions() / bytes);
     std::print(" {:5.2f} i/c ",
                agg.fastest_instructions() / agg.fastest_cycles());
   }
@@ -223,7 +223,7 @@ void run_benchmark(const std::vector<uint64_t> &data, [[maybe_unused]] Variant a
   auto run_and_report = [&](auto&& name, auto&& func, size_t volume) {
     std::print("\n");
     for (size_t i = 0; i < Number_Benchmark_Runs; ++i)
-      pretty_print(volume, data.size() * sizeof(uint64_t), name, bench(func));
+      pretty_print(data.size(), volume, name, bench(func));
   };
 
 #if defined(CHAMPAGNE_LEMIRE_AVX512) && CHAMPAGNE_LEMIRE_AVX512
