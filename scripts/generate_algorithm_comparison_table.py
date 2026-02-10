@@ -23,7 +23,7 @@ ALGORITHMS = [
     ('itoa_an_64', 'AppNexus'),
     ('absl_fastint', 'Abseil FastInt'),
     ('std::to_chars', 'std::to\\_chars'),
-    ('mula_sse64', 'Mula SSE64'),
+    # ('mula_sse64', 'Mula SSE64'),
     ('mathisen_sse_u64', 'Mathisen SSE'),
     ('hopman_fast', 'Hopman'),
     ('naive_onepass', 'Naive'),

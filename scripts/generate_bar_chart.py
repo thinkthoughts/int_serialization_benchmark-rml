@@ -2,12 +2,13 @@
 """
 Generate bar chart figures comparing integer-to-string algorithms across datasets.
 
-Creates publication-quality bar charts showing performance (ns/digit) for all algorithms
+Creates publication-quality bar charts showing performance (ns/integer) for all algorithms
 across three key datasets: Twitter JSON, CIT Patents, and Natural 1-8 digit.
 
 Based on scripts/daniel/plotfiles.py but reads from benchmark output files.
 """
 
+from utils import get_cpu_model
 import sys
 import re
 import argparse
@@ -17,8 +18,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 
-from utils import get_cpu_model
-
 # Algorithm list (same as table scripts)
 ALGORITHMS = [
     ('avx-512\\+champagne_lemire', 'Champagne--Lemire'),
@@ -27,7 +26,7 @@ ALGORITHMS = [
     ('itoa_an_64', 'AppNexus'),
     ('absl_fastint', 'Abseil FastInt'),
     ('std::to_chars', 'std::to_chars'),
-    ('mula_sse64', 'Mula SSE64'),
+    # ('mula_sse64', 'Mula SSE64'),
     ('mathisen_sse_u64', 'Mathisen SSE'),
     ('hopman_fast', 'Hopman'),
     ('naive_onepass', 'Naive'),
@@ -39,7 +38,7 @@ ALGORITHMS_SIMPLIFIED = [
     ('jeaiii_fast_uint64', 'jeaiii'),
     ('itoa_yy_64', 'yy'),
     ('std::to_chars', 'std::to_chars'),
-    ('mula_sse64', 'Mula SSE64'),
+    # ('mula_sse64', 'Mula SSE64'),
 ]
 
 # Datasets to include in bar charts
@@ -206,7 +205,7 @@ def generate_bar_chart(data: Dict[str, Dict[str, float]], algorithms: List[Tuple
                     ax.text(bar.get_x() + bar.get_width()/2, val + 0.03,
                             f"{val:.2f}", ha='center', va='bottom', fontsize=14)
 
-            ax.set_ylabel("ns per digit")
+            ax.set_ylabel("ns per integer")
             ax.set_title(dataset_display)
             ax.set_xticks(range(len(algo_names)))
             ax.set_xticklabels(algo_names, rotation=45, ha='right')
@@ -232,7 +231,7 @@ def generate_bar_chart(data: Dict[str, Dict[str, float]], algorithms: List[Tuple
                     ax.text(bar.get_x() + bar.get_width()/2, val + 0.03,
                             f"{val:.2f}", ha='center', va='bottom', fontsize=14)
 
-            ax.set_ylabel("ns per digit")
+            ax.set_ylabel("ns per integer")
             ax.set_title(dataset_display)
             ax.set_xticks(range(len(algo_names)))
             ax.set_xticklabels(algo_names, rotation=45, ha='right')

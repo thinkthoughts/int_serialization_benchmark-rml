@@ -156,7 +156,7 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
         r"  \caption{Performance comparison of homogeneous vs heterogeneous variants"
     )
     lines.append(
-        r"  across different datasets. Times shown in nanoseconds per integer (ns/i)."
+        r"  across different datasets. Times shown in nanoseconds per number (ns/n)."
     )
     lines.append(
         r"  The \textbf{bold} value indicates the faster variant for each dataset."
@@ -169,7 +169,7 @@ def generate_latex_table(compiler: str, output_dir: str) -> str:
     lines.append(r"  \begin{tabular}{lrrr}")
     lines.append(r"    \toprule")
     lines.append(
-        r"    Dataset & Homogeneous (ns/i) & Heterogeneous (ns/i) & Selected \\"
+        r"    Dataset & Homogeneous (ns/n) & Heterogeneous (ns/n) & Selected \\"
     )
     lines.append(r"    \midrule")
 

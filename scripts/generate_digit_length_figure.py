@@ -21,7 +21,7 @@ ALGORITHMS = [
     ('itoa_an_64', 'AppNexus'),
     ('absl_fastint', 'Abseil FastInt'),
     ('std::to_chars', 'std::to_chars'),
-    ('mula_sse64', 'Mula SSE64'),
+    # ('mula_sse64', 'Mula SSE64'),
     ('mathisen_sse_u64', 'Mathisen SSE'),
     ('hopman_fast', 'Hopman'),
     ('naive_onepass', 'Naive'),
@@ -33,7 +33,7 @@ ALGORITHMS_SIMPLIFIED = [
     ('jeaiii_fast_uint64', 'jeaiii'),
     ('itoa_yy_64', 'yy'),
     ('std::to_chars', 'std::to_chars'),
-    ('mula_sse64', 'Mula SSE64'),
+    # ('mula_sse64', 'Mula SSE64'),
 ]
 
 # Digit lengths to include (1-20 digits for uint64_t)
