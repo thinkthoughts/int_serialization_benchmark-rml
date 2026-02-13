@@ -29,31 +29,59 @@ n = 84736251
 84736251       = n mod 10^8
 
 From this paper
-https://arxiv.org/abs/1902.01961
- page 8:
 
-      uint32_t d = ...; // your divisor > 0
-      // c = ceil ( (1 < <64) / d ) ; we take L = N
-      uint64_t c = UINT64_C (0xFFFFFFFFFFFFFFFF ) / d + 1;
-      // fastmod computes (n mod d) given precomputed c
-      uint32_t fastmod ( uint32_t n, uint64_t c, uint32_t d) {
-          uint64_t lowbits = c * n;
-          return (( __uint128_t ) lowbits * d) >> 64;
-      }
+Lemire, D., Bartlett, C., & Kaser, O. (2021). Integer division by constants: optimal bounds. Heliyon, 7(6).
+https://arxiv.org/abs/2012.12369
 
-Fastmod fits well for this AVX512FMA instruction pair:
-VPMADD52LUQ => lowbits = c * n + 0
-VPMADD52HUQ => highbits = lowbits * 10 + asciiZero
-just uses 52b and 104b numbers instead of 64 and 128, and highbits use 10 instead of d, and produces 8 decimal digits for 0 <= n <= 99999999.
+Theorem 4 (page 3)
 
-The only problem is that in the 8th digit case the VPMADD52HUQ overflows, if we use the original 0x2af31dd ( = (2^53 - 1)/(10^8) + 1) constant as c in VPMADD52LUQ:
+It says that ( (c * n + c) % m ) * d / m gives n mod d, for 0 <= n <= N as long as 
 
-0x2af31dd * 99999999 = 0x10000001a50b23
+(1 - 1/(N+1))*1/d ≤ c/m  < 1/d
 
-Solution: we use 0x2af31dc = 0x2af31dd - 1 as c, and use 0x1A1A400 bias instead of 0. 0x1A1A400 is the smallest bias, which does not underflows in case of the smallest 8-digit number:
+or
 
-0x2af31dc * 10000000 = 0x19999996FD600 = 450359960000000
-(0x19999996FD600 + 0x1A1A400) * 10 = 0x1000000EAEC400
+N m ≤c d (N+1) < m (N+1)
+
+
+As long as d does not divide m, we can set c = floor (m / d) and c/m  < 1/d is satisfied. 
+
+It remains to verify the left identity.
+
+N m ≤c d (N+1)
+
+We want m to be 2^52 and N = 10^8 - 1, so we need to verify that
+
+(10^8 - 1) * 2^52 ≤ floor(2^52 / d) * d * 10^8
+
+where d = 10, ... , 10^8 
+
+In Python, we can check:
+
+for k in range(1,9):
+  d = 10**k
+  lhs = (10**8-1) * 2**52
+  rhs = (2**52//d)*d*10**8
+  assert lhs <= rhs
+
+This fits well with the IFMA instruction pair, which computes (c * n + c) mod 2^52 and then multiplies the result by 10 and adds '0' to get the ASCII code of the digit.
+
+We set call 'c' ifma_const, set m = 2^52, and we compute
+
+(c  n + c) % 2^52 as
+
+lowbits_l = _mm512_madd52lo_epu64(ifma_const, bcstq_l, ifma_const)
+
+and then we compute
+
+((c  n + c) % 2^52) * 10 + '0' as
+
+_mm512_madd52hi_epu64(asciiZero, zmmTen, lowbits_l)
+
+where asciiZero is the vector of '0' characters and zmmTen is the vector of 10s.
+
+
+
 */
 
 
