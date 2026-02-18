@@ -92,7 +92,6 @@ champagne_lemire_really_inline __m512i to_string_avx512ifma_8digits(uint64_t n) 
     twoto52 / 100000000, twoto52 / 10000000, twoto52 / 1000000, twoto52 / 100000,
     twoto52 / 10000, twoto52 / 1000, twoto52 / 100, twoto52 / 10
   );
-  __m512i zmmzero   = _mm512_castsi128_si512(_mm_cvtsi64_si128(0x01A1A400));
   __m512i zmmTen    = _mm512_set1_epi64(10);
   __m512i asciiZero = _mm512_set1_epi64('0');
   __m512i lowbits_l  = _mm512_madd52lo_epu64(ifma_const, bcstq_l, ifma_const); // ifma_const * bcstq_l + ifma_const
