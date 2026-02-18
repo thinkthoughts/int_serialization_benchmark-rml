@@ -65,33 +65,6 @@ champagne_lemire_really_inline std::array<char, 2> get_one_digit_with_dot(uint32
   return digit_table[value];
 }
 
-champagne_lemire_really_inline std::array<char, 3> get_two_digits_with_dot(uint32_t value) {
-  constexpr static std::array<std::array<char, 3>, 100> hundreds_digit_table =
-    []() {
-      std::array<std::array<char, 3>, 100> table{};
-      for (int i = 0; i < 100; ++i) {
-        table[i] = {static_cast<char>((i / 10) % 10 + '0'), '.',
-                    static_cast<char>((i % 10) + '0')};
-      }
-      return table;
-    }();
-  return hundreds_digit_table[value];
-}
-
-
-
-champagne_lemire_really_inline std::array<char, 4> get_two_digits_with_dot_with_one_pad(uint32_t value) {
-  constexpr static std::array<std::array<char, 4>, 100> hundreds_digit_table =
-    []() {
-      std::array<std::array<char, 4>, 100> table{};
-      for (int i = 0; i < 100; ++i) {
-        table[i] = {static_cast<char>((i / 10) % 10 + '0'), '.',
-                    static_cast<char>((i % 10) + '0'), '0'}; // extra pad
-      }
-      return table;
-    }();
-  return hundreds_digit_table[value];
-}
 
 champagne_lemire_really_inline std::array<char, 2> get_two_digits_v(uint32_t value) {
   constexpr static std::array<std::array<char, 2>, 256> hundreds_digit_table =
@@ -119,45 +92,6 @@ champagne_lemire_really_inline std::array<char, 2> get_two_digits(uint32_t value
       return table;
     }();
   return hundreds_digit_table[value];
-}
-
-// We stop at 309 because that is the upper bound for the exponent in a double
-champagne_lemire_really_inline std::array<char, 3> get_three_digits(uint32_t value) {
-  constexpr static std::array<std::array<char, 3>, 309> digit_table =
-    []() {
-      std::array<std::array<char, 3>, 309> table;
-      for (int i = 0; i < 309; ++i) {
-        table[i][0] = (i / 100) + '0';
-        // Calculate the tens digit
-        table[i][1] = ((i / 10) % 10) + '0';
-        // Calculate the units digit
-        table[i][2] = (i % 10) + '0';
-      }
-      return table;
-    }();
-  return digit_table[value];
-}
-
-champagne_lemire_really_inline void write_one_digit_with_dot(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_one_digit_with_dot(value).data(), 2);
-}
-
-champagne_lemire_really_inline void write_two_digits_with_dot(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits_with_dot(value).data(), 3);
-}
-
-// writes two digits, a dot, and a padding zero, why the padding zero? because
-// it is faster to copy four bytes than three bytes on most architectures.
-champagne_lemire_really_inline void write_two_digits_with_dot_with_one_pad(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits_with_dot_with_one_pad(value).data(), 4);
-}
-
-champagne_lemire_really_inline void write_two_digits(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits(value).data(), 2);
-}
-
-champagne_lemire_really_inline void write_two_digits_v(char *buffer, uint32_t value) {
-  std::memcpy(buffer, get_two_digits_v(value).data(), 2);
 }
 
 champagne_lemire_really_inline void write_three_digits(char *buffer, uint32_t value) {
