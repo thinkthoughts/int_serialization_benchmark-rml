@@ -1,4 +1,4 @@
-name: Ubuntu 24.04 Sanitized CI (GCC 14)
+name: Ubuntu 24.04 CI (GCC 14 & Clang 18)
 
 on: [push, pull_request]
 
@@ -8,12 +8,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - {shared: ON}
-          - {shared: OFF}
+          - {cc: gcc-14, cxx: g++-14}
+          - {cc: clang-18, cxx: clang++-18}
     steps:
       - uses: actions/checkout@v3
-      - name: Use cmake
+      - name: Build with ${{matrix.cxx}}
         run: |
-          mkdir build &&
-          cmake -B build -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 &&
+          cmake -B build -DCMAKE_C_COMPILER=${{matrix.cc}} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
           cmake --build build

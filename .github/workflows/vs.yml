@@ -6,18 +6,12 @@ jobs:
   ci:
     name: windows
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - {gen: Visual Studio 17 2025, arch: x64, shared: ON}
-          - {gen: Visual Studio 17 2025, arch: x64, shared: OFF}
     steps:
     - name: checkout
       uses: actions/checkout@v3
     - name: Configure
       run: |
-        cmake -G "${{matrix.gen}}" -A ${{matrix.arch}} -B build
+        cmake -G "Visual Studio 17 2025" -A x64 -B build
     - name: Build Debug
       run: cmake --build build --config Debug --verbose
     - name: Build Release
