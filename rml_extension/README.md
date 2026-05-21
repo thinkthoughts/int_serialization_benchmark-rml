@@ -212,4 +212,42 @@ Notebook 06 should add hardware-counter overlays or architecture-specific benchm
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/06_hardware_counter_overlays.ipynb
 )
 
+# Report 06 — Hardware-Counter Overlays
+
+This report overlays hardware-counter metrics onto RML phase and benchmark results.
+
+Constraint view:
+> performance becomes interpretable when structural predictions meet hardware counters.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook06_hardware_counter_overlays.csv`
+- Metrics JSON: `/content/results/notebook06_hardware_counter_overlays.json`
+- Figure: `/content/figures/notebook06_branch_miss_rate.png`
+- Figure: `/content/figures/notebook06_cache_miss_rate.png`
+- Figure: `/content/figures/notebook06_fragmentation_vs_counter_pressure.png`
+- Figure: `/content/figures/notebook06_ipc_vs_throughput.png`
+- Figure: `/content/figures/notebook06_counter_summary_matrix.png`
+
+## Hardware-counter overlay summary
+
+| distribution          | regime               |   observed_throughput_mib_s |   observed_latency_ns |   branch_miss_rate |   cache_miss_rate |     ipc |   cycles_per_item |   fragmentation_score |   counter_pressure_score |   abs_fragmentation_counter_gap |
+|:----------------------|:---------------------|----------------------------:|----------------------:|-------------------:|------------------:|--------:|------------------:|----------------------:|-------------------------:|--------------------------------:|
+| low_entropy_repeating | coherent-local       |                        1650 |                  0.6  |          0.0005    |         0.005     | 2       |               900 |                  0.02 |                0.0453782 |                     0.0253782   |
+| sequential_ids        | scalar-favorable     |                        1350 |                  0.74 |          0.0048    |         0.0122222 | 1.75    |              1200 |                  0.36 |                0.238392  |                     0.121608    |
+| uniform_32bit         | simd-favorable       |                        1900 |                  0.53 |          0.0285714 |         0.022     | 2.6     |              1000 |                  0.95 |                0.411201  |                     0.538799    |
+| zipfian_smallints     | simd-favorable       |                        1500 |                  0.67 |          0.0306452 |         0.01875   | 1.84615 |              1300 |                  0.79 |                0.516925  |                     0.273075    |
+| clustered_ranges      | fragmented-irregular |                         950 |                  1.05 |          0.0466667 |         0.0387755 | 1.27778 |              1800 |                  1    |                1         |                     1.11022e-16 |
+
+## Interpretation
+
+- Branch miss rate and cache miss rate help convert structural proxies into measurable systems behavior.
+- Counter pressure can validate, correct, or refine the fragmentation model from Notebook 04.
+- IPC vs throughput helps distinguish hardware saturation from structural coherence.
+- Real counters are the next bridge from RML phase maps to architecture-aware performance claims.
+
+## Next step
+
+Notebook 07 can build adaptive path-selection rules using structural metrics plus observed counters.
+
 
