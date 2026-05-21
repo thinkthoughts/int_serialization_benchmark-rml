@@ -169,3 +169,40 @@ Notebook 05 should integrate real benchmark outputs from upstream runs and compa
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/05_real_benchmark_ingestion.ipynb
 )
 
+# Report 05 — Real Benchmark Ingestion
+
+This report ingests benchmark outputs and compares observed performance against RML structural phase metrics.
+
+Constraint view:
+> useful models become stronger when they meet measured systems behavior.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook05_real_benchmark_ingestion.csv`
+- Metrics JSON: `/content/results/notebook05_real_benchmark_ingestion.json`
+- Figure: `/content/figures/notebook05_observed_throughput.png`
+- Figure: `/content/figures/notebook05_observed_latency.png`
+- Figure: `/content/figures/notebook05_coherence_vs_throughput.png`
+- Figure: `/content/figures/notebook05_prediction_gap.png`
+
+## Benchmark summary
+
+| distribution          |   observed_throughput_mib_s |   observed_latency_ns |   runs | regime               |   coherence_score |   fragmentation_score |   observed_throughput_norm |   abs_prediction_gap | implementations   | simd_modes   | hardware_profiles   |
+|:----------------------|----------------------------:|----------------------:|-------:|:---------------------|------------------:|----------------------:|---------------------------:|---------------------:|:------------------|:-------------|:--------------------|
+| clustered_ranges      |                         950 |                  1.05 |      1 | fragmented-irregular |              0.22 |                  1    |                   0        |            0.22      | mixed_path        | mixed        | baseline            |
+| low_entropy_repeating |                        1650 |                  0.6  |      1 | coherent-local       |              0.75 |                  0.02 |                   0.736842 |            0.0131579 | scalar_fastpath   | scalar       | baseline            |
+| sequential_ids        |                        1350 |                  0.74 |      1 | scalar-favorable     |              0.52 |                  0.36 |                   0.421053 |            0.0989474 | scalar_fastpath   | scalar       | baseline            |
+| uniform_32bit         |                        1900 |                  0.53 |      1 | simd-favorable       |              0.24 |                  0.95 |                   1        |            0.76      | simd_path         | SIMD         | baseline            |
+| zipfian_smallints     |                        1500 |                  0.67 |      1 | simd-favorable       |              0.42 |                  0.79 |                   0.578947 |            0.158947  | simd_path         | SIMD         | baseline            |
+
+## Interpretation
+
+- Observed throughput and latency are now connected to structural predictions.
+- Prediction gaps identify where the proxy model needs correction or real hardware context.
+- High coherence does not automatically mean maximum throughput; it means structural alignment under chosen constraints.
+- This notebook creates the bridge from RML proxy analysis to real benchmark validation.
+
+## Next step
+
+Notebook 06 should add hardware-counter overlays or architecture-specific benchmark comparisons.
+
