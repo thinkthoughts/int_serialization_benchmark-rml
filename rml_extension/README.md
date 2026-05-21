@@ -752,11 +752,12 @@ Notebook 16 can build a prototype memory bank with aging, pruning, and stability
 
 ## Notebook 16 -
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/16_prototype_memory_bank_aging.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
 | -------- | ----------------------------------------------- |
-| 16       | prototype aging + forgetting                    |
 | 17       | hierarchical prototype trees                    |
 | 18       | prototype merge/split events                    |
 | 19       | online Bayesian regime confidence               |
@@ -766,4 +767,5 @@ Notebook 16 can build a prototype memory bank with aging, pruning, and stability
 | 23       | adaptive alarm thresholds                       |
 | 24       | prototype genealogy graph                       |
 | 25       | online intervention simulation                  |
+| 00       | ZOS left5 GOS                                   |
 
