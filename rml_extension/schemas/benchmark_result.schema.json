@@ -1,0 +1,22 @@
+{
+  "title": "BenchmarkResult",
+  "type": "object",
+  "properties": {
+    "throughput_mib_s": {
+      "type": "number"
+    },
+    "latency_ns": {
+      "type": "number"
+    },
+    "distribution": {
+      "type": "string"
+    },
+    "hardware_profile": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "throughput_mib_s",
+    "latency_ns"
+  ]
+}

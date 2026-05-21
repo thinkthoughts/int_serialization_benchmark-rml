@@ -1,0 +1,18 @@
+{
+  "title": "HardwareProfile",
+  "type": "object",
+  "properties": {
+    "architecture": {
+      "type": "string"
+    },
+    "cores": {
+      "type": "integer"
+    },
+    "threads": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "architecture"
+  ]
+}

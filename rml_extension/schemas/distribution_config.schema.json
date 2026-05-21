@@ -1,0 +1,18 @@
+{
+  "title": "DistributionConfig",
+  "type": "object",
+  "properties": {
+    "distribution": {
+      "type": "string"
+    },
+    "sample_size": {
+      "type": "integer"
+    },
+    "seed": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "distribution"
+  ]
+}

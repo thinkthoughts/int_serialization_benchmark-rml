@@ -1,0 +1,18 @@
+{
+  "title": "PlotConfig",
+  "type": "object",
+  "properties": {
+    "plot_type": {
+      "type": "string"
+    },
+    "x_axis": {
+      "type": "string"
+    },
+    "y_axis": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "plot_type"
+  ]
+}

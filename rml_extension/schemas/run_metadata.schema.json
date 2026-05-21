@@ -1,0 +1,18 @@
+{
+  "title": "RunMetadata",
+  "type": "object",
+  "properties": {
+    "run_name": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_name"
+  ]
+}
