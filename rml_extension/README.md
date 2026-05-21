@@ -648,6 +648,50 @@ Constraint view:
 
 Notebook 14 can introduce online drift detection: detect when new or changing mixtures stop matching existing prototypes.
 
-## - Notebook 14
+## Notebook 14 - Online Drift Detection
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/14_online_drift_detection.ipynb)
+
+# Report 14 — Online Drift Detection
+
+This report detects windows where existing mixed-regime prototypes no longer explain the stream.
+
+Constraint view:
+> when reconstruction residuals rise, existing execution prototypes no longer explain the stream.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook14_online_drift_detection.csv">`results/notebook14_online_drift_detection.csv`</a>
+- Metrics JSON: <a href="results/notebook14_online_drift_detection.json">`results/notebook14_online_drift_detection.json`</a>
+- Episodes CSV: <a href="results/notebook14_drift_episodes.csv">`results/notebook14_drift_episodes.csv`</a>
+- Figure: <a href="figures/notebook14_drift_score_timeline.png">`figures/notebook14_drift_score_timeline.png`</a>
+- Figure: <a href="figures/notebook14_residual_entropy_zscores.png">`figures/notebook14_residual_entropy_zscores.png`</a>
+- Figure: <a href="figures/notebook14_reconstruction_residual_alarms.png">`figures/notebook14_reconstruction_residual_alarms.png`</a>
+- Figure: <a href="figures/notebook14_policy_regime_instability.png">`figures/notebook14_policy_regime_instability.png`</a>
+- Figure: <a href="figures/notebook14_drift_alarm_timeline.png">`figures/notebook14_drift_alarm_timeline.png`</a>
+- Figure: <a href="figures/notebook14_drift_episodes_summary.png">`figures/notebook14_drift_episodes_summary.png`</a>
+
+## Summary
+
+|   windows |   warning_windows |   alarm_windows |   unknown_candidate_windows |   drift_episodes |   max_drift_score |   mean_drift_score |   mean_reconstruction_residual |   mean_mixture_entropy |
+|----------:|------------------:|----------------:|----------------------------:|-----------------:|------------------:|-------------------:|-------------------------------:|-----------------------:|
+|       180 |                10 |               1 |                           4 |                1 |          0.673333 |           0.145204 |                      0.0514594 |                 1.1994 |
+
+## Drift episodes
+
+|   drift_episode_id |   start_window |   end_window |   duration |   max_drift_score |   mean_residual |   mean_entropy |   unknown_candidates |
+|-------------------:|---------------:|-------------:|-----------:|------------------:|----------------:|---------------:|---------------------:|
+|                  0 |            105 |          105 |          1 |          0.673333 |        0.162402 |        2.33424 |                    1 |
+
+## Interpretation
+
+- Reconstruction residuals measure prototype mismatch.
+- Mixture entropy measures ambiguity in the regime decomposition.
+- Policy and regime switch rates identify unstable runtime behavior.
+- Drift alarms mark windows where adaptation should slow down, inspect, or propose new prototypes.
+
+## Next step
+
+Notebook 15 can perform prototype update and recovery: learn a new prototype from drift windows and test whether residuals decrease.
+
+## Notebook 15 -
