@@ -83,4 +83,40 @@ Constraint view:
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/03_simd_vs_scalar_paths.ipynb
 )
 
+# Report 03 — SIMD vs Scalar Paths
+
+This report adds an execution-path interpretation layer for integer serialization.
+
+Constraint view:
+> SIMD helps when data structure, algorithm path, and hardware constraints align.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook03_simd_scalar_path_metrics.csv`
+- Metrics JSON: `/content/results/notebook03_simd_scalar_path_metrics.json`
+- Figure: `/content/figures/notebook03_simd_suitability.png`
+- Figure: `/content/figures/notebook03_scalar_vs_simd_throughput.png`
+- Figure: `/content/figures/notebook03_speedup_vs_branch_pressure.png`
+- Figure: `/content/figures/notebook03_execution_path_phase_map.png`
+
+## Execution-path summary
+
+| name                  |   simd_suitability |   scalar_suitability |   branch_pressure_score |   estimated_scalar_throughput |   estimated_simd_throughput |   estimated_speedup_simd_over_scalar |
+|:----------------------|-------------------:|---------------------:|------------------------:|------------------------------:|----------------------------:|-------------------------------------:|
+| uniform_32bit         |           0.615411 |            0.0852458 |                    0.72 |                      0.72788  |                    1.05252  |                              1.44601 |
+| zipfian_smallints     |           0.668454 |            0.221936  |                    0.72 |                      0.802394 |                    1.1002   |                              1.37114 |
+| clustered_ranges      |           0.451659 |            0.0513471 |                    0.79 |                      0.6767   |                    0.815844 |                              1.20562 |
+| sequential_ids        |           0.392822 |            0.617615  |                    0.2  |                      1.36671  |                    1.47837  |                              1.0817  |
+| low_entropy_repeating |           0.262835 |            0.982     |                    0.01 |                      1.7856   |                    1.4731   |                              0.82499 |
+
+## Interpretation
+
+- SIMD suitability is distribution-dependent, not automatic.
+- Branch pressure can reduce SIMD advantage even when wide work exists.
+- Scalar pathways remain meaningful for low-entropy, high-reuse, or highly local distributions.
+- This notebook creates a modeling layer that later benchmark results can confirm, correct, or falsify.
+
+## Next step
+
+Notebook 04 should combine distribution structure, cache/branching proxies, and execution-path metrics into constraint phase maps.
 
