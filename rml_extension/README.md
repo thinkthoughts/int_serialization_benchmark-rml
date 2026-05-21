@@ -52,12 +52,12 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook02_cache_branching_metrics.csv`
-- Metrics JSON: `/content/results/notebook02_cache_branching_metrics.json`
-- Figure: `/content/figures/notebook02_branch_pressure_score.png`
-- Figure: `/content/figures/notebook02_digit_entropy_vs_transition.png`
-- Figure: `/content/figures/notebook02_locality_vs_reuse.png`
-- Figure: `/content/figures/notebook02_delta_abs_mean_log.png`
+- Metrics CSV: <a href="results/notebook02_cache_branching_metrics.csv">`results/notebook02_cache_branching_metrics.csv`</a>
+- Metrics JSON: <a href="results/notebook02_cache_branching_metrics.json">`results/notebook02_cache_branching_metrics.json`</a>
+- Figure: <a href="figures/notebook02_branch_pressure_score.png">`figures/notebook02_branch_pressure_score.png`</a>
+- Figure: <a href="figures/notebook02_digit_entropy_vs_transition.png">`figures/notebook02_digit_entropy_vs_transition.png`</a>
+- Figure: <a href="figures/notebook02_locality_vs_reuse.png">`figures/notebook02_locality_vs_reuse.png`</a>
+- Figure: <a href="figures/notebook02_delta_abs_mean_log.png">`figures/notebook02_delta_abs_mean_log.png`</a>
 
 ## Cache / branching proxy metrics
 
@@ -92,12 +92,12 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook03_simd_scalar_path_metrics.csv`
-- Metrics JSON: `/content/results/notebook03_simd_scalar_path_metrics.json`
-- Figure: `/content/figures/notebook03_simd_suitability.png`
-- Figure: `/content/figures/notebook03_scalar_vs_simd_throughput.png`
-- Figure: `/content/figures/notebook03_speedup_vs_branch_pressure.png`
-- Figure: `/content/figures/notebook03_execution_path_phase_map.png`
+- Metrics CSV: <a href="results/notebook03_simd_scalar_path_metrics.csv">`results/notebook03_simd_scalar_path_metrics.csv`</a>
+- Metrics JSON: <a href="results/notebook03_simd_scalar_path_metrics.json">`results/notebook03_simd_scalar_path_metrics.json`</a>
+- Figure: <a href="figures/notebook03_simd_suitability.png">`figures/notebook03_simd_suitability.png`</a>
+- Figure: <a href="figures/notebook03_scalar_vs_simd_throughput.png">`figures/notebook03_scalar_vs_simd_throughput.png`</a>
+- Figure: <a href="figures/notebook03_speedup_vs_branch_pressure.png">`figures/notebook03_speedup_vs_branch_pressure.png`</a>
+- Figure: <a href="figures/notebook03_execution_path_phase_map.png">`figures/notebook03_execution_path_phase_map.png`</a>
 
 ## Execution-path summary
 
@@ -135,12 +135,12 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook04_constraint_phase_metrics.csv`
-- Metrics JSON: `/content/results/notebook04_constraint_phase_metrics.json`
-- Figure: `/content/figures/notebook04_constraint_phase_map.png`
-- Figure: `/content/figures/notebook04_coherence_landscape.png`
-- Figure: `/content/figures/notebook04_regime_classification.png`
-- Figure: `/content/figures/notebook04_constraint_summary_matrix.png`
+- Metrics CSV: <a href="results/notebook04_constraint_phase_metrics.csv">`results/notebook04_constraint_phase_metrics.csv`</a>
+- Metrics JSON: <a href="results/notebook04_constraint_phase_metrics.json">`results/notebook04_constraint_phase_metrics.json`</a>
+- Figure: <a href="figures/notebook04_constraint_phase_map.png">`figures/notebook04_constraint_phase_map.png`</a>
+- Figure: <a href="figures/notebook04_coherence_landscape.png">`figures/notebook04_coherence_landscape.png`</a>
+- Figure: <a href="figures/notebook04_regime_classification.png">`figures/notebook04_regime_classification.png`</a>
+- Figure: <a href="figures/notebook04_constraint_summary_matrix.png">`figures/notebook04_constraint_summary_matrix.png`</a>
 
 ## Constraint phase summary
 
@@ -178,12 +178,12 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook05_real_benchmark_ingestion.csv`
-- Metrics JSON: `/content/results/notebook05_real_benchmark_ingestion.json`
-- Figure: `/content/figures/notebook05_observed_throughput.png`
-- Figure: `/content/figures/notebook05_observed_latency.png`
-- Figure: `/content/figures/notebook05_coherence_vs_throughput.png`
-- Figure: `/content/figures/notebook05_prediction_gap.png`
+- Metrics CSV: <a href="results/notebook05_real_benchmark_ingestion.csv">`results/notebook05_real_benchmark_ingestion.csv`</a>
+- Metrics JSON: <a href="results/notebook05_real_benchmark_ingestion.json">`results/notebook05_real_benchmark_ingestion.json`</a>
+- Figure: <a href="figures/notebook05_observed_throughput.png">`figures/notebook05_observed_throughput.png`</a>
+- Figure: <a href="figures/notebook05_observed_latency.pn">`figures/notebook05_observed_latency.png`</a>
+- Figure: <a href="figures/notebook05_coherence_vs_throughput.png">`figures/notebook05_coherence_vs_throughput.png`</a>
+- Figure: <a href="igures/notebook05_prediction_gap.png">`figures/notebook05_prediction_gap.png`</a>
 
 ## Benchmark summary
 
@@ -221,13 +221,13 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook06_hardware_counter_overlays.csv`
-- Metrics JSON: `/content/results/notebook06_hardware_counter_overlays.json`
-- Figure: `/content/figures/notebook06_branch_miss_rate.png`
-- Figure: `/content/figures/notebook06_cache_miss_rate.png`
-- Figure: `/content/figures/notebook06_fragmentation_vs_counter_pressure.png`
-- Figure: `/content/figures/notebook06_ipc_vs_throughput.png`
-- Figure: `/content/figures/notebook06_counter_summary_matrix.png`
+- Metrics CSV: <a href="results/notebook06_hardware_counter_overlays.csv">`results/notebook06_hardware_counter_overlays.csv`</a>
+- Metrics JSON: <a href="results/notebook06_hardware_counter_overlays.json`">`results/notebook06_hardware_counter_overlays.json`</a>
+- Figure: <a href="figures/notebook06_branch_miss_rate.png">`figures/notebook06_branch_miss_rate.png`</a>
+- Figure: <a href="figures/notebook06_cache_miss_rate.png">`figures/notebook06_cache_miss_rate.png`</a>
+- Figure: <a href="figures/notebook06_fragmentation_vs_counter_pressure.png">`figures/notebook06_fragmentation_vs_counter_pressure.png`</a>
+- Figure: <a href="figures/notebook06_ipc_vs_throughput.png">`figures/notebook06_ipc_vs_throughput.png`</a>
+- Figure: <a href="figures/notebook06_counter_summary_matrix.png">`figures/notebook06_counter_summary_matrix.png`</a>
 
 ## Hardware-counter overlay summary
 
@@ -265,13 +265,13 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook07_adaptive_execution_selection.csv`
-- Metrics JSON: `/content/results/notebook07_adaptive_execution_selection.json`
-- Figure: `/content/figures/notebook07_selector_scores.png`
-- Figure: `/content/figures/notebook07_selector_phase_map.png`
-- Figure: `/content/figures/notebook07_predicted_vs_observed.png`
-- Figure: `/content/figures/notebook07_adaptive_improvement_opportunity.png`
-- Figure: `/content/figures/notebook07_policy_matrix.png`
+- Metrics CSV: <a href="results/notebook07_adaptive_execution_selection.csv">`results/notebook07_adaptive_execution_selection.csv`</a>
+- Metrics JSON: <a href="results/notebook07_adaptive_execution_selection.json">`results/notebook07_adaptive_execution_selection.json`</a>
+- Figure: <a href="figures/notebook07_selector_scores.png">`figures/notebook07_selector_scores.png`</a>
+- Figure: <a href="figures/notebook07_selector_phase_map.png">`figures/notebook07_selector_phase_map.png`</a>
+- Figure: <a href="figures/notebook07_predicted_vs_observed.png">`figures/notebook07_predicted_vs_observed.png`</a>
+- Figure: <a href="figures/notebook07_adaptive_improvement_opportunity.png">`figures/notebook07_adaptive_improvement_opportunity.png`</a>
+- Figure: <a href="figures/notebook07_policy_matrix.png">`figures/notebook07_policy_matrix.png`</a>
 
 ## Adaptive selector summary
 
@@ -309,13 +309,13 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook08_streaming_runtime_adaptation.csv`
-- Metrics JSON: `/content/results/notebook08_streaming_runtime_adaptation.json`
-- Figure: `/content/figures/notebook08_regime_timeline.png`
-- Figure: `/content/figures/notebook08_policy_timeline.png`
-- Figure: `/content/figures/notebook08_throughput_timeline.png`
-- Figure: `/content/figures/notebook08_coherence_pressure_timeline.png`
-- Figure: `/content/figures/notebook08_adaptive_gain_by_regime.png`
+- Metrics CSV: <a href="results/notebook08_streaming_runtime_adaptation.csv">`results/notebook08_streaming_runtime_adaptation.csv`</a>
+- Metrics JSON: <a href="results/notebook08_streaming_runtime_adaptation.json">`results/notebook08_streaming_runtime_adaptation.json`</a>
+- Figure: <a href="figures/notebook08_regime_timeline.png">`figures/notebook08_regime_timeline.png`</a>
+- Figure: <a href="figures/notebook08_policy_timeline.png">`figures/notebook08_policy_timeline.png`</a>
+- Figure: <a href="figures/notebook08_throughput_timeline.png">`figures/notebook08_throughput_timeline.png`</a>
+- Figure: <a href="figures/notebook08_coherence_pressure_timeline.png">`figures/notebook08_coherence_pressure_timeline.png`</a>
+- Figure: <a href="figures/notebook08_adaptive_gain_by_regime.png">`figures/notebook08_adaptive_gain_by_regime.png`</a>
 
 ## Summary
 
