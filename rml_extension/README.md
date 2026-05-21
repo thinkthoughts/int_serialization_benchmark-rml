@@ -600,4 +600,6 @@ Constraint view:
 
 Notebook 13 can introduce mixed-regime decomposition: classify windows that contain blends rather than single regimes.
 
+## Notebook 13
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/13_mixed_regime_decomposition.ipynb)
