@@ -543,8 +543,61 @@ Constraint view:
 
 Notebook 12 can analyze latency-throughput Pareto frontiers: choose policies under explicit tradeoff constraints.
 
-## Notebook 11 — Latency Throughput Pareto Frontiers
+## Notebook 12 — Latency Throughput Pareto Frontiers
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/12_latency_throughput_pareto_frontiers.ipynb)
+
+# Report 12 — Latency / Throughput Pareto Frontiers
+
+This report analyzes policy tradeoffs between throughput, latency, pressure, and coherence.
+
+Constraint view:
+> adaptive execution should not optimize one metric blindly; it should expose tradeoff frontiers.
+
+## Generated outputs
+
+- Candidate CSV: <a href="">`results/notebook12_pareto_candidates.csv`</a>
+- Candidate JSON: <a href="">`results/notebook12_pareto_candidates.json`</a>
+- Selected policy CSV: <a href="">`results/notebook12_pareto_selected_policies.csv`</a>
+- Figure: <a href="">`figures/notebook12_latency_throughput_cloud.png`</a>
+- Figure: <a href="">`figures/notebook12_pareto_policy_frequency.png`</a>
+- Figure: <a href="">`figures/notebook12_objective_policy_choices.png`</a>
+- Figure: <a href="">`figures/notebook12_frontier_score_by_regime.png`</a>
+- Figure: <a href="">`figures/notebook12_policy_timeline_by_objective.png`</a>
+
+## Summary
+
+|   candidate_rows |   windows |   pareto_efficient_rows |   pareto_fraction |   objective_profiles |
+|-----------------:|----------:|------------------------:|------------------:|---------------------:|
+|              500 |       100 |                     160 |              0.32 |                    3 |
+
+## Pareto-efficient policy frequency
+
+| policy           |   pareto_count |
+|:-----------------|---------------:|
+| coherent_local   |             40 |
+| simd             |             40 |
+| hybrid           |             39 |
+| scalar           |             21 |
+| guarded_fallback |             20 |
+
+## Selected policies by objective profile
+
+| objective_profile   |   coherent_local |   guarded_fallback |   hybrid |   scalar |   simd |
+|:--------------------|-----------------:|-------------------:|---------:|---------:|-------:|
+| balanced_constraint |               33 |                 20 |       25 |        2 |     20 |
+| latency_first       |               20 |                 20 |       31 |        1 |     28 |
+| throughput_first    |               20 |                 20 |       26 |        0 |     34 |
+
+## Interpretation
+
+- Pareto frontiers expose which policies remain useful under multi-objective constraints.
+- Throughput-first, latency-first, and balanced profiles can select different execution paths for the same window.
+- Guarded fallback can be Pareto-efficient when pressure dominates fragmented regimes.
+- SIMD is not universally optimal; it is optimal under objective profiles and regimes that reward wide throughput.
+
+## Next step
+
+Notebook 13 can introduce mixed-regime decomposition: classify windows that contain blends rather than single regimes.
 
 
