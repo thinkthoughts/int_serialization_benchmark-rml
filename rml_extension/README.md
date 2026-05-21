@@ -163,3 +163,9 @@ Constraint view:
 
 Notebook 05 should integrate real benchmark outputs from upstream runs and compare observed throughput against these structural predictions.
 
+## Notebook 05 — Real Benchmark Ingestion
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/05_real_benchmark_ingestion.ipynb
+)
+
