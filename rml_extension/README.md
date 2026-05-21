@@ -750,9 +750,58 @@ Constraint view:
 
 Notebook 16 can build a prototype memory bank with aging, pruning, and stability scores.
 
-## Notebook 16 -
+## Notebook 16 - Prototype Memory Bank Aging
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/16_prototype_memory_bank_aging.ipynb)
+
+# Report 16 — Prototype Memory Bank Aging
+
+This report manages an adaptive prototype memory bank using age, usage, residual quality, drift quality, and policy stability.
+
+Constraint view:
+> adaptive prototype memory needs both recall and forgetting.
+
+## Generated outputs
+
+- Window events CSV: <a href="results/notebook16_prototype_memory_bank_aging.csv">`results/notebook16_prototype_memory_bank_aging.csv`</a>
+- Window events JSON: <a href="results/notebook16_prototype_memory_bank_aging.json">`results/notebook16_prototype_memory_bank_aging.json`</a>
+- Memory summary CSV: <a href="results/notebook16_memory_bank_summary.csv">`results/notebook16_memory_bank_summary.csv`</a>
+- Figure: <a href="figures/notebook16_memory_stability_scores.png">`figures/notebook16_memory_stability_scores.png`</a>
+- Figure: <a href="figures/notebook16_effective_memory_weight.png">`figures/notebook16_effective_memory_weight.png`</a>
+- Figure: <a href="figures/notebook16_prototype_usage_timeline.png">`figures/notebook16_prototype_usage_timeline.png`</a>
+- Figure: <a href="figures/notebook16_memory_action_counts.png">`figures/notebook16_memory_action_counts.png`</a>
+- Figure: <a href="figures/notebook16_memory_event_timeline.png">`figures/notebook16_memory_event_timeline.png`</a>
+- Figure: <a href="figures/notebook16_memory_status_matrix.png">`figures/notebook16_memory_status_matrix.png`</a>
+
+## Summary
+
+|   windows |   prototype_count |   retain_count |   refresh_count |   watch_count |   prune_count |   mean_memory_stability_score |   mean_effective_memory_weight |
+|----------:|------------------:|---------------:|----------------:|--------------:|--------------:|------------------------------:|-------------------------------:|
+|       220 |                 6 |              4 |               2 |             0 |             0 |                      0.503969 |                       0.565477 |
+
+## Memory bank summary
+
+| prototype               |   first_seen |   last_seen |   age |   recency_gap |   usage_count |   usage_rate |   mean_residual |   mean_drift_score |   policy_switch_rate |   usage_score |   recency_score |   residual_quality_score |   drift_quality_score |   policy_stability_score |   memory_stability_score | memory_status   |   age_decay |   reinforced_weight |   effective_memory_weight | memory_action   |
+|:------------------------|-------------:|------------:|------:|--------------:|--------------:|-------------:|----------------:|-------------------:|---------------------:|--------------:|----------------:|-------------------------:|----------------------:|-------------------------:|-------------------------:|:----------------|------------:|--------------------:|--------------------------:|:----------------|
+| uniform_32bit           |            6 |         219 |   214 |             0 |            38 |     0.172727 |        0.472039 |          0.0745126 |            0.0263158 |      0.4      |        1        |               0.0422093  |              0.921377 |                 0.589474 |                 0.575596 | retain          |    1        |            0.79     |                  0.661358 | retain          |
+| low_entropy_repeating   |           23 |         215 |   197 |             4 |            37 |     0.168182 |        0.480203 |          0.0616303 |            0.027027  |      0.366667 |        0.945946 |               0.0179647  |              1        |                 0.554955 |                 0.555575 | retain          |    0.923116 |            0.728359 |                  0.624689 | retain          |
+| zipfian_smallints       |            0 |         214 |   220 |             5 |            34 |     0.154545 |        0.486252 |          0.0765296 |            0.0294118 |      0.266667 |        0.932432 |               0          |              0.909067 |                 0.439216 |                 0.49339  | retain          |    0.904837 |            0.681478 |                  0.568625 | retain          |
+| learned_drift_prototype |           90 |         145 |   130 |            74 |            56 |     0.254545 |        0.149519 |          0.22548   |            0.0178571 |      1        |        0        |               1          |              0        |                 1        |                 0.6      | refresh         |    0.227638 |            0.497964 |                  0.559186 | refresh         |
+| clustered_ranges        |            2 |         213 |   218 |             6 |            29 |     0.131818 |        0.483625 |          0.0749466 |            0.0344828 |      0.1      |        0.918919 |               0.00780244 |              0.918728 |                 0.193103 |                 0.41841  | retain          |    0.88692  |            0.611498 |                  0.495645 | retain          |
+| sequential_ids          |            3 |         218 |   217 |             1 |            26 |     0.118182 |        0.47962  |          0.0831649 |            0.0384615 |      0        |        0.986486 |               0.0196962  |              0.868571 |                 0        |                 0.380846 | refresh         |    0.980199 |            0.637129 |                  0.48336  | refresh         |
+
+## Interpretation
+
+- Retained prototypes explain recent windows with stable residuals and useful policy behavior.
+- Refresh candidates are useful but unstable, suggesting prototype update or split.
+- Watch candidates are low-confidence memory entries that should not be removed immediately.
+- Prune candidates are unused or stale prototypes with weak effective memory weight.
+
+## Next step
+
+Notebook 17 can build hierarchical prototype trees: split broad prototypes into child prototypes and merge redundant ones.
+
+## Notebook 17 -
 
 # Next
 
