@@ -1,0 +1,6 @@
+hardware_profile,architecture,mean_throughput,mean_efficiency,policy_match_reference_rate,mean_pressure,policy_switches,throughput_rank
+avx2_linux,x86_64,1851.7669171769107,0.9924035946417248,0.375,0.51375,5,2
+avx512_linux,x86_64,2147.375995625,1.0,0.0,0.51375,1,1
+cloud_vm_baseline,virtualized,1428.6403697454655,0.990625,0.5,0.51375,6,5
+neon_arm64,arm64,1757.6782365645329,0.9953125,0.5,0.51375,6,3
+scalar_reference,x86_64,1523.8651562500002,0.994375,1.0,0.51375,7,4
