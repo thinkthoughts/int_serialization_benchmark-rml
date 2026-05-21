@@ -969,9 +969,89 @@ That’s a real systems story now, not isolated notebooks.
 
 Notebook 19 can perform recursive memory compression: merge redundant prototypes while preserving routing and reconstruction quality.
 
-## Notebook 19 -
+## Notebook 19 - Recursive Memory Compression
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/19_recursive_memory_compression.ipynb)
+
+# Report 19 — Recursive Memory Compression
+
+This report compresses prototype memory into macro-prototypes while tracking route stability and reconstruction proxy quality.
+
+Constraint view:
+> adaptive memory should preserve useful distinctions while compressing redundant structure.
+
+## Generated outputs
+
+- Window compression CSV: <a href="results/notebook19_recursive_memory_compression.csv">`results/notebook19_recursive_memory_compression.csv`</a>
+- Window compression JSON: <a href="results/notebook19_recursive_memory_compression.json">`results/notebook19_recursive_memory_compression.json`</a>
+- Prototype to macro map CSV: <a href="results/notebook19_prototype_to_macro_map.csv">`results/notebook19_prototype_to_macro_map.csv`</a>
+- Compressed macro-prototypes CSV: <a href="results/notebook19_compressed_macro_prototypes.csv">`results/notebook19_compressed_macro_prototypes.csv`</a>
+- Redundancy pairs CSV: <a href="results/notebook19_redundancy_pairs.csv">`results/notebook19_redundancy_pairs.csv`</a>
+- Macro transition matrix CSV: <a href="results/notebook19_macro_transition_matrix.csv">`results/notebook19_macro_transition_matrix.csv`</a>
+- Figure: <a href="figures/notebook19_prototype_macro_projection.png">`figures/notebook19_prototype_macro_projection.png`</a>
+- Figure: <a href="figures/notebook19_compression_ratio_summary.png">`figures/notebook19_compression_ratio_summary.png`</a>
+- Figure: <a href="figures/notebook19_macro_route_timeline.png">`figures/notebook19_macro_route_timeline.png`</a>
+- Figure: <a href="figures/notebook19_child_vs_macro_switch_rates.png">`figures/notebook19_child_vs_macro_switch_rates.png`</a>
+- Figure: <a href="figures/notebook19_compressed_route_stability.png">`figures/notebook19_compressed_route_stability.png`</a>
+- Figure: <a href="figures/notebook19_compression_residual_by_prototype.png">`figures/notebook19_compression_residual_by_prototype.png`</a>
+- Figure: <a href="figures/notebook19_macro_transition_matrix.png">`figures/notebook19_macro_transition_matrix.png`</a>
+
+## Summary
+
+|   windows |   original_prototype_count |   compressed_macro_count |   compression_ratio |   mean_compression_residual |   mean_compression_quality |   mean_macro_switch_rate |   mean_child_switch_rate |   mean_compressed_route_stability |   merge_recommended_pairs |
+|----------:|---------------------------:|-------------------------:|--------------------:|----------------------------:|---------------------------:|-------------------------:|-------------------------:|----------------------------------:|--------------------------:|
+|       240 |                          6 |                        5 |            0.166667 |                    0.109527 |                   0.912916 |                 0.609759 |                 0.609759 |                          0.398686 |                         5 |
+
+## Compressed macro-prototypes
+
+| macro_prototype   | members                                    |   member_count |   total_usage_count |   mean_memory_stability |   mean_effective_memory_weight |   entropy_norm |   repetition_ratio |   locality_small_delta_ratio |   cache_window_reuse_proxy |   branch_norm |   coherence_score |   hardware_pressure_proxy |
+|:------------------|:-------------------------------------------|---------------:|--------------------:|------------------------:|-------------------------------:|---------------:|-------------------:|-----------------------------:|---------------------------:|--------------:|------------------:|--------------------------:|
+| macro_0           | zipfian_smallints, learned_drift_prototype |              2 |                  90 |                   0.545 |                          0.565 |        0.34354 |           0.631504 |                     0.354248 |                   0.379735 |      0.680354 |          0.434867 |                  0.705133 |
+| macro_1           | clustered_ranges                           |              1 |                  20 |                   0.42  |                          0.5   |        0.55    |           0.98     |                     0        |                   0.01     |      0.79     |          0.18     |                  0.98     |
+| macro_2           | low_entropy_repeating                      |              1 |                  32 |                   0.56  |                          0.62  |        0.1     |           0.98     |                     1        |                   0.94     |      0.02     |          0.95     |                  0.02     |
+| macro_3           | sequential_ids                             |              1 |                  22 |                   0.38  |                          0.48  |        0.9     |           0        |                     1        |                   0        |      0.2      |          0.55     |                  0.25     |
+| macro_4           | uniform_32bit                              |              1 |                  36 |                   0.58  |                          0.66  |        1       |           0        |                     0        |                   0        |      0.72     |          0.08     |                  0.88     |
+
+## Prototype → macro map
+
+| regime                  | macro_prototype   |   compression_residual |   compression_quality |
+|:------------------------|:------------------|-----------------------:|----------------------:|
+| low_entropy_repeating   | macro_2           |               0        |              1        |
+| sequential_ids          | macro_3           |               0        |              1        |
+| uniform_32bit           | macro_4           |               0        |              1        |
+| zipfian_smallints       | macro_0           |               0.255209 |              0.79668  |
+| clustered_ranges        | macro_1           |               0        |              1        |
+| learned_drift_prototype | macro_0           |               0.259767 |              0.793798 |
+
+## Top redundancy pairs
+
+| prototype_a           | prototype_b             |   feature_distance |   feature_similarity | same_policy   |   usage_balance |   redundancy_score | merge_recommended   |
+|:----------------------|:------------------------|-------------------:|---------------------:|:--------------|----------------:|-------------------:|:--------------------|
+| zipfian_smallints     | learned_drift_prototype |           0.514976 |             0.783166 | False         |        0.958333 |           0.652808 | True                |
+| zipfian_smallints     | clustered_ranges        |           0.698498 |             0.705892 | False         |        0.941667 |           0.60008  | True                |
+| sequential_ids        | zipfian_smallints       |           1.52381  |             0.358388 | True          |        0.916667 |           0.570452 | True                |
+| clustered_ranges      | learned_drift_prototype |           0.897274 |             0.622196 | False         |        0.9      |           0.539428 | True                |
+| uniform_32bit         | learned_drift_prototype |           0.996393 |             0.580461 | False         |        0.954167 |           0.520425 | True                |
+| uniform_32bit         | clustered_ranges        |           1.08991  |             0.541086 | False         |        0.945833 |           0.493581 | False               |
+| sequential_ids        | learned_drift_prototype |           1.11472  |             0.530639 | False         |        0.875    |           0.476165 | False               |
+| uniform_32bit         | zipfian_smallints       |           1.28413  |             0.459306 | False         |        0.995833 |           0.447924 | False               |
+| sequential_ids        | uniform_32bit           |           1.37775  |             0.419888 | False         |        0.920833 |           0.411052 | False               |
+| low_entropy_repeating | zipfian_smallints       |           1.47672  |             0.378217 | False         |        0.954167 |           0.388966 | False               |
+| low_entropy_repeating | learned_drift_prototype |           1.45475  |             0.387467 | False         |        0.9125   |           0.388728 | False               |
+| low_entropy_repeating | sequential_ids          |           1.65206  |             0.304388 | False         |        0.9625   |           0.342227 | False               |
+
+## Interpretation
+
+- Macro-prototypes reduce memory footprint while preserving coarse routing behavior.
+- Compression residual marks prototypes that lose detail under merging.
+- Macro switch rate should be lower than child switch rate if compression stabilizes routing.
+- Redundancy pairs identify candidates for safe merge or grouped monitoring.
+
+## Next step
+
+Notebook 20 can add CGCS-style constraint gating over compressed route memory.
+
+#Notebook 20 -
 
 # Next
 
