@@ -803,6 +803,8 @@ Notebook 17 can build hierarchical prototype trees: split broad prototypes into 
 
 ## Notebook 17 -
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/17_hierarchical_prototype_routing.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
