@@ -556,14 +556,14 @@ Constraint view:
 
 ## Generated outputs
 
-- Candidate CSV: <a href="">`results/notebook12_pareto_candidates.csv`</a>
-- Candidate JSON: <a href="">`results/notebook12_pareto_candidates.json`</a>
-- Selected policy CSV: <a href="">`results/notebook12_pareto_selected_policies.csv`</a>
-- Figure: <a href="">`figures/notebook12_latency_throughput_cloud.png`</a>
-- Figure: <a href="">`figures/notebook12_pareto_policy_frequency.png`</a>
-- Figure: <a href="">`figures/notebook12_objective_policy_choices.png`</a>
-- Figure: <a href="">`figures/notebook12_frontier_score_by_regime.png`</a>
-- Figure: <a href="">`figures/notebook12_policy_timeline_by_objective.png`</a>
+- Candidate CSV: <a href="results/notebook12_pareto_candidates.csv">`results/notebook12_pareto_candidates.csv`</a>
+- Candidate JSON: <a href="results/notebook12_pareto_candidates.json">`results/notebook12_pareto_candidates.json`</a>
+- Selected policy CSV: <a href="results/notebook12_pareto_selected_policies.csv">`results/notebook12_pareto_selected_policies.csv`</a>
+- Figure: <a href="figures/notebook12_latency_throughput_cloud.png">`figures/notebook12_latency_throughput_cloud.png`</a>
+- Figure: <a href="figures/notebook12_pareto_policy_frequency.png`">`figures/notebook12_pareto_policy_frequency.png`</a>
+- Figure: <a href="figures/notebook12_objective_policy_choices.png">`figures/notebook12_objective_policy_choices.png`</a>
+- Figure: <a href="figures/notebook12_frontier_score_by_regime.png">`figures/notebook12_frontier_score_by_regime.png`</a>
+- Figure: <a href="figures/notebook12_policy_timeline_by_objective.png">`figures/notebook12_policy_timeline_by_objective.png`</a>
 
 ## Summary
 
