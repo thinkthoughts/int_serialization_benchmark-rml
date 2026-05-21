@@ -1,0 +1,6 @@
+macro_prototype,members,member_count,total_usage_count,mean_memory_stability,mean_effective_memory_weight,entropy_norm,repetition_ratio,locality_small_delta_ratio,cache_window_reuse_proxy,branch_norm,coherence_score,hardware_pressure_proxy
+macro_0,"zipfian_smallints, learned_drift_prototype",2,90.0,0.5449999999999999,0.565,0.3435398230088496,0.6315044247787611,0.3542477876106195,0.37973451327433627,0.6803539823008851,0.4348672566371682,0.7051327433628319
+macro_1,clustered_ranges,1,20.0,0.42,0.5,0.55,0.98,0.0,0.01,0.79,0.18,0.98
+macro_2,low_entropy_repeating,1,32.0,0.56,0.62,0.1,0.98,1.0,0.94,0.02,0.95,0.02
+macro_3,sequential_ids,1,22.0,0.38,0.48,0.9,0.0,1.0,0.0,0.2,0.55,0.25
+macro_4,uniform_32bit,1,36.0,0.58,0.66,1.0,0.0,0.0,0.0,0.72,0.08,0.88
