@@ -600,7 +600,7 @@ Constraint view:
 
 Notebook 13 can introduce mixed-regime decomposition: classify windows that contain blends rather than single regimes.
 
-## Notebook 13
+## Notebook 13 — Mixed-Regime Decomposition
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/13_mixed_regime_decomposition.ipynb)
 
@@ -647,3 +647,7 @@ Constraint view:
 ## Next step
 
 Notebook 14 can introduce online drift detection: detect when new or changing mixtures stop matching existing prototypes.
+
+## - Notebook 14
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/14_online_drift_detection.ipynb)
