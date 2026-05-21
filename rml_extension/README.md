@@ -695,3 +695,7 @@ Constraint view:
 Notebook 15 can perform prototype update and recovery: learn a new prototype from drift windows and test whether residuals decrease.
 
 ## Notebook 15 -
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/15_prototype_update_and_recovery.ipynb)
+
+
