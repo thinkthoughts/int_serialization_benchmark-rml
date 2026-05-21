@@ -408,4 +408,11 @@ Constraint view:
 
 Notebook 10 can build a learned execution selector from the policy table and evaluate whether learned routing improves over transparent rules.
 
+## Notebook 10 — Learned Execution Selector
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/10_learned_execution_selector.ipynb
+)
+
+
 
