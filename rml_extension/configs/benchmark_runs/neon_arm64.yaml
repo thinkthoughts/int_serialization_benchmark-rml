@@ -1,0 +1,6 @@
+name: neon_arm64
+compiler: clang
+optimization: -O3
+simd: NEON
+threads: 12
+description: ARM64 NEON benchmark profile

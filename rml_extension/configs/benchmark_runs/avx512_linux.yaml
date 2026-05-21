@@ -1,0 +1,6 @@
+name: avx512_linux
+compiler: gcc-14
+optimization: -O3
+simd: AVX512
+threads: 16
+description: Linux AVX512 optimized benchmark

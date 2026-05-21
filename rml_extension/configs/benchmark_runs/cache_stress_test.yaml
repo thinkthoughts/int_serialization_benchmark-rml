@@ -1,0 +1,8 @@
+name: cache_stress_test
+compiler: gcc
+optimization: -O3
+simd: AVX2
+threads: 16
+dataset_scale: large
+memory_pressure: high
+description: Stress cache locality and memory bandwidth

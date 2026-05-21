@@ -1,3 +1,6 @@
 name: avx2_linux
-simd: AVX2
+compiler: gcc-14
 optimization: -O3
+simd: AVX2
+threads: 16
+description: Linux AVX2 optimized benchmark

@@ -1,0 +1,6 @@
+name: scalar_reference
+compiler: gcc
+optimization: -O2
+simd: disabled
+threads: 1
+description: Baseline scalar serialization benchmark
