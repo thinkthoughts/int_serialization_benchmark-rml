@@ -359,4 +359,53 @@ Notebook 09 can test cross-hardware policy portability: does the same selector t
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/09_cross_hardware_policy_portability.ipynb
 )
 
+# Report 09 — Cross-Hardware Policy Portability
+
+This report tests whether adaptive execution policies remain stable across simulated hardware profiles.
+
+Constraint view:
+> a policy is portable only if structure survives architecture changes.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook09_cross_hardware_policy_portability.csv">`results/notebook09_cross_hardware_policy_portability.csv`</a>
+- Metrics JSON: <a href="results/notebook09_cross_hardware_policy_portability.json">`results/notebook09_cross_hardware_policy_portability.json`</a>
+- Summary CSV: <a href="results/notebook09_cross_hardware_policy_summary.csv">`results/notebook09_cross_hardware_policy_summary.csv`</a>
+- Figure: <a href="figures/notebook09_mean_throughput_by_hardware.png">`figures/notebook09_mean_throughput_by_hardware.png`</a>
+- Figure: <a href="figures/notebook09_policy_match_reference.png">`figures/notebook09_policy_match_reference.png`</a>
+- Figure: <a href="figures/notebook09_policy_timeline_by_hardware.png">`figures/notebook09_policy_timeline_by_hardware.png`</a>
+- Figure: <a href="figures/notebook09_efficiency_by_regime_hardware.png">`figures/notebook09_efficiency_by_regime_hardware.png`</a>
+- Figure: <a href="figures/notebook09_portability_summary_matrix.png">`figures/notebook09_portability_summary_matrix.png`</a>
+
+## Hardware portability summary
+
+| hardware_profile   | architecture   |   mean_throughput |   mean_efficiency |   policy_match_reference_rate |   mean_pressure |   policy_switches |   throughput_rank |
+|:-------------------|:---------------|------------------:|------------------:|------------------------------:|----------------:|------------------:|------------------:|
+| avx2_linux         | x86_64         |           1851.77 |          0.992404 |                         0.375 |         0.51375 |                 5 |                 2 |
+| avx512_linux       | x86_64         |           2147.38 |          1        |                         0     |         0.51375 |                 1 |                 1 |
+| cloud_vm_baseline  | virtualized    |           1428.64 |          0.990625 |                         0.5   |         0.51375 |                 6 |                 5 |
+| neon_arm64         | arm64          |           1757.68 |          0.995313 |                         0.5   |         0.51375 |                 6 |                 3 |
+| scalar_reference   | x86_64         |           1523.87 |          0.994375 |                         1     |         0.51375 |                 7 |                 4 |
+
+## Policy counts by hardware
+
+| hardware_profile   |   coherent_local |   guarded_fallback |   hybrid |   scalar |   simd |
+|:-------------------|-----------------:|-------------------:|---------:|---------:|-------:|
+| avx2_linux         |                8 |                  4 |        0 |        0 |     20 |
+| avx512_linux       |                0 |                  0 |        0 |        0 |     32 |
+| cloud_vm_baseline  |                8 |                  4 |        4 |        0 |     16 |
+| neon_arm64         |                8 |                  4 |        4 |        0 |     16 |
+| scalar_reference   |                8 |                  4 |       12 |        8 |      0 |
+
+## Interpretation
+
+- Policy portability measures whether the same structural signal produces stable decisions across architectures.
+- AVX-style profiles should favor SIMD more often, while scalar and virtualized profiles penalize pressure differently.
+- Low portability is not failure; it identifies architecture-specific constraints.
+- This notebook creates a bridge from adaptive selection to architecture-aware scheduling.
+
+## Next step
+
+Notebook 10 can build a learned execution selector from the policy table and evaluate whether learned routing improves over transparent rules.
+
 
