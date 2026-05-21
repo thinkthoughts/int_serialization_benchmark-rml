@@ -414,5 +414,73 @@ Notebook 10 can build a learned execution selector from the policy table and eva
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/10_learned_execution_selector.ipynb
 )
 
+# Report 10 — Learned Execution Selector
 
+This report trains lightweight learned selectors for adaptive integer-serialization execution policy.
+
+Constraint view:
+> learned routing should improve policy selection without hiding the constraints that made the policy meaningful.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook10_learned_execution_selector.csv">`results/notebook10_learned_execution_selector.csv`</a>
+- Metrics JSON: <a href="results/notebook10_learned_execution_selector.json">`results/notebook10_learned_execution_selector.json`</a>
+- Figure:  <a href="figures/notebook10_learned_policy_agreement.png">`figures/notebook10_learned_policy_agreement.png`</a>
+- Figure:  <a href="figures/notebook10_feature_importance.png">`figures/notebook10_feature_importance.png`</a>
+- Figure:  <a href="figures/notebook10_learned_gain_vs_rule.png">`figures/notebook10_learned_gain_vs_rule.png`</a>
+- Figure:  <a href="figures/notebook10_policy_confusion_matrix.png">`figures/notebook10_policy_confusion_matrix.png`</a>
+- Figure:  <a href="figures/notebook10_decision_tree.png">`figures/notebook10_decision_tree.png`</a>
+
+## Summary
+
+|   rows |   decision_tree_accuracy |   random_forest_accuracy |   learned_rule_agreement_rate |   mean_learned_gain_pct_vs_rule |
+|-------:|-------------------------:|-------------------------:|------------------------------:|--------------------------------:|
+|    150 |                 0.888889 |                 0.955556 |                          0.98 |                     -0.00792753 |
+
+## Policy confusion table
+
+| selected_policy   |   coherent_local |   guarded_fallback |   hybrid |   scalar |   simd |
+|:------------------|-----------------:|-------------------:|---------:|---------:|-------:|
+| coherent_local    |               30 |                  0 |        0 |        0 |      0 |
+| guarded_fallback  |                0 |                 30 |        0 |        0 |      0 |
+| hybrid            |                0 |                  0 |       48 |        0 |      0 |
+| scalar            |                0 |                  0 |        0 |        6 |      0 |
+| simd              |                0 |                  0 |        3 |        0 |     33 |
+
+## Top feature importances
+
+| feature                            |   importance |
+|:-----------------------------------|-------------:|
+| hardware_pressure_proxy            |   0.267224   |
+| coherence_score                    |   0.214882   |
+| truth_regime_clustered_ranges      |   0.134033   |
+| truth_regime_uniform_32bit         |   0.107987   |
+| truth_regime_low_entropy_repeating |   0.0953577  |
+| truth_regime_sequential_ids        |   0.0534699  |
+| hardware_profile_scalar_reference  |   0.0319537  |
+| selected_efficiency                |   0.0297364  |
+| truth_regime_zipfian_smallints     |   0.0286386  |
+| hardware_profile_avx512_linux      |   0.0173409  |
+| architecture_x86_64                |   0.00840921 |
+| hardware_profile_avx2_linux        |   0.00336291 |
+| architecture_arm64                 |   0.00232356 |
+| architecture_virtualized           |   0.00201549 |
+| hardware_profile_cloud_vm_baseline |   0.00184428 |
+
+## Interpretation
+
+- Learned selectors can recover policy structure from RML metrics and hardware-profile context.
+- Feature importance helps verify whether the model is using meaningful constraints.
+- Mismatches between learned and rule policies identify where hand-written heuristics may be brittle.
+- This notebook bridges transparent constraint rules and learned runtime routing.
+
+## Next step
+
+Notebook 11 can simulate online distribution classification: detect regime changes from windows before selecting execution paths.
+
+## Notebook 11 — Online Distribution Classification
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/11_online_distribution_classification.ipynb
+)
 
