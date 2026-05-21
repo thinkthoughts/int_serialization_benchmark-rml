@@ -18,7 +18,7 @@ Constraint view:
 - Metrics CSV: `/content/results/notebook01_input_distribution_metrics.csv`
 - Metrics JSON: `/content/results/notebook01_input_distribution_metrics.json`
 - Figure: `/content/figures/notebook01_entropy_vs_repetition.png`
-- Figure: <a href="figures/notebook01_delta_abs_mean.png`">`/figures/notebook01_delta_abs_mean.png`</a>
+- Figure: <a href="/figures/notebook01_delta_abs_mean.png`">`/figures/notebook01_delta_abs_mean.png`</a>
 
 ## Distribution metrics
 
