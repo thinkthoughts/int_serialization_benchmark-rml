@@ -250,4 +250,9 @@ Constraint view:
 
 Notebook 07 can build adaptive path-selection rules using structural metrics plus observed counters.
 
+## Notebook 07 — Adaptive Execution Selection
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/07_adaptive_execution_selection.ipynb
+)
 
