@@ -1,0 +1,6 @@
+name: high_entropy_random
+distribution: random
+entropy_level: high
+bit_width: 64
+sample_size: 1000000
+seed: 42

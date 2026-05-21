@@ -1,0 +1,5 @@
+name: uniform_64bit
+distribution: uniform
+bit_width: 64
+sample_size: 1000000
+seed: 42

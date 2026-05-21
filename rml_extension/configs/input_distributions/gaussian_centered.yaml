@@ -1,0 +1,6 @@
+name: gaussian_centered
+distribution: gaussian
+mean: 0
+stddev: 1000
+sample_size: 1000000
+seed: 42

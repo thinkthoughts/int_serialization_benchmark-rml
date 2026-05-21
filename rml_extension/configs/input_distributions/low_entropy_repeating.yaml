@@ -1,0 +1,4 @@
+name: low_entropy_repeating
+distribution: repeating
+pattern: [1,2,3,4]
+sample_size: 1000000
