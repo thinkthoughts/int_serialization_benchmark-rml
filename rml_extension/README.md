@@ -42,3 +42,37 @@ Constraint view:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/02_cache_branching_structure.ipynb
 )
+
+# Report 02 — Cache & Branching Structure
+
+This report adds a structural proxy layer for cache and branching behavior in integer serialization.
+
+Constraint view:
+> serialization performance emerges from interactions among digit structure, branch transitions, locality, reuse, and hardware pathways.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook02_cache_branching_metrics.csv`
+- Metrics JSON: `/content/results/notebook02_cache_branching_metrics.json`
+- Figure: `/content/figures/notebook02_branch_pressure_score.png`
+- Figure: `/content/figures/notebook02_digit_entropy_vs_transition.png`
+- Figure: `/content/figures/notebook02_locality_vs_reuse.png`
+- Figure: `/content/figures/notebook02_delta_abs_mean_log.png`
+
+## Cache / branching proxy metrics
+
+| name                  |      n |   digit_length_min |   digit_length_max |   digit_length_entropy |   digit_length_transition_rate |   locality_small_delta_ratio |   cache_window_reuse_proxy |   unique_ratio |   repetition_ratio |   branch_pressure_score |   delta_abs_mean |
+|:----------------------|-------:|-------------------:|-------------------:|-----------------------:|-------------------------------:|-----------------------------:|---------------------------:|---------------:|-------------------:|------------------------:|-----------------:|
+| clustered_ranges      | 100000 |                  1 |                  6 |               1.25251  |                    0.545525    |                    0.0160802 |                  0.0152949 |        0.02    |            0.98    |                0.786799 |  50299.3         |
+| zipfian_smallints     | 100000 |                  1 |                 10 |               2.41149  |                    0.740837    |                    0.270743  |                  0.349012  |        0.18212 |            0.81788 |                0.718815 |      6.52328e+07 |
+| uniform_32bit         | 100000 |                  4 |                 10 |               0.903305 |                    0.365504    |                    0         |                  0         |        0.99999 |            1e-05   |                0.714477 |      1.43465e+09 |
+| sequential_ids        | 100000 |                  1 |                  5 |               0.521054 |                    4.00004e-05 |                    1         |                  0         |        1       |            0       |                0.200018 |      1           |
+| low_entropy_repeating | 100000 |                  1 |                  1 |              -0        |                    0           |                    1         |                  0.9375    |        4e-05   |            0.99996 |                0.0125   |      1.49998     |
+
+## Interpretation
+
+- Digit-length transitions approximate one source of parsing/formatting branch pressure.
+- Small adjacent deltas indicate local continuity that may favor predictable paths.
+- Repeated values within local windows act as a simple cache/reuse proxy.
+- Heavy-tail distributions require log-scale visualization to avoid masking other regimes.
+- Later notebooks can overlay real throughput, latency, SIMD paths, cache misses, and branch-mispredict counters.
