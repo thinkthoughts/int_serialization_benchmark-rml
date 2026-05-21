@@ -126,3 +126,40 @@ Notebook 04 should combine distribution structure, cache/branching proxies, and 
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/04_constraint_phase_maps.ipynb
 )
 
+# Report 04 — Constraint Phase Maps
+
+This report combines distribution, cache/branching, and execution-path metrics into an RML-style phase-map layer.
+
+Constraint view:
+> performance regimes emerge where distribution structure, branch/cache behavior, and execution paths align.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook04_constraint_phase_metrics.csv`
+- Metrics JSON: `/content/results/notebook04_constraint_phase_metrics.json`
+- Figure: `/content/figures/notebook04_constraint_phase_map.png`
+- Figure: `/content/figures/notebook04_coherence_landscape.png`
+- Figure: `/content/figures/notebook04_regime_classification.png`
+- Figure: `/content/figures/notebook04_constraint_summary_matrix.png`
+
+## Constraint phase summary
+
+| name                  | regime               |   coherence_score |   fragmentation_score |   structure_regularization |   execution_alignment |   branch_pressure_score |   simd_suitability |   scalar_suitability |
+|:----------------------|:---------------------|------------------:|----------------------:|---------------------------:|----------------------:|------------------------:|-------------------:|---------------------:|
+| low_entropy_repeating | coherent-local       |          0.744597 |              0.015    |                  0.981994  |              0.302    |                    0.01 |               0.26 |                 0.98 |
+| sequential_ids        | scalar-favorable     |          0.522732 |              0.359615 |                  0.501282  |              0.483079 |                    0.2  |               0.39 |                 0.62 |
+| zipfian_smallints     | simd-favorable       |          0.421224 |              0.791115 |                  0.338277  |              0.649206 |                    0.72 |               0.67 |                 0.22 |
+| uniform_32bit         | simd-favorable       |          0.242955 |              0.959615 |                  0.0179502 |              0.648    |                    0.72 |               0.62 |                 0.08 |
+| clustered_ranges      | fragmented-irregular |          0.224194 |              0.9975   |                  0.15      |              0.44627  |                    0.79 |               0.45 |                 0.05 |
+
+## Interpretation
+
+- Coherence score combines structure regularization, execution alignment, and low fragmentation.
+- Fragmentation score highlights branch pressure, weak locality, and weak local reuse.
+- SIMD-favorable regimes differ from scalar-favorable regimes; neither is universally best.
+- Phase maps create a bridge from synthetic distributions to real benchmark performance.
+
+## Next step
+
+Notebook 05 should integrate real benchmark outputs from upstream runs and compare observed throughput against these structural predictions.
+
