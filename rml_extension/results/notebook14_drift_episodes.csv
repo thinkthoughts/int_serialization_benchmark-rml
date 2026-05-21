@@ -1,0 +1,2 @@
+drift_episode_id,start_window,end_window,duration,max_drift_score,mean_residual,mean_entropy,unknown_candidates
+0.0,105,105,1,0.6733333333333333,0.16240206567434928,2.3342434755458417,1
