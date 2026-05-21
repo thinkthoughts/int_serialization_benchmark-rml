@@ -698,4 +698,58 @@ Notebook 15 can perform prototype update and recovery: learn a new prototype fro
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/15_prototype_update_and_recovery.ipynb)
 
+# Report 15 — Prototype Update and Recovery
+
+This report updates the prototype bank using drift windows and tests whether reconstruction and drift alarms improve.
+
+Constraint view:
+> drift detection becomes useful when the runtime can recover by updating its prototype memory.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook15_prototype_update_and_recovery.csv">`results/notebook15_prototype_update_and_recovery.csv`</a>
+- Metrics JSON: <a href="results/notebook15_prototype_update_and_recovery.json">`results/notebook15_prototype_update_and_recovery.json`</a>
+- Updated prototypes CSV: <a href="results/notebook15_updated_prototypes.csv">`results/notebook15_updated_prototypes.csv`</a>
+- Figure: <a href="figures/notebook15_old_vs_new_residuals.png">`figures/notebook15_old_vs_new_residuals.png`</a>
+- Figure: <a href="figures/notebook15_residual_reduction_timeline.png">`figures/notebook15_residual_reduction_timeline.png`</a>
+- Figure: <a href="figures/notebook15_drift_score_before_after.pn">`figures/notebook15_drift_score_before_after.png`</a>
+- Figure: <a href="figures/notebook15_learned_prototype_features.png">`figures/notebook15_learned_prototype_features.png`</a>
+- Figure: <a href="figures/notebook15_updated_dominant_prototype_timeline.png">`figures/notebook15_updated_dominant_prototype_timeline.png`</a>
+- Figure: <a href="figures/notebook15_alarm_recovery_summary.png">`figures/notebook15_alarm_recovery_summary.png`</a>
+
+## Summary
+
+|   windows |   drift_windows_used_for_prototype |   mean_old_residual |   mean_new_residual |   mean_residual_reduction |   mean_residual_reduction_pct |   old_alarm_count |   new_alarm_count |   recovered_alarm_count |   new_prototype_dominant_windows |
+|----------:|-----------------------------------:|--------------------:|--------------------:|--------------------------:|------------------------------:|------------------:|------------------:|------------------------:|---------------------------------:|
+|       180 |                                 31 |            0.467057 |            0.444465 |                 0.0225919 |                       8.27811 |                 1 |                 3 |                       0 |                               65 |
+
+## Learned drift prototype
+
+| regime                  |   entropy_norm |   repetition_ratio |   locality_small_delta_ratio |   cache_window_reuse_proxy |   branch_norm |   coherence_score |   hardware_pressure_proxy |
+|:------------------------|---------------:|-------------------:|-----------------------------:|---------------------------:|--------------:|------------------:|--------------------------:|
+| learned_drift_prototype |       0.509088 |           0.457231 |                     0.439492 |                   0.412959 |       0.64112 |          0.448685 |                  0.692703 |
+
+## Updated policy counts
+
+| policy             |   count |
+|:-------------------|--------:|
+| prototype_recovery |      65 |
+| hybrid             |      38 |
+| coherent_local     |      35 |
+| simd               |      21 |
+| guarded_fallback   |      21 |
+
+## Interpretation
+
+- A new prototype is learned from drift / unknown-candidate windows.
+- Recovery is measured by comparing old and new reconstruction residuals.
+- Alarm reduction indicates whether the new prototype explains previously anomalous windows.
+- Windows dominated by the learned prototype become candidates for a new execution policy or deeper inspection.
+
+## Next step
+
+Notebook 16 can build a prototype memory bank with aging, pruning, and stability scores.
+
+## Notebook 16 -
+
 
