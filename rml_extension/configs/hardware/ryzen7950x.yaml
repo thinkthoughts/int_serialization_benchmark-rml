@@ -1,0 +1,4 @@
+name: ryzen7950x
+architecture: x86_64
+cores: 16
+threads: 32

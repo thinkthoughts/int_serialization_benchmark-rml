@@ -1,0 +1,4 @@
+name: raspberry_pi
+architecture: arm64
+cores: 4
+threads: 4

@@ -1,0 +1,4 @@
+name: old_laptop_baseline
+architecture: x86_64
+cores: 2
+threads: 4

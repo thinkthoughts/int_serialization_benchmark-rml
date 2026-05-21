@@ -1,0 +1,4 @@
+name: cloud_vm_baseline
+architecture: virtualized
+cores: 4
+threads: 8

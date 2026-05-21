@@ -1,2 +1,4 @@
 name: m2_max
 architecture: arm64
+cores: 12
+threads: 12
