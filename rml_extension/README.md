@@ -76,3 +76,11 @@ Constraint view:
 - Repeated values within local windows act as a simple cache/reuse proxy.
 - Heavy-tail distributions require log-scale visualization to avoid masking other regimes.
 - Later notebooks can overlay real throughput, latency, SIMD paths, cache misses, and branch-mispredict counters.
+
+## Notebook 03 — SIMD vs Scalar Paths
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/03_simd_vs_scalar_paths.ipynb
+)
+
+
