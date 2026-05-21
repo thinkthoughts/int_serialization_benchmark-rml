@@ -752,4 +752,18 @@ Notebook 16 can build a prototype memory bank with aging, pruning, and stability
 
 ## Notebook 16 -
 
+# Next
+
+| Notebook | Direction                                       |
+| -------- | ----------------------------------------------- |
+| 16       | prototype aging + forgetting                    |
+| 17       | hierarchical prototype trees                    |
+| 18       | prototype merge/split events                    |
+| 19       | online Bayesian regime confidence               |
+| 20       | CGCS stability scoring over prototype evolution |
+| 21       | manifold projection of prototype trajectories   |
+| 22       | drift-wave propagation analysis                 |
+| 23       | adaptive alarm thresholds                       |
+| 24       | prototype genealogy graph                       |
+| 25       | online intervention simulation                  |
 
