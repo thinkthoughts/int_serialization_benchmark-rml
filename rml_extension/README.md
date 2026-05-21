@@ -206,3 +206,10 @@ Constraint view:
 
 Notebook 06 should add hardware-counter overlays or architecture-specific benchmark comparisons.
 
+## Notebook 06 — Hardware Counter Overlays
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/06_hardware_counter_overlays.ipynb
+)
+
+
