@@ -1,0 +1,6 @@
+distribution,observed_throughput_mib_s,observed_latency_ns,runs,implementations,simd_modes,hardware_profiles,name,regime,coherence_score,fragmentation_score,simd_suitability,scalar_suitability,observed_throughput_norm,coherence_throughput_gap,abs_prediction_gap
+clustered_ranges,950.0,1.05,1,mixed_path,mixed,baseline,clustered_ranges,fragmented-irregular,0.22,1.0,0.45,0.05,0.0,0.22,0.22
+low_entropy_repeating,1650.0,0.6,1,scalar_fastpath,scalar,baseline,low_entropy_repeating,coherent-local,0.75,0.02,0.26,0.98,0.7368421052631579,0.013157894736842146,0.013157894736842146
+sequential_ids,1350.0,0.74,1,scalar_fastpath,scalar,baseline,sequential_ids,scalar-favorable,0.52,0.36,0.39,0.62,0.42105263157894735,0.09894736842105267,0.09894736842105267
+uniform_32bit,1900.0,0.53,1,simd_path,SIMD,baseline,uniform_32bit,simd-favorable,0.24,0.95,0.62,0.08,1.0,-0.76,0.76
+zipfian_smallints,1500.0,0.67,1,simd_path,SIMD,baseline,zipfian_smallints,simd-favorable,0.42,0.79,0.67,0.22,0.5789473684210527,-0.15894736842105267,0.15894736842105267
