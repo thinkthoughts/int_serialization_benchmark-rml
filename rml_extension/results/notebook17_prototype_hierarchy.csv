@@ -1,0 +1,7 @@
+regime,entropy_norm,repetition_ratio,locality_small_delta_ratio,cache_window_reuse_proxy,branch_norm,coherence_score,hardware_pressure_proxy,prototype,memory_stability_score,effective_memory_weight,memory_action,usage_count,parent_id,parent_route
+low_entropy_repeating,0.1,0.98,1.0,0.94,0.02,0.95,0.02,low_entropy_repeating,0.56,0.62,retain,32,2,parent_2
+sequential_ids,0.9,0.0,1.0,0.0,0.2,0.55,0.25,sequential_ids,0.38,0.48,refresh,22,1,parent_1
+uniform_32bit,1.0,0.0,0.0,0.0,0.72,0.08,0.88,uniform_32bit,0.58,0.66,retain,36,0,parent_0
+zipfian_smallints,0.18,0.8,0.27,0.35,0.72,0.42,0.72,zipfian_smallints,0.49,0.57,refresh,26,0,parent_0
+clustered_ranges,0.55,0.98,0.0,0.01,0.79,0.18,0.98,clustered_ranges,0.42,0.5,refresh,20,0,parent_0
+learned_drift_prototype,0.51,0.46,0.44,0.41,0.64,0.45,0.69,learned_drift_prototype,0.6,0.56,retain,64,0,parent_0

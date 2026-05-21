@@ -1,0 +1,4 @@
+parent_route,prototype_count,mean_memory_stability,mean_effective_weight,total_usage,mean_entropy,mean_pressure,mean_coherence
+parent_0,4,0.5225,0.5725,146,0.56,0.8175,0.2825
+parent_1,1,0.38,0.48,22,0.9,0.25,0.55
+parent_2,1,0.56,0.62,32,0.1,0.02,0.95

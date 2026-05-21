@@ -1,0 +1,7 @@
+prototype_a,prototype_b,parent_route,feature_distance,merge_candidate
+uniform_32bit,zipfian_smallints,parent_0,1.2841339493993607,False
+uniform_32bit,clustered_ranges,parent_0,1.0899082530194915,True
+uniform_32bit,learned_drift_prototype,parent_0,0.9963934965664921,True
+zipfian_smallints,clustered_ranges,parent_0,0.698498389404013,True
+zipfian_smallints,learned_drift_prototype,parent_0,0.5149757275833492,True
+clustered_ranges,learned_drift_prototype,parent_0,0.8972736483370055,True
