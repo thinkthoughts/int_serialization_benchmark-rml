@@ -1,0 +1,7 @@
+regime,entropy_norm,repetition_ratio,locality_small_delta_ratio,cache_window_reuse_proxy,branch_norm,coherence_score,hardware_pressure_proxy
+low_entropy_repeating,0.1,0.98,1.0,0.94,0.02,0.95,0.02
+sequential_ids,0.9,0.0,1.0,0.0,0.2,0.55,0.25
+uniform_32bit,1.0,0.0,0.0,0.0,0.72,0.08,0.88
+zipfian_smallints,0.18,0.8,0.27,0.35,0.72,0.42,0.72
+clustered_ranges,0.55,0.98,0.0,0.01,0.79,0.18,0.98
+learned_drift_prototype,0.5090882884758778,0.45723075777596894,0.43949171968545925,0.4129589972889136,0.6411202607984913,0.4486851054966862,0.6927032944295906
