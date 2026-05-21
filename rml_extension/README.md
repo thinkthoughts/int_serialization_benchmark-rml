@@ -293,3 +293,9 @@ Constraint view:
 ## Next step
 
 Notebook 08 can simulate online runtime adaptation: classify distribution windows, choose execution paths, and estimate throughput under switching costs.
+
+## Notebook 08 — Streaming Runtime Adaptation
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/08_streaming_runtime_adaptation.ipynb
+)
