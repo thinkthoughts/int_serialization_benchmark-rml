@@ -875,9 +875,91 @@ Constraint view:
 
 Notebook 18 can perform prototype compression: merge redundant prototypes while preserving reconstruction quality.
 
-## Notebook 18 -
+## Notebook 18 — Hierarchical Drift Forecasting
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/18_hierarchical_drift_forecasting.ipynb)
+
+# Report 18 — Hierarchical Drift Forecasting
+
+This report forecasts parent-route transitions and identifies early-warning windows before hierarchical drift.
+
+Constraint view:
+> hierarchical routing becomes more useful when route pressure can be forecast before drift alarms fire.
+
+## Generated outputs
+
+- Forecasting CSV: <a href="results/notebook18_hierarchical_drift_forecasting.csv">`results/notebook18_hierarchical_drift_forecasting.csv`</a>
+- Forecasting JSON: <a href="results/notebook18_hierarchical_drift_forecasting.json">`results/notebook18_hierarchical_drift_forecasting.json`</a>
+- Transition matrix CSV: <a href="results/notebook18_parent_transition_matrix.csv">`results/notebook18_parent_transition_matrix.csv`</a>
+- Transition warning evaluation CSV: <a href="results/notebook18_transition_warning_eval.csv">`results/notebook18_transition_warning_eval.csv`</a>
+- Figure: <a href="figures/notebook18_parent_transition_matrix.png">`figures/notebook18_parent_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook18_route_pressure_timeline.png">`figures/notebook18_route_pressure_timeline.png`</a>
+- Figure: <a href="figures/notebook18_early_warning_score_timeline.png">`figures/notebook18_early_warning_score_timeline.png`</a>
+- Figure: <a href="figures/notebook18_forecast_correctness_timeline.png">`figures/notebook18_forecast_correctness_timeline.png`</a>
+- Figure: <a href="figures/notebook18_parent_route_actual_vs_forecast.png">`figures/notebook18_parent_route_actual_vs_forecast.png`</a>
+- Figure: <a href="figures/notebook18_transition_warning_recall.png">`figures/notebook18_transition_warning_recall.png`</a>
+- Figure: <a href="figures/notebook18_parent_persistence_by_route.png">`figures/notebook18_parent_persistence_by_route.png`</a>
+
+## Summary
+
+|   windows |   parent_route_count |   forecast_accuracy |   early_warning_threshold |   early_warning_windows |   parent_transition_count |   early_warning_recall_prior_horizon |   forecast_horizon |   mean_route_pressure |   mean_route_uncertainty |
+|----------:|---------------------:|--------------------:|--------------------------:|------------------------:|--------------------------:|-------------------------------------:|-------------------:|----------------------:|-------------------------:|
+|       240 |                    3 |            0.878661 |                  0.376667 |                      40 |                        30 |                             0.586207 |                  8 |              0.121366 |                 0.121366 |
+
+## Parent transition probabilities
+
+|          |   parent_0 |   parent_1 |   parent_2 |
+|:---------|-----------:|-----------:|-----------:|
+| parent_0 |  0.903614  |  0.0481928 |  0.0481928 |
+| parent_1 |  0.0285714 |  0.857143  |  0.114286  |
+| parent_2 |  0.0581395 |  0.0697674 |  0.872093  |
+
+## Parent transition warning evaluation
+
+|   transition_window | from_parent   | to_parent   | warning_in_prior_horizon   |   max_prior_warning_score |   horizon |
+|--------------------:|:--------------|:------------|:---------------------------|--------------------------:|----------:|
+|                  17 | parent_0      | parent_2    | False                      |                 0.035     |         8 |
+|                  18 | parent_2      | parent_0    | True                       |                 0.39407   |         8 |
+|                  26 | parent_0      | parent_2    | False                      |                 0.163333  |         8 |
+|                  27 | parent_2      | parent_0    | True                       |                 0.407403  |         8 |
+|                  50 | parent_0      | parent_2    | False                      |                 0         |         8 |
+|                  51 | parent_2      | parent_0    | True                       |                 0.39407   |         8 |
+|                  55 | parent_0      | parent_1    | True                       |                 0.39407   |         8 |
+|                  66 | parent_1      | parent_2    | True                       |                 0.386667  |         8 |
+|                  67 | parent_2      | parent_1    | True                       |                 0.386667  |         8 |
+|                  72 | parent_1      | parent_2    | True                       |                 0.536667  |         8 |
+|                  73 | parent_2      | parent_1    | True                       |                 0.536667  |         8 |
+|                  80 | parent_1      | parent_2    | True                       |                 0.526667  |         8 |
+|                  81 | parent_2      | parent_0    | True                       |                 0.587403  |         8 |
+|                  82 | parent_0      | parent_2    | True                       |                 0.587403  |         8 |
+|                 115 | parent_2      | parent_0    | False                      |                 0.237403  |         8 |
+|                 131 | parent_0      | parent_1    | False                      |                 0.0233333 |         8 |
+|                 132 | parent_1      | parent_0    | True                       |                 0.506667  |         8 |
+|                 145 | parent_0      | parent_1    | False                      |                 0.0133333 |         8 |
+|                 158 | parent_1      | parent_2    | False                      |                 0.373333  |         8 |
+|                 159 | parent_2      | parent_1    | True                       |                 0.417403  |         8 |
+|                 170 | parent_1      | parent_0    | False                      |                 0.363333  |         8 |
+|                 171 | parent_0      | parent_1    | False                      |                 0.363333  |         8 |
+|                 190 | parent_1      | parent_2    | False                      |                 0.363333  |         8 |
+|                 198 | parent_2      | parent_1    | True                       |                 0.560736  |         8 |
+|                 199 | parent_1      | parent_2    | True                       |                 0.53      |         8 |
+|                 220 | parent_2      | parent_1    | False                      |                 0.250736  |         8 |
+|                 221 | parent_1      | parent_2    | True                       |                 0.506667  |         8 |
+|                 231 | parent_2      | parent_1    | False                      |                 0.250736  |         8 |
+|                 232 | parent_1      | parent_2    | True                       |                 0.52      |         8 |
+
+## Interpretation
+
+- Parent-route persistence estimates which coarse routing states are stable.
+- Route pressure estimates likelihood that the current parent route will change.
+- Early-warning windows flag route instability before parent-route transitions.
+- Forecast confidence distinguishes stable routing from uncertain transition regions.
+
+## Next step
+
+Notebook 19 can perform recursive memory compression: merge redundant prototypes while preserving routing and reconstruction quality.
+
+## Notebook 19 -
 
 # Next
 
