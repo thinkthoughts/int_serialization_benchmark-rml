@@ -484,3 +484,62 @@ Notebook 11 can simulate online distribution classification: detect regime chang
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/11_online_distribution_classification.ipynb
 )
 
+# Report 11 — Online Distribution Classification
+
+This report classifies streaming integer-distribution regimes before selecting execution policies.
+
+Constraint view:
+> adaptive execution depends on detecting structure before selecting policy.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook11_online_distribution_classification.csv">`results/notebook11_online_distribution_classification.csv`</a>
+- Metrics JSON: <a href="results/notebook11_online_distribution_classification.json">`results/notebook11_online_distribution_classification.json`</a>
+- Figure: <a href="figures/notebook11_true_vs_predicted_regime_timeline.png">`figures/notebook11_true_vs_predicted_regime_timeline.png`</a>
+- Figure: <a href="figures/notebook11_regime_confusion_matrix.png">`figures/notebook11_regime_confusion_matrix.png`</a>
+- Figure: <a href="figures/notebook11_prediction_confidence_timeline.png">`figures/notebook11_prediction_confidence_timeline.png`</a>
+- Figure: <a href="figures/notebook11_feature_importance.png">`figures/notebook11_feature_importance.png`</a>
+- Figure: <a href="figures/notebook11_policy_correctness_from_regime.png">`figures/notebook11_policy_correctness_from_regime.png`</a>
+- Figure: <a href="figures/notebook11_decision_tree.png">`figures/notebook11_decision_tree.png`</a>
+
+## Summary
+
+|   windows |   decision_tree_accuracy |   random_forest_accuracy |   online_regime_accuracy |   policy_correctness_from_regime |   mean_regime_probability |   mean_regime_confidence |
+|----------:|-------------------------:|-------------------------:|-------------------------:|---------------------------------:|--------------------------:|-------------------------:|
+|       160 |                        1 |                        1 |                        1 |                                1 |                  0.991198 |                 0.983698 |
+
+## Regime → predicted policy table
+
+| truth_regime          |   coherent_local |   guarded_fallback |   hybrid |   simd |
+|:----------------------|-----------------:|-------------------:|---------:|-------:|
+| clustered_ranges      |                0 |                 32 |        0 |      0 |
+| low_entropy_repeating |               32 |                  0 |        0 |      0 |
+| sequential_ids        |                0 |                  0 |       32 |      0 |
+| uniform_32bit         |                0 |                  0 |        0 |     32 |
+| zipfian_smallints     |                0 |                  0 |       32 |      0 |
+
+## Feature importance
+
+| feature                    |   importance |
+|:---------------------------|-------------:|
+| hardware_pressure_proxy    |    0.157598  |
+| coherence_score            |    0.149127  |
+| approx_entropy_bits        |    0.140855  |
+| entropy_norm               |    0.128774  |
+| branch_norm                |    0.101513  |
+| repetition_ratio           |    0.0890698 |
+| branch_pressure_score      |    0.0843426 |
+| cache_window_reuse_proxy   |    0.0821167 |
+| locality_small_delta_ratio |    0.0666037 |
+
+## Interpretation
+
+- Online distribution classification moves adaptive execution one step earlier than policy selection.
+- Correct regime detection supports correct execution-path routing.
+- Confidence traces show when the selector is stable and when it should hesitate.
+- Feature importance checks whether the classifier relies on meaningful structure rather than arbitrary labels.
+
+## Next step
+
+Notebook 12 can analyze latency-throughput Pareto frontiers: choose policies under explicit tradeoff constraints.
+
