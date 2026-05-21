@@ -603,3 +603,47 @@ Notebook 13 can introduce mixed-regime decomposition: classify windows that cont
 ## Notebook 13
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/13_mixed_regime_decomposition.ipynb)
+
+# Report 13 — Mixed-Regime Decomposition
+
+This report estimates mixed-regime structure within streaming windows instead of forcing each window into one hard label.
+
+Constraint view:
+> real streams often contain mixed structure; adaptive runtimes should estimate mixture, not only classify.
+
+## Generated outputs
+
+- Metrics CSV: <a href="results/notebook13_mixed_regime_decomposition.csv">`results/notebook13_mixed_regime_decomposition.csv`</a>
+- Metrics JSON: <a href="results/notebook13_mixed_regime_decomposition.json">`results/notebook13_mixed_regime_decomposition.json`</a>
+- Figure: <a href="figures/notebook13_estimated_mixture_weights.png">`figures/notebook13_estimated_mixture_weights.png`</a>
+- Figure: <a href="figures/notebook13_dominant_regime_timeline.png">`figures/notebook13_dominant_regime_timeline.png`</a>
+- Figure: <a href="figures/notebook13_mixture_entropy_timeline.png">`figures/notebook13_mixture_entropy_timeline.png`</a>
+- Figure: <a href="figures/notebook13_reconstruction_residuals.png">`figures/notebook13_reconstruction_residuals.png`</a>
+- Figure: <a href="figures/notebook13_mixture_policy_timeline.png">`figures/notebook13_mixture_policy_timeline.png`</a>
+- Figure: <a href="figures/notebook13_average_mixture_by_regime.png">`figures/notebook13_average_mixture_by_regime.png`</a>
+
+## Summary
+
+|   windows |   dominant_regime_accuracy |   mean_mixture_entropy |   mean_reconstruction_residual |   policy_changed_by_mixture_entropy_rate |
+|----------:|---------------------------:|-----------------------:|-------------------------------:|-----------------------------------------:|
+|       160 |                     0.7875 |                1.21063 |                      0.0401939 |                                  0.15625 |
+
+## Mixture-aware policy counts
+
+| policy           |   count |
+|:-----------------|--------:|
+| hybrid           |      79 |
+| simd             |      32 |
+| guarded_fallback |      29 |
+| coherent_local   |      20 |
+
+## Interpretation
+
+- Mixture weights expose blended windows that hard classification hides.
+- Mixture entropy identifies when runtime policy should hesitate or choose hybrid paths.
+- Reconstruction residuals identify windows poorly explained by current prototypes.
+- This notebook turns regime classification into regime decomposition.
+
+## Next step
+
+Notebook 14 can introduce online drift detection: detect when new or changing mixtures stop matching existing prototypes.
