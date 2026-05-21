@@ -955,11 +955,23 @@ Constraint view:
 - Early-warning windows flag route instability before parent-route transitions.
 - Forecast confidence distinguishes stable routing from uncertain transition regions.
 
+## The current sequence (14–18) now reads like a coherent research arc:
+
+14 → online drift detection
+15 → adaptive prototype updating
+16 → memory-bank stabilization
+17 → hierarchical routing
+18 → hierarchical forecasting + early warning
+
+That’s a real systems story now, not isolated notebooks.
+
 ## Next step
 
 Notebook 19 can perform recursive memory compression: merge redundant prototypes while preserving routing and reconstruction quality.
 
 ## Notebook 19 -
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/19_recursive_memory_compression.ipynb)
 
 # Next
 
