@@ -15,10 +15,10 @@ Constraint view:
 
 ## Generated outputs
 
-- Metrics CSV: `/content/results/notebook01_input_distribution_metrics.csv`
-- Metrics JSON: `/content/results/notebook01_input_distribution_metrics.json`
-- Figure: `/content/figures/notebook01_entropy_vs_repetition.png`
-- Figure: <a href="figures/notebook01_delta_abs_mean.png">`/figures/notebook01_delta_abs_mean.png`</a>
+- Metrics CSV: <a href="results/notebook01_input_distribution_metrics.csv">`results/notebook01_input_distribution_metrics.csv`</a>
+- Metrics JSON: <a href="results/notebook01_input_distribution_metrics.json">`results/notebook01_input_distribution_metrics.json`</a>
+- Figure: <a href="figures/notebook01_entropy_vs_repetition.png">`figures/notebook01_entropy_vs_repetition.png`</a>
+- Figure: <a href="figures/notebook01_delta_abs_mean.png">`figures/notebook01_delta_abs_mean.png`</a>
 
 ## Distribution metrics
 
@@ -299,3 +299,56 @@ Notebook 08 can simulate online runtime adaptation: classify distribution window
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/08_streaming_runtime_adaptation.ipynb
 )
+
+# Report 08 — Streaming Runtime Adaptation
+
+This report simulates adaptive execution selection over a regime-switching integer stream.
+
+Constraint view:
+> runtime adaptation asks whether coherence persists as distributions drift.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook08_streaming_runtime_adaptation.csv`
+- Metrics JSON: `/content/results/notebook08_streaming_runtime_adaptation.json`
+- Figure: `/content/figures/notebook08_regime_timeline.png`
+- Figure: `/content/figures/notebook08_policy_timeline.png`
+- Figure: `/content/figures/notebook08_throughput_timeline.png`
+- Figure: `/content/figures/notebook08_coherence_pressure_timeline.png`
+- Figure: `/content/figures/notebook08_adaptive_gain_by_regime.png`
+
+## Summary
+
+|   windows |   policy_switches |   mean_fixed_scalar |   mean_fixed_simd |   mean_adaptive |   mean_gain_pct_vs_best_fixed |
+|----------:|------------------:|--------------------:|------------------:|----------------:|------------------------------:|
+|        32 |                 8 |              1287.5 |           1493.75 |         1420.42 |                      -5.54265 |
+
+## Policy counts
+
+| policy           |   count |
+|:-----------------|--------:|
+| guarded_fallback |      13 |
+| coherent_local   |       8 |
+| simd             |       8 |
+| hybrid           |       3 |
+
+## Regime × policy table
+
+| truth_regime          |   coherent_local |   guarded_fallback |   hybrid |   simd |
+|:----------------------|-----------------:|-------------------:|---------:|-------:|
+| clustered_ranges      |                0 |                  4 |        0 |      0 |
+| low_entropy_repeating |                8 |                  0 |        0 |      0 |
+| sequential_ids        |                0 |                  0 |        0 |      8 |
+| uniform_32bit         |                0 |                  8 |        0 |      0 |
+| zipfian_smallints     |                0 |                  1 |        3 |      0 |
+
+## Interpretation
+
+- The adaptive selector tracks changes in local distribution structure across windows.
+- Switching costs prevent unrealistic free adaptation.
+- Coherence and hardware-pressure timelines expose when the stream becomes stable or fragmented.
+- Adaptive gain is most meaningful in mixed or high-pressure regimes where fixed scalar/SIMD policies are brittle.
+
+## Next step
+
+Notebook 09 can test cross-hardware policy portability: does the same selector transfer across x86, ARM, AVX2, AVX512, and cloud baselines?
