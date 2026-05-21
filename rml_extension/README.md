@@ -120,3 +120,9 @@ Constraint view:
 
 Notebook 04 should combine distribution structure, cache/branching proxies, and execution-path metrics into constraint phase maps.
 
+## Notebook 04 — Constraint Phase Maps
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/04_constraint_phase_maps.ipynb
+)
+
