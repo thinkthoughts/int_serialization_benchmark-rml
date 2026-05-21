@@ -1,6 +1,7 @@
 # RML Extension
 
-## Notebook 01
+## Notebook 01 — Input Distribution Analysis
+
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/01_input_distribution_analysis.ipynb
 )
@@ -35,3 +36,9 @@ Constraint view:
 - High-entropy distributions stress parsing and serialization throughput differently.
 - Sequential and clustered inputs expose locality and delta structure.
 - Later notebooks can overlay throughput, latency, SIMD mode, and hardware profile results.
+
+## Notebook 02 — Cache & Branching Structure
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
+https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/02_cache_branching_structure.ipynb
+)
