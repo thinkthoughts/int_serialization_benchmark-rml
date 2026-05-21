@@ -1,0 +1,3 @@
+plot: throughput_phase_map
+x_axis: entropy
+y_axis: throughput

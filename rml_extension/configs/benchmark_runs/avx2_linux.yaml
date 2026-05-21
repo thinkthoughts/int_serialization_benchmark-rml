@@ -1,0 +1,3 @@
+name: avx2_linux
+simd: AVX2
+optimization: -O3
