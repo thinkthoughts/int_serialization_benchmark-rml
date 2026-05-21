@@ -256,3 +256,40 @@ Notebook 07 can build adaptive path-selection rules using structural metrics plu
 https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/07_adaptive_execution_selection.ipynb
 )
 
+# Report 07 — Adaptive Execution Selection
+
+This report turns RML structural, benchmark, and hardware-counter layers into an adaptive execution-selector model.
+
+Constraint view:
+> execution is a constraint-selection problem: distribution structure → execution topology → hardware pressure → adaptive path choice.
+
+## Generated outputs
+
+- Metrics CSV: `/content/results/notebook07_adaptive_execution_selection.csv`
+- Metrics JSON: `/content/results/notebook07_adaptive_execution_selection.json`
+- Figure: `/content/figures/notebook07_selector_scores.png`
+- Figure: `/content/figures/notebook07_selector_phase_map.png`
+- Figure: `/content/figures/notebook07_predicted_vs_observed.png`
+- Figure: `/content/figures/notebook07_adaptive_improvement_opportunity.png`
+- Figure: `/content/figures/notebook07_policy_matrix.png`
+
+## Adaptive selector summary
+
+| distribution          | predicted_selector      | observed_behavior_label   | selector_matches_observed   |   selector_confidence |   coherence_score |   hardware_pressure |   observed_throughput_mib_s |   adaptive_improvement_opportunity |   estimated_adaptive_gain_pct |
+|:----------------------|:------------------------|:--------------------------|:----------------------------|----------------------:|------------------:|--------------------:|----------------------------:|-----------------------------------:|------------------------------:|
+| low_entropy_repeating | select_scalar           | select_coherent_local     | False                       |             0.0345385 |              0.75 |           0.0821818 |                        1650 |                           0.122255 |                       8.05637 |
+| sequential_ids        | select_hybrid           | select_scalar             | False                       |             0.0166181 |              0.52 |           0.25518   |                        1350 |                           0.32     |                      13       |
+| uniform_32bit         | select_simd             | select_simd               | True                        |             0.133568  |              0.24 |           0.416349  |                        1900 |                           0.519857 |                      17.9964  |
+| zipfian_smallints     | select_hybrid           | select_hybrid             | True                        |             0.0993733 |              0.42 |           0.530647  |                        1500 |                           0.515291 |                      17.8823  |
+| clustered_ranges      | select_guarded_fallback | select_guarded_fallback   | True                        |             0.563125  |              0.22 |           1         |                         950 |                           0.8      |                      25       |
+
+## Interpretation
+
+- The selector treats scalar, SIMD, coherent-local, guarded-fallback, and hybrid execution as regimes.
+- Selector confidence measures how clearly one regime dominates the alternatives.
+- Mismatches identify where the rule-based policy needs measured benchmark correction.
+- Improvement opportunity highlights distributions where adaptive routing could matter most.
+
+## Next step
+
+Notebook 08 can simulate online runtime adaptation: classify distribution windows, choose execution paths, and estimate throughput under switching costs.
