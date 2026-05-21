@@ -1,0 +1,7 @@
+name: latency_vs_entropy
+plot_type: scatter
+x_axis: entropy_bits
+y_axis: latency_ns
+group_by: distribution
+title: Latency vs Entropy
+output: figures/latency_vs_entropy.png

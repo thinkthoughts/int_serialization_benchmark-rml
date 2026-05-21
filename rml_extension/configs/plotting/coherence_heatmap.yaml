@@ -1,0 +1,7 @@
+name: coherence_heatmap
+plot_type: heatmap
+x_axis: cache_miss_rate
+y_axis: branch_mispredict_rate
+color_metric: throughput_mib_s
+title: Cache / Branch Coherence Heatmap
+output: figures/coherence_heatmap.png

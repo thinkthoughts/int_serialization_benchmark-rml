@@ -1,0 +1,7 @@
+name: simd_scalar_comparison
+plot_type: bar
+x_axis: implementation
+y_axis: throughput_mib_s
+group_by: simd_mode
+title: SIMD vs Scalar Throughput
+output: figures/simd_scalar_comparison.png

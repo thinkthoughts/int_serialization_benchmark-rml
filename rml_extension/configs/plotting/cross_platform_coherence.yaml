@@ -1,0 +1,7 @@
+name: cross_platform_coherence
+plot_type: line
+x_axis: distribution
+y_axis: normalized_throughput
+group_by: hardware_profile
+title: Cross-Platform Coherence
+output: figures/cross_platform_coherence.png

@@ -1,3 +1,7 @@
-plot: throughput_phase_map
-x_axis: entropy
-y_axis: throughput
+name: throughput_phase_map
+plot_type: phase_map
+x_axis: entropy_bits
+y_axis: throughput_mib_s
+color_metric: latency_ns
+title: Throughput Phase Map
+output: figures/throughput_phase_map.png
