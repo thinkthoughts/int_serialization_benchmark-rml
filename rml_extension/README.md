@@ -543,3 +543,8 @@ Constraint view:
 
 Notebook 12 can analyze latency-throughput Pareto frontiers: choose policies under explicit tradeoff constraints.
 
+## Notebook 11 — Latency Throughput Pareto Frontiers
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/12_latency_throughput_pareto_frontiers.ipynb)
+
+
