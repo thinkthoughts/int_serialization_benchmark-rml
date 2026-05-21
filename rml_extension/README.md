@@ -801,9 +801,81 @@ Constraint view:
 
 Notebook 17 can build hierarchical prototype trees: split broad prototypes into child prototypes and merge redundant ones.
 
-## Notebook 17 -
+## Notebook 17 — Hierarchical Prototype Routing
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/17_hierarchical_prototype_routing.ipynb)
+
+# Report 17 — Hierarchical Prototype Routing
+
+This report turns the prototype memory bank into a coarse-to-fine routing hierarchy.
+
+Constraint view:
+> adaptive runtimes should route from broad structure to precise execution behavior.
+
+## Generated outputs
+
+- Window routes CSV: <a href="results/notebook17_hierarchical_prototype_routing.csv">`results/notebook17_hierarchical_prototype_routing.csv`</a>
+- Window routes JSON: <a href="results/notebook17_hierarchical_prototype_routing.json">`results/notebook17_hierarchical_prototype_routing.json`</a>
+- Prototype hierarchy CSV: <a href="results/notebook17_prototype_hierarchy.csv">`results/notebook17_prototype_hierarchy.csv`</a>
+- Parent route summary CSV: <a href="esults/notebook17_parent_route_summary.csv">`esults/notebook17_parent_route_summary.csv`</a>
+- Merge candidates CSV: <a href="results/notebook17_merge_candidates.csv">`results/notebook17_merge_candidates.csv`</a>
+- Split candidates CSV: <a href="results/notebook17_split_candidates.csv">`results/notebook17_split_candidates.csv`</a>
+- Figure: <a href="figures/notebook17_prototype_hierarchy_projection.png">`figures/notebook17_prototype_hierarchy_projection.png`</a>
+- Figure: <a href="figures/notebook17_parent_route_timeline.png">`figures/notebook17_parent_route_timeline.png`</a>
+- Figure: <a href="figures/notebook17_child_prototype_timeline.png">`figures/notebook17_child_prototype_timeline.png`</a>
+- Figure: <a href="figures/notebook17_route_switch_rates.png">`figures/notebook17_route_switch_rates.png`</a>
+- Figure: <a href="figures/notebook17_hierarchical_stability_timeline.png">`figures/notebook17_hierarchical_stability_timeline.png`</a>
+- Figure: <a href="figures/notebook17_parent_route_summary_matrix.png">`figures/notebook17_parent_route_summary_matrix.png`</a>
+- Figure: <a href="figures/notebook17_merge_split_counts.png">`figures/notebook17_merge_split_counts.png`</a>
+
+## Summary
+
+|   windows |   prototype_count |   parent_route_count |   mean_hierarchical_stability |   mean_parent_switch_rate |   mean_child_switch_rate |   mean_policy_switch_rate |   merge_candidate_count |   split_candidate_count |
+|----------:|------------------:|---------------------:|------------------------------:|--------------------------:|-------------------------:|--------------------------:|------------------------:|------------------------:|
+|       220 |                 6 |                    3 |                      0.495276 |                  0.414248 |                   0.6152 |                    0.5652 |                       5 |                       3 |
+
+## Parent route summary
+
+| parent_route   |   prototype_count |   mean_memory_stability |   mean_effective_weight |   total_usage |   mean_entropy |   mean_pressure |   mean_coherence |
+|:---------------|------------------:|------------------------:|------------------------:|--------------:|---------------:|----------------:|-----------------:|
+| parent_0       |                 4 |                  0.5225 |                  0.5725 |           146 |           0.56 |          0.8175 |           0.2825 |
+| parent_1       |                 1 |                  0.38   |                  0.48   |            22 |           0.9  |          0.25   |           0.55   |
+| parent_2       |                 1 |                  0.56   |                  0.62   |            32 |           0.1  |          0.02   |           0.95   |
+
+## Merge candidates
+
+| prototype_a       | prototype_b             | parent_route   |   feature_distance | merge_candidate   |
+|:------------------|:------------------------|:---------------|-------------------:|:------------------|
+| uniform_32bit     | zipfian_smallints       | parent_0       |           1.28413  | False             |
+| uniform_32bit     | clustered_ranges        | parent_0       |           1.08991  | True              |
+| uniform_32bit     | learned_drift_prototype | parent_0       |           0.996393 | True              |
+| zipfian_smallints | clustered_ranges        | parent_0       |           0.698498 | True              |
+| zipfian_smallints | learned_drift_prototype | parent_0       |           0.514976 | True              |
+| clustered_ranges  | learned_drift_prototype | parent_0       |           0.897274 | True              |
+
+## Split candidates
+
+| prototype               | parent_route   |   memory_stability_score |   usage_count |   windows |   mean_child_switch |   mean_parent_switch |   mean_stability | split_candidate   |
+|:------------------------|:---------------|-------------------------:|--------------:|----------:|--------------------:|---------------------:|-----------------:|:------------------|
+| low_entropy_repeating   | parent_2       |                     0.56 |            32 |        37 |            0.770721 |             0.544144 |         0.353739 | True              |
+| sequential_ids          | parent_1       |                     0.38 |            22 |        20 |            0.816667 |             0.54625  |         0.333208 | True              |
+| uniform_32bit           | parent_0       |                     0.58 |            36 |        36 |            0.785185 |             0.486243 |         0.379471 | False             |
+| zipfian_smallints       | parent_0       |                     0.49 |            26 |        38 |            0.799237 |             0.531032 |         0.349252 | True              |
+| clustered_ranges        | parent_0       |                     0.42 |            20 |        31 |            0.786766 |             0.51373  |         0.362225 | False             |
+| learned_drift_prototype | parent_0       |                     0.6  |            64 |        58 |            0.128736 |             0.111494 |         0.880115 | False             |
+
+## Interpretation
+
+- Parent routes provide stable coarse structure even when child prototypes switch.
+- Child routes preserve precision for execution-policy choice.
+- Merge candidates identify redundant prototypes within a parent group.
+- Split candidates identify broad or unstable prototypes that may need refinement.
+
+## Next step
+
+Notebook 18 can perform prototype compression: merge redundant prototypes while preserving reconstruction quality.
+
+## Notebook 18 -
 
 # Next
 
