@@ -1177,6 +1177,8 @@ Constraint view:
 
 Notebook 22 can build predictive decompression: forecast decompression before fallback occurs.
 
+## Notebook 22
+
 # Next
 
 | Notebook | Direction                                       |
