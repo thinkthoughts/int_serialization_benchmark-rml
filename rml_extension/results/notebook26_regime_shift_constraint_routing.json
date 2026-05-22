@@ -1,0 +1,415 @@
+{
+  "summary": [
+    {
+      "windows": 240,
+      "regimes": 5,
+      "policies": 5,
+      "mean_constraint_score": 0.5343430782406676,
+      "mean_regret": 0.19875341472577815,
+      "mean_recovery_score": 0.37381268035878323,
+      "mean_route_persistence": 0.4369763336094199,
+      "mean_recommendation_score": 0.33293374318711433
+    }
+  ],
+  "policy_summary": [
+    {
+      "policy": "cgcs_balanced",
+      "windows": 240,
+      "mean_constraint_score": 0.5949813159371564,
+      "mean_regret": 0.13446608591160242,
+      "mean_recovery_score": 0.5348828605457965,
+      "mean_route_persistence": 0.5274649081503557,
+      "mean_route_volatility": 0.5386050271292612,
+      "mean_memory_quality": 0.44046623519744627,
+      "mean_recommendation_score": 0.4223668938239454
+    },
+    {
+      "policy": "conservative_predictive",
+      "windows": 240,
+      "mean_constraint_score": 0.5727315982003931,
+      "mean_regret": 0.16834890909728775,
+      "mean_recovery_score": 0.44860362148184485,
+      "mean_route_persistence": 0.5161864935035633,
+      "mean_route_volatility": 0.5477802414528595,
+      "mean_memory_quality": 0.4264448997094851,
+      "mean_recommendation_score": 0.38589832092341037
+    },
+    {
+      "policy": "predictive",
+      "windows": 240,
+      "mean_constraint_score": 0.537906456292119,
+      "mean_regret": 0.19814249632169115,
+      "mean_recovery_score": 0.38276653595631344,
+      "mean_route_persistence": 0.39861575802606314,
+      "mean_route_volatility": 0.6637868437754153,
+      "mean_memory_quality": 0.41601734534318974,
+      "mean_recommendation_score": 0.32870774364226857
+    },
+    {
+      "policy": "aggressive_predictive",
+      "windows": 240,
+      "mean_constraint_score": 0.5058734038102517,
+      "mean_regret": 0.2104741724999733,
+      "mean_recovery_score": 0.2838680796139349,
+      "mean_route_persistence": 0.31487816730229923,
+      "mean_route_volatility": 0.7453616899419304,
+      "mean_memory_quality": 0.4015990482948644,
+      "mean_recommendation_score": 0.27556366992342657
+    },
+    {
+      "policy": "reactive",
+      "windows": 240,
+      "mean_constraint_score": 0.4602226169634178,
+      "mean_regret": 0.2823354097983362,
+      "mean_recovery_score": 0.2189423041960262,
+      "mean_route_persistence": 0.4277363410648178,
+      "mean_route_volatility": 0.6308405198009707,
+      "mean_memory_quality": 0.3905124057719232,
+      "mean_recommendation_score": 0.2521320876225209
+    }
+  ],
+  "regime_summary": [
+    {
+      "regime": "adversarial",
+      "policy": "aggressive_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.3832444311616949,
+      "mean_regret": 0.2708845250985091,
+      "mean_recovery_score": 0.2191825297253386,
+      "mean_route_persistence": 0.15123203562456375,
+      "mean_route_volatility": 0.9305700515934117,
+      "mean_decompression_need": 0.5584450355830198,
+      "mean_recommendation_score": 0.16992254248622948
+    },
+    {
+      "regime": "adversarial",
+      "policy": "cgcs_balanced",
+      "windows": 48,
+      "mean_constraint_score": 0.555763139663963,
+      "mean_regret": 0.19632402101935256,
+      "mean_recovery_score": 0.3846550466392256,
+      "mean_route_persistence": 0.35207254887983735,
+      "mean_route_volatility": 0.7353823685812907,
+      "mean_decompression_need": 0.462032137183698,
+      "mean_recommendation_score": 0.3269638089050325
+    },
+    {
+      "regime": "adversarial",
+      "policy": "conservative_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5532475320616104,
+      "mean_regret": 0.23208873938203137,
+      "mean_recovery_score": 0.32805357133375257,
+      "mean_route_persistence": 0.3407748421885139,
+      "mean_route_volatility": 0.7446552459421074,
+      "mean_decompression_need": 0.49391650485515165,
+      "mean_recommendation_score": 0.30414306843813405
+    },
+    {
+      "regime": "adversarial",
+      "policy": "predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.46695109035945653,
+      "mean_regret": 0.2612589547604692,
+      "mean_recovery_score": 0.28265450376590023,
+      "mean_route_persistence": 0.22002858206628392,
+      "mean_route_volatility": 0.8636285568848207,
+      "mean_decompression_need": 0.5252274356000509,
+      "mean_recommendation_score": 0.23137933062625451
+    },
+    {
+      "regime": "adversarial",
+      "policy": "reactive",
+      "windows": 48,
+      "mean_constraint_score": 0.4052468547790562,
+      "mean_regret": 0.3483755185288821,
+      "mean_recovery_score": 0.17776927040954468,
+      "mean_route_persistence": 0.25106660144420734,
+      "mean_route_volatility": 0.8285306291104932,
+      "mean_decompression_need": 0.5647880044237839,
+      "mean_recommendation_score": 0.1736412608892062
+    },
+    {
+      "regime": "overload",
+      "policy": "aggressive_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5664396626532614,
+      "mean_regret": 0.20460776738986317,
+      "mean_recovery_score": 0.24525947225725755,
+      "mean_route_persistence": 0.3044713554548893,
+      "mean_route_volatility": 0.7440607134823614,
+      "mean_decompression_need": 0.43991010964830246,
+      "mean_recommendation_score": 0.2891768733178412
+    },
+    {
+      "regime": "overload",
+      "policy": "cgcs_balanced",
+      "windows": 48,
+      "mean_constraint_score": 0.5995065997347929,
+      "mean_regret": 0.1282008077182751,
+      "mean_recovery_score": 0.4831389252996067,
+      "mean_route_persistence": 0.5287722569984864,
+      "mean_route_volatility": 0.5251109717451747,
+      "mean_decompression_need": 0.3579430421780137,
+      "mean_recommendation_score": 0.41421736132117704
+    },
+    {
+      "regime": "overload",
+      "policy": "conservative_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5566511501238774,
+      "mean_regret": 0.15788571948699778,
+      "mean_recovery_score": 0.3999942566615155,
+      "mean_route_persistence": 0.5162195790400655,
+      "mean_route_volatility": 0.5357406840124087,
+      "mean_decompression_need": 0.3937317856379567,
+      "mean_recommendation_score": 0.3711929454232204
+    },
+    {
+      "regime": "overload",
+      "policy": "predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5580226823556856,
+      "mean_regret": 0.18758172393660433,
+      "mean_recovery_score": 0.33836211090141877,
+      "mean_route_persistence": 0.40132891286494776,
+      "mean_route_volatility": 0.6487978041122694,
+      "mean_decompression_need": 0.4055011435604389,
+      "mean_recommendation_score": 0.3292377214791413
+    },
+    {
+      "regime": "overload",
+      "policy": "reactive",
+      "windows": 48,
+      "mean_constraint_score": 0.42308527244270405,
+      "mean_regret": 0.27266279748400685,
+      "mean_recovery_score": 0.18329139499322553,
+      "mean_route_persistence": 0.429362459174862,
+      "mean_route_volatility": 0.6174360314243533,
+      "mean_decompression_need": 0.45452541535805163,
+      "mean_recommendation_score": 0.23243644276490819
+    },
+    {
+      "regime": "recovery",
+      "policy": "aggressive_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5480297522155662,
+      "mean_regret": 0.15457250098853248,
+      "mean_recovery_score": 0.34185262818432155,
+      "mean_route_persistence": 0.45619153955197106,
+      "mean_route_volatility": 0.5862288232239133,
+      "mean_decompression_need": 0.2856410914637096,
+      "mean_recommendation_score": 0.34378269175515364
+    },
+    {
+      "regime": "recovery",
+      "policy": "cgcs_balanced",
+      "windows": 48,
+      "mean_constraint_score": 0.6516716272611508,
+      "mean_regret": 0.07676772551645897,
+      "mean_recovery_score": 0.6592504904185005,
+      "mean_route_persistence": 0.6653988870331752,
+      "mean_route_volatility": 0.38443934327656487,
+      "mean_decompression_need": 0.2101935681877977,
+      "mean_recommendation_score": 0.5103965585546507
+    },
+    {
+      "regime": "recovery",
+      "policy": "conservative_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.6255030102999745,
+      "mean_regret": 0.11398514386415294,
+      "mean_recovery_score": 0.5505248390549327,
+      "mean_route_persistence": 0.6549612179026743,
+      "mean_route_volatility": 0.3919434004654161,
+      "mean_decompression_need": 0.23209635235305778,
+      "mean_recommendation_score": 0.46700182331377976
+    },
+    {
+      "regime": "recovery",
+      "policy": "predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.59037069564503,
+      "mean_regret": 0.14060850952725992,
+      "mean_recovery_score": 0.4685406555381017,
+      "mean_route_persistence": 0.5420356589768967,
+      "mean_route_volatility": 0.5035969219998665,
+      "mean_decompression_need": 0.2521768337050611,
+      "mean_recommendation_score": 0.40770523845342105
+    },
+    {
+      "regime": "recovery",
+      "policy": "reactive",
+      "windows": 48,
+      "mean_constraint_score": 0.5213625879732579,
+      "mean_regret": 0.22014927358525835,
+      "mean_recovery_score": 0.260923436171276,
+      "mean_route_persistence": 0.5678707315740447,
+      "mean_route_volatility": 0.47415868301068564,
+      "mean_decompression_need": 0.3107259892988063,
+      "mean_recommendation_score": 0.32506523098527595
+    },
+    {
+      "regime": "sparse_memory",
+      "policy": "aggressive_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5364117433755013,
+      "mean_regret": 0.227438655213964,
+      "mean_recovery_score": 0.249372508881085,
+      "mean_route_persistence": 0.29516613033834943,
+      "mean_route_volatility": 0.7814630233550971,
+      "mean_decompression_need": 0.5471442486847857,
+      "mean_recommendation_score": 0.2722439094614063
+    },
+    {
+      "regime": "sparse_memory",
+      "policy": "cgcs_balanced",
+      "windows": 48,
+      "mean_constraint_score": 0.6020870251714419,
+      "mean_regret": 0.15301969921108813,
+      "mean_recovery_score": 0.4508300701488534,
+      "mean_route_persistence": 0.5034882741352559,
+      "mean_route_volatility": 0.5784513835315952,
+      "mean_decompression_need": 0.45681232203566186,
+      "mean_recommendation_score": 0.3980693999827292
+    },
+    {
+      "regime": "sparse_memory",
+      "policy": "conservative_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5768570948303804,
+      "mean_regret": 0.18391348210107508,
+      "mean_recovery_score": 0.3814749667613622,
+      "mean_route_persistence": 0.49818590840456634,
+      "mean_route_volatility": 0.5819491104281455,
+      "mean_decompression_need": 0.4900337192414936,
+      "mean_recommendation_score": 0.36598467398374246
+    },
+    {
+      "regime": "sparse_memory",
+      "policy": "predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5531664999669834,
+      "mean_regret": 0.21754663626895868,
+      "mean_recovery_score": 0.32891064256803254,
+      "mean_route_persistence": 0.3773473024105129,
+      "mean_route_volatility": 0.7012489486448449,
+      "mean_decompression_need": 0.5099030494723448,
+      "mean_recommendation_score": 0.3145237445807317
+    },
+    {
+      "regime": "sparse_memory",
+      "policy": "reactive",
+      "windows": 48,
+      "mean_constraint_score": 0.4827655943014977,
+      "mean_regret": 0.3008406217944791,
+      "mean_recovery_score": 0.1968113237950567,
+      "mean_route_persistence": 0.40404490618512573,
+      "mean_route_volatility": 0.6701982872635063,
+      "mean_decompression_need": 0.5571139712587565,
+      "mean_recommendation_score": 0.2473902739476109
+    },
+    {
+      "regime": "stable",
+      "policy": "aggressive_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.495241429645235,
+      "mean_regret": 0.19486741380899766,
+      "mean_recovery_score": 0.36367325902167164,
+      "mean_route_persistence": 0.36732977554172264,
+      "mean_route_volatility": 0.6844858380548686,
+      "mean_decompression_need": 0.3861491968518745,
+      "mean_recommendation_score": 0.302692332596502
+    },
+    {
+      "regime": "stable",
+      "policy": "cgcs_balanced",
+      "windows": 48,
+      "mean_constraint_score": 0.5658781878544339,
+      "mean_regret": 0.11801817609283723,
+      "mean_recovery_score": 0.6965397702227967,
+      "mean_route_persistence": 0.5875925737050237,
+      "mean_route_volatility": 0.46964106851168075,
+      "mean_decompression_need": 0.3050269747475696,
+      "mean_recommendation_score": 0.46218734035613745
+    },
+    {
+      "regime": "stable",
+      "policy": "conservative_predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5513992036861227,
+      "mean_regret": 0.15387146065218157,
+      "mean_recovery_score": 0.5829704735976613,
+      "mean_route_persistence": 0.570790919981996,
+      "mean_route_volatility": 0.48461276641622003,
+      "mean_decompression_need": 0.331523973324214,
+      "mean_recommendation_score": 0.42116909345817505
+    },
+    {
+      "regime": "stable",
+      "policy": "predictive",
+      "windows": 48,
+      "mean_constraint_score": 0.5210213131334398,
+      "mean_regret": 0.1837166571151637,
+      "mean_recovery_score": 0.49536476700811405,
+      "mean_route_persistence": 0.4523383338116746,
+      "mean_route_volatility": 0.6016619872352753,
+      "mean_decompression_need": 0.35317991050717895,
+      "mean_recommendation_score": 0.3606926830717944
+    },
+    {
+      "regime": "stable",
+      "policy": "reactive",
+      "windows": 48,
+      "mean_constraint_score": 0.4686527753205733,
+      "mean_regret": 0.26964883759905456,
+      "mean_recovery_score": 0.2759160956110281,
+      "mean_route_persistence": 0.4863370069458493,
+      "mean_route_volatility": 0.5638789681958148,
+      "mean_decompression_need": 0.4062725652642749,
+      "mean_recommendation_score": 0.282127229525603
+    }
+  ],
+  "regime_transition_matrix": [
+    {
+      "current_regime": "stable",
+      "stable": 0.9791666666666666,
+      "overload": 0.020833333333333332,
+      "sparse_memory": 0.0,
+      "adversarial": 0.0,
+      "recovery": 0.0
+    },
+    {
+      "current_regime": "overload",
+      "stable": 0.0,
+      "overload": 0.9791666666666666,
+      "sparse_memory": 0.020833333333333332,
+      "adversarial": 0.0,
+      "recovery": 0.0
+    },
+    {
+      "current_regime": "sparse_memory",
+      "stable": 0.0,
+      "overload": 0.0,
+      "sparse_memory": 0.9791666666666666,
+      "adversarial": 0.020833333333333332,
+      "recovery": 0.0
+    },
+    {
+      "current_regime": "adversarial",
+      "stable": 0.0,
+      "overload": 0.0,
+      "sparse_memory": 0.0,
+      "adversarial": 0.9791666666666666,
+      "recovery": 0.020833333333333332
+    },
+    {
+      "current_regime": "recovery",
+      "stable": 0.0,
+      "overload": 0.0,
+      "sparse_memory": 0.0,
+      "adversarial": 0.0,
+      "recovery": 1.0
+    }
+  ]
+}
