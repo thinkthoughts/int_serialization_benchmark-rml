@@ -1628,6 +1628,102 @@ Notebook 26 can build budget phase diagrams:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/26_regime_shift_constraint_routing.ipynb)
 
+# Report 26 — Regime-Shift Constraint Routing
+
+Notebook 26 evaluates route-memory policies under nonstationary operating regimes.
+
+Constraint view:
+> adaptive routing is useful only when policies remain coherent across changing regimes, not only during stable plateaus.
+
+## Generated outputs
+
+- Regime-shift routing CSV: <a href="results/notebook26_regime_shift_constraint_routing.csv">`results/notebook26_regime_shift_constraint_routing.csv`</a>
+- Regime-shift routing JSON: <a href="results/notebook26_regime_shift_constraint_routing.json">`results/notebook26_regime_shift_constraint_routing.json`</a>
+- Policy summary CSV: <a href="results/notebook26_policy_summary.csv">`results/notebook26_policy_summary.csv`</a>
+- Regime summary CSV: <a href="results/notebook26_regime_summary.csv">`results/notebook26_regime_summary.csv`</a>
+- Regime transition matrix CSV: <a href="results/notebook26_regime_transition_matrix.csv">`results/notebook26_regime_transition_matrix.csv`</a>
+- Route persistence CSV: <a href="results/notebook26_route_persistence.csv">`results/notebook26_route_persistence.csv`</a>
+- Figure: <a href="figures/notebook26_regime_timeline.png">`figures/notebook26_regime_timeline.png`</a>
+- Figure: <a href="figures/notebook26_constraint_score_by_regime.png">`figures/notebook26_constraint_score_by_regime.png`</a>
+- Figure: <a href="figures/notebook26_regret_by_regime.png">`figures/notebook26_regret_by_regime.png`</a>
+- Figure: <a href="figures/notebook26_recovery_curve.png">`figures/notebook26_recovery_curve.png`</a>
+- Figure: <a href="figures/notebook26_policy_frontier.png">`figures/notebook26_policy_frontier.png`</a>
+- Figure: <a href="figures/notebook26_regime_transition_matrix.png">`figures/notebook26_regime_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook26_memory_quality_timeline.png">`figures/notebook26_memory_quality_timeline.png`</a>
+- Figure: <a href="figures/notebook26_route_persistence.png">`figures/notebook26_route_persistence.png`</a>
+- Figure: <a href="figures/notebook26_recommendation_score.png">`figures/notebook26_recommendation_score.png`</a>
+- Figure: <a href="figures/notebook26_route_volatility_timeline.png">`figures/notebook26_route_volatility_timeline.png`</a>
+
+## Summary
+
+|   windows |   regimes |   policies |   mean_constraint_score |   mean_regret |   mean_recovery_score |   mean_route_persistence |   mean_recommendation_score |
+|----------:|----------:|-----------:|------------------------:|--------------:|----------------------:|-------------------------:|----------------------------:|
+|       240 |         5 |          5 |                0.534343 |      0.198753 |              0.373813 |                 0.436976 |                    0.332934 |
+
+## Policy summary
+
+| policy                  |   windows |   mean_constraint_score |   mean_regret |   mean_recovery_score |   mean_route_persistence |   mean_route_volatility |   mean_memory_quality |   mean_recommendation_score |
+|:------------------------|----------:|------------------------:|--------------:|----------------------:|-------------------------:|------------------------:|----------------------:|----------------------------:|
+| cgcs_balanced           |       240 |                0.594981 |      0.134466 |              0.534883 |                 0.527465 |                0.538605 |              0.440466 |                    0.422367 |
+| conservative_predictive |       240 |                0.572732 |      0.168349 |              0.448604 |                 0.516186 |                0.54778  |              0.426445 |                    0.385898 |
+| predictive              |       240 |                0.537906 |      0.198142 |              0.382767 |                 0.398616 |                0.663787 |              0.416017 |                    0.328708 |
+| aggressive_predictive   |       240 |                0.505873 |      0.210474 |              0.283868 |                 0.314878 |                0.745362 |              0.401599 |                    0.275564 |
+| reactive                |       240 |                0.460223 |      0.282335 |              0.218942 |                 0.427736 |                0.630841 |              0.390512 |                    0.252132 |
+
+## Regime summary
+
+| regime        | policy                  |   windows |   mean_constraint_score |   mean_regret |   mean_recovery_score |   mean_route_persistence |   mean_route_volatility |   mean_decompression_need |   mean_recommendation_score |
+|:--------------|:------------------------|----------:|------------------------:|--------------:|----------------------:|-------------------------:|------------------------:|--------------------------:|----------------------------:|
+| adversarial   | aggressive_predictive   |        48 |                0.383244 |     0.270885  |              0.219183 |                 0.151232 |                0.93057  |                  0.558445 |                    0.169923 |
+| adversarial   | cgcs_balanced           |        48 |                0.555763 |     0.196324  |              0.384655 |                 0.352073 |                0.735382 |                  0.462032 |                    0.326964 |
+| adversarial   | conservative_predictive |        48 |                0.553248 |     0.232089  |              0.328054 |                 0.340775 |                0.744655 |                  0.493917 |                    0.304143 |
+| adversarial   | predictive              |        48 |                0.466951 |     0.261259  |              0.282655 |                 0.220029 |                0.863629 |                  0.525227 |                    0.231379 |
+| adversarial   | reactive                |        48 |                0.405247 |     0.348376  |              0.177769 |                 0.251067 |                0.828531 |                  0.564788 |                    0.173641 |
+| overload      | aggressive_predictive   |        48 |                0.56644  |     0.204608  |              0.245259 |                 0.304471 |                0.744061 |                  0.43991  |                    0.289177 |
+| overload      | cgcs_balanced           |        48 |                0.599507 |     0.128201  |              0.483139 |                 0.528772 |                0.525111 |                  0.357943 |                    0.414217 |
+| overload      | conservative_predictive |        48 |                0.556651 |     0.157886  |              0.399994 |                 0.51622  |                0.535741 |                  0.393732 |                    0.371193 |
+| overload      | predictive              |        48 |                0.558023 |     0.187582  |              0.338362 |                 0.401329 |                0.648798 |                  0.405501 |                    0.329238 |
+| overload      | reactive                |        48 |                0.423085 |     0.272663  |              0.183291 |                 0.429362 |                0.617436 |                  0.454525 |                    0.232436 |
+| recovery      | aggressive_predictive   |        48 |                0.54803  |     0.154573  |              0.341853 |                 0.456192 |                0.586229 |                  0.285641 |                    0.343783 |
+| recovery      | cgcs_balanced           |        48 |                0.651672 |     0.0767677 |              0.65925  |                 0.665399 |                0.384439 |                  0.210194 |                    0.510397 |
+| recovery      | conservative_predictive |        48 |                0.625503 |     0.113985  |              0.550525 |                 0.654961 |                0.391943 |                  0.232096 |                    0.467002 |
+| recovery      | predictive              |        48 |                0.590371 |     0.140609  |              0.468541 |                 0.542036 |                0.503597 |                  0.252177 |                    0.407705 |
+| recovery      | reactive                |        48 |                0.521363 |     0.220149  |              0.260923 |                 0.567871 |                0.474159 |                  0.310726 |                    0.325065 |
+| sparse_memory | aggressive_predictive   |        48 |                0.536412 |     0.227439  |              0.249373 |                 0.295166 |                0.781463 |                  0.547144 |                    0.272244 |
+| sparse_memory | cgcs_balanced           |        48 |                0.602087 |     0.15302   |              0.45083  |                 0.503488 |                0.578451 |                  0.456812 |                    0.398069 |
+| sparse_memory | conservative_predictive |        48 |                0.576857 |     0.183913  |              0.381475 |                 0.498186 |                0.581949 |                  0.490034 |                    0.365985 |
+| sparse_memory | predictive              |        48 |                0.553166 |     0.217547  |              0.328911 |                 0.377347 |                0.701249 |                  0.509903 |                    0.314524 |
+| sparse_memory | reactive                |        48 |                0.482766 |     0.300841  |              0.196811 |                 0.404045 |                0.670198 |                  0.557114 |                    0.24739  |
+| stable        | aggressive_predictive   |        48 |                0.495241 |     0.194867  |              0.363673 |                 0.36733  |                0.684486 |                  0.386149 |                    0.302692 |
+| stable        | cgcs_balanced           |        48 |                0.565878 |     0.118018  |              0.69654  |                 0.587593 |                0.469641 |                  0.305027 |                    0.462187 |
+| stable        | conservative_predictive |        48 |                0.551399 |     0.153871  |              0.58297  |                 0.570791 |                0.484613 |                  0.331524 |                    0.421169 |
+| stable        | predictive              |        48 |                0.521021 |     0.183717  |              0.495365 |                 0.452338 |                0.601662 |                  0.35318  |                    0.360693 |
+| stable        | reactive                |        48 |                0.468653 |     0.269649  |              0.275916 |                 0.486337 |                0.563879 |                  0.406273 |                    0.282127 |
+
+## Regime transition probabilities
+
+|               |   stable |   overload |   sparse_memory |   adversarial |   recovery |
+|:--------------|---------:|-----------:|----------------:|--------------:|-----------:|
+| stable        | 0.979167 |  0.0208333 |       0         |     0         |  0         |
+| overload      | 0        |  0.979167  |       0.0208333 |     0         |  0         |
+| sparse_memory | 0        |  0         |       0.979167  |     0.0208333 |  0         |
+| adversarial   | 0        |  0         |       0         |     0.979167  |  0.0208333 |
+| recovery      | 0        |  0         |       0         |     0         |  1         |
+
+## Interpretation
+
+- Stable regimes reward route persistence and low decompression pressure.
+- Overload regimes reward predictive and pressure-aware adaptation.
+- Sparse-memory regimes expose whether a policy can recover from degraded retrieval quality.
+- Adversarial regimes penalize aggressive rerouting and highlight robustness differences.
+- Recovery regimes test whether policies can return to coherent compressed routing after instability.
+
+## Next step
+
+Notebook 27 can start a new group: distributed adaptive coordination across multiple routing agents.
+
+## Notebook 27 -
+
 # Next
 
 | Notebook | Direction                                       |
