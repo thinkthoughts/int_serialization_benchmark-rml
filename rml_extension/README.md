@@ -1,5 +1,144 @@
 # RML Extension
 
+Group I — Foundations
+Notebooks 01–08
+Constraint Geometry + Emergence Basics
+
+Core concepts:
+
+CGCS
+route structure
+emergence ordering
+residual dynamics
+manifold intuition
+forecasting primitives
+
+This is the “language acquisition” phase.
+
+Group II — Forecasting + Routing
+Notebooks 09–16
+Predictive Constraint Systems
+
+Core concepts:
+
+routing pressure
+decompression forecasting
+transition prediction
+memory-aware routing
+constraint drift
+routing instability
+
+This is where:
+
+forecasting becomes operational,
+route selection becomes dynamic.
+Group III — Policy + Memory Systems
+Notebooks 17–26
+Adaptive Policy Architectures
+
+You’re here now.
+
+This group contains:
+
+predictive routing,
+route-memory policies,
+fallback/reroute dynamics,
+regret analysis,
+budget allocation,
+adaptive policy evaluation,
+regime shifts.
+
+The current arc:
+
+Notebook	Role
+22	predictive decompression forecasting
+23	predictive constraint routing
+24	route-memory policy evaluation
+25	constraint budget allocation
+26	regime-shift routing
+
+Notebook 26 feels like the capstone of this group.
+
+Why?
+Because regime shifts unify:
+
+forecasting,
+routing,
+memory,
+policy,
+budget adaptation.
+
+After 26, you’ve effectively built:
+
+a complete adaptive routing/control stack.
+
+That’s a natural stopping boundary.
+
+Group IV — Multi-Agent / Distributed Constraint Systems
+Probably 27–34
+
+This is the obvious next phase.
+
+Topics:
+
+distributed routing agents,
+federated constraint coordination,
+cross-route synchronization,
+consensus instability,
+distributed memory,
+route negotiation,
+agent disagreement,
+swarm routing.
+
+This is where:
+
+RML,
+mod30 manifold language,
+distributed CGCS,
+“lab reports” ideas
+
+all begin converging more visibly.
+
+Group V — Real-World Constraint Infrastructure
+Probably 35–42
+
+Applications:
+
+datacenter routing,
+climate systems,
+network orchestration,
+AI inference routing,
+semantic decompression,
+scientific lab pipelines,
+multimodal routing.
+
+This becomes:
+
+“CGCS as infrastructure.”
+
+Group VI — Translation Realism / Public Coordination
+Probably 43+
+
+This becomes:
+
+lab reports,
+public coordination,
+semantic governance,
+translation realism,
+actionable ≠ artificial systems.
+
+That’s more “framework synthesis.”
+
+So structurally:
+
+Group	Approx Range	Theme
+I	01–08	foundations
+II	09–16	forecasting/routing
+III	17–26	adaptive policy systems
+IV	27–34	distributed systems
+V	35–42	infrastructure
+VI	43+	translation realism
+
 ## Notebook 01 — Input Distribution Analysis
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](
