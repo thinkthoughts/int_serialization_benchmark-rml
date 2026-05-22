@@ -1502,6 +1502,129 @@ Notebook 25 can build policy-regret phase diagrams:
 ##Notebook 25
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/25_constraint_budget_allocation.ipynb)
+# Report 25 — Constraint Budget Allocation
+
+This report adds finite resource allocation to predictive route-memory policy evaluation.
+
+Constraint view:
+> predictive routing is useful only when finite constraint budgets are allocated before fallback pressure dominates.
+
+## Generated outputs
+
+- Budget allocation CSV: <a href="results/notebook25_constraint_budget_allocation.csv">`results/notebook25_constraint_budget_allocation.csv`</a>
+- Budget allocation JSON: <a href="results/notebook25_constraint_budget_allocation.json">`results/notebook25_constraint_budget_allocation.json`</a>
+- Budget summary CSV: <a href="results/notebook25_budget_summary.csv">`results/notebook25_budget_summary.csv`</a>
+- Policy-budget summary CSV: <a href="results/notebook25_policy_budget_summary.csv">`results/notebook25_policy_budget_summary.csv`</a>
+- Route-budget summary CSV: <a href="results/notebook25_route_budget_summary.csv">`results/notebook25_route_budget_summary.csv`</a>
+- Figure: <a href="figures/notebook25_budget_recommendation_score.png">`figures/notebook25_budget_recommendation_score.png`</a>
+- Figure: <a href="figures/notebook25_adjusted_constraint_score.png">`figures/notebook25_adjusted_constraint_score.png`</a>
+- Figure: <a href="figures/notebook25_budget_regret.png">`figures/notebook25_budget_regret.png`</a>
+- Figure: <a href="figures/notebook25_allocation_rates.png">`figures/notebook25_allocation_rates.png`</a>
+- Figure: <a href="figures/notebook25_avoided_fallback_rate.png">`figures/notebook25_avoided_fallback_rate.png`</a>
+- Figure: <a href="figures/notebook25_policy_budget_constraint_heatmap.png">`figures/notebook25_policy_budget_constraint_heatmap.png`</a>
+- Figure: <a href="figures/notebook25_route_budget_constraint_heatmap.png">`figures/notebook25_route_budget_constraint_heatmap.png`</a>
+- Figure: <a href="figures/notebook25_budget_priority_timeline.png">`figures/notebook25_budget_priority_timeline.png`</a>
+- Figure: <a href="figures/notebook25_adjusted_cost_timeline.png">`figures/notebook25_adjusted_cost_timeline.png`</a>
+- Figure: <a href="figures/notebook25_budget_frontier.png">`figures/notebook25_budget_frontier.png`</a>
+
+## Budget strategy summary
+
+| budget_strategy          |   windows |   mean_adjusted_constraint_score |   mean_adjusted_stability |   mean_adjusted_cost |   mean_budget_regret |   reroute_allocation_rate |   decompression_allocation_rate |   monitor_allocation_rate |   avoided_fallback_rate |   mean_budget_switch_rate |
+|:-------------------------|----------:|---------------------------------:|--------------------------:|---------------------:|---------------------:|--------------------------:|--------------------------------:|--------------------------:|------------------------:|--------------------------:|
+| cgcs_balanced_budget     |     36000 |                         0.576925 |                  0.588119 |             0.127534 |            0.0845606 |                  0.265694 |                        0.185528 |                  0.489833 |               0.0146389 |                  0.346347 |
+| uniform_budget           |     36000 |                         0.575909 |                  0.586942 |             0.130251 |            0.0856052 |                  0.2515   |                        0.176583 |                  0.499833 |               0.0146389 |                  0.346347 |
+| pressure_first           |     36000 |                         0.574512 |                  0.587725 |             0.126936 |            0.0830322 |                  0.277889 |                        0.185528 |                  0.452306 |               0.0146389 |                  0.346347 |
+| forecast_first           |     36000 |                         0.573683 |                  0.588477 |             0.12437  |            0.0839174 |                  0.296278 |                        0.185917 |                  0.439667 |               0.0146389 |                  0.346347 |
+| regret_minimizing_budget |     36000 |                         0.572114 |                  0.585748 |             0.131856 |            0.0857567 |                  0.239222 |                        0.182917 |                  0.469833 |               0.0146389 |                  0.346347 |
+
+## Policy-budget summary
+
+| policy                  | budget_strategy          |   windows |   mean_adjusted_constraint_score |   mean_adjusted_stability |   mean_adjusted_cost |   mean_budget_regret |   avoided_fallback_rate |   reroute_allocation_rate |   decompression_allocation_rate |
+|:------------------------|:-------------------------|----------:|---------------------------------:|--------------------------:|---------------------:|---------------------:|------------------------:|--------------------------:|--------------------------------:|
+| aggressive_predictive   | cgcs_balanced_budget     |      7200 |                         0.586425 |                  0.630229 |            0.17849   |            0.135516  |              0          |                 0.320833  |                        0.190556 |
+| aggressive_predictive   | forecast_first           |      7200 |                         0.590898 |                  0.634027 |            0.169208  |            0.128755  |              0          |                 0.383333  |                        0.19125  |
+| aggressive_predictive   | pressure_first           |      7200 |                         0.589321 |                  0.631479 |            0.177575  |            0.133671  |              0          |                 0.341667  |                        0.190556 |
+| aggressive_predictive   | regret_minimizing_budget |      7200 |                         0.583316 |                  0.627765 |            0.184379  |            0.138279  |              0          |                 0.283333  |                        0.1875   |
+| aggressive_predictive   | uniform_budget           |      7200 |                         0.582903 |                  0.628142 |            0.182935  |            0.138289  |              0          |                 0.3       |                        0.178611 |
+| cgcs_balanced           | cgcs_balanced_budget     |      7200 |                         0.587843 |                  0.586291 |            0.104252  |            0.0612784 |              0.00777778 |                 0.314306  |                        0.18375  |
+| cgcs_balanced           | forecast_first           |      7200 |                         0.580508 |                  0.584837 |            0.103544  |            0.0630914 |              0.00777778 |                 0.33125   |                        0.184167 |
+| cgcs_balanced           | pressure_first           |      7200 |                         0.582286 |                  0.585116 |            0.103855  |            0.0599517 |              0.00777778 |                 0.325972  |                        0.18375  |
+| cgcs_balanced           | regret_minimizing_budget |      7200 |                         0.580399 |                  0.583237 |            0.109471  |            0.0633716 |              0.00777778 |                 0.2825    |                        0.181667 |
+| cgcs_balanced           | uniform_budget           |      7200 |                         0.587378 |                  0.585136 |            0.106967  |            0.062321  |              0.00777778 |                 0.297083  |                        0.174861 |
+| conservative_predictive | cgcs_balanced_budget     |      7200 |                         0.589896 |                  0.586655 |            0.0964116 |            0.0534381 |              0          |                 0.307083  |                        0.187083 |
+| conservative_predictive | forecast_first           |      7200 |                         0.581668 |                  0.584852 |            0.0966193 |            0.0561666 |              0          |                 0.318056  |                        0.187639 |
+| conservative_predictive | pressure_first           |      7200 |                         0.583661 |                  0.585238 |            0.0966737 |            0.0527701 |              0          |                 0.314722  |                        0.187083 |
+| conservative_predictive | regret_minimizing_budget |      7200 |                         0.583544 |                  0.583898 |            0.100642  |            0.0545419 |              0          |                 0.281528  |                        0.183889 |
+| conservative_predictive | uniform_budget           |      7200 |                         0.590098 |                  0.585808 |            0.0987731 |            0.0541274 |              0          |                 0.295     |                        0.178194 |
+| predictive              | cgcs_balanced_budget     |      7200 |                         0.594539 |                  0.61095  |            0.137146  |            0.0941725 |              0          |                 0.320833  |                        0.18125  |
+| predictive              | forecast_first           |      7200 |                         0.599409 |                  0.614675 |            0.129344  |            0.0888917 |              0          |                 0.383333  |                        0.18125  |
+| predictive              | pressure_first           |      7200 |                         0.59703  |                  0.612196 |            0.13424   |            0.0903366 |              0          |                 0.341667  |                        0.18125  |
+| predictive              | regret_minimizing_budget |      7200 |                         0.591464 |                  0.608593 |            0.142521  |            0.0964217 |              0          |                 0.283333  |                        0.179722 |
+| predictive              | uniform_budget           |      7200 |                         0.591917 |                  0.609321 |            0.140858  |            0.0962126 |              0          |                 0.3       |                        0.175833 |
+| reactive                | cgcs_balanced_budget     |      7200 |                         0.525923 |                  0.526472 |            0.121371  |            0.0783976 |              0.0654167  |                 0.0654167 |                        0.185    |
+| reactive                | forecast_first           |      7200 |                         0.515932 |                  0.523991 |            0.123135  |            0.0826821 |              0.0654167  |                 0.0654167 |                        0.185278 |
+| reactive                | pressure_first           |      7200 |                         0.52026  |                  0.524597 |            0.122335  |            0.0784313 |              0.0654167  |                 0.0654167 |                        0.185    |
+| reactive                | regret_minimizing_budget |      7200 |                         0.521844 |                  0.525248 |            0.122268  |            0.0761688 |              0.0654167  |                 0.0654167 |                        0.181806 |
+| reactive                | uniform_budget           |      7200 |                         0.527249 |                  0.526301 |            0.121722  |            0.077076  |              0.0654167  |                 0.0654167 |                        0.175417 |
+
+## Route-budget summary
+
+| macro_route   | budget_strategy          |   windows |   mean_adjusted_constraint_score |   mean_adjusted_stability |   mean_budget_regret |   avoided_fallback_rate |   allocation_rate |
+|:--------------|:-------------------------|----------:|---------------------------------:|--------------------------:|---------------------:|------------------------:|------------------:|
+| macro_0       | cgcs_balanced_budget     |      7271 |                         0.577109 |                  0.588511 |            0.0855027 |               0.0178792 |          0.75973  |
+| macro_0       | forecast_first           |      7271 |                         0.574664 |                  0.589222 |            0.0846836 |               0.0178792 |          0.732086 |
+| macro_0       | pressure_first           |      7271 |                         0.574789 |                  0.588094 |            0.0841206 |               0.0178792 |          0.738413 |
+| macro_0       | regret_minimizing_budget |      7271 |                         0.572718 |                  0.586273 |            0.0864827 |               0.0178792 |          0.725897 |
+| macro_0       | uniform_budget           |      7271 |                         0.576345 |                  0.587365 |            0.0864081 |               0.0178792 |          0.757255 |
+| macro_1       | cgcs_balanced_budget     |      7176 |                         0.57583  |                  0.587622 |            0.0866324 |               0.0163043 |          0.762263 |
+| macro_1       | forecast_first           |      7176 |                         0.572298 |                  0.587826 |            0.0861992 |               0.0163043 |          0.726031 |
+| macro_1       | pressure_first           |      7176 |                         0.573533 |                  0.587317 |            0.0849174 |               0.0163043 |          0.740663 |
+| macro_1       | regret_minimizing_budget |      7176 |                         0.571172 |                  0.585321 |            0.0878166 |               0.0163043 |          0.726031 |
+| macro_1       | uniform_budget           |      7176 |                         0.575012 |                  0.586517 |            0.0875239 |               0.0163043 |          0.759058 |
+| macro_2       | cgcs_balanced_budget     |      7237 |                         0.577913 |                  0.589712 |            0.0837569 |               0.0142324 |          0.762747 |
+| macro_2       | forecast_first           |      7237 |                         0.575061 |                  0.59022  |            0.0828094 |               0.0142324 |          0.731933 |
+| macro_2       | pressure_first           |      7237 |                         0.575765 |                  0.589422 |            0.0820921 |               0.0142324 |          0.742573 |
+| macro_2       | regret_minimizing_budget |      7237 |                         0.572759 |                  0.587164 |            0.085304  |               0.0142324 |          0.722675 |
+| macro_2       | uniform_budget           |      7237 |                         0.57678  |                  0.588482 |            0.0847986 |               0.0142324 |          0.756943 |
+| macro_3       | cgcs_balanced_budget     |      7162 |                         0.577203 |                  0.588128 |            0.0827414 |               0.0118682 |          0.763334 |
+| macro_3       | forecast_first           |      7162 |                         0.573236 |                  0.588248 |            0.0821546 |               0.0118682 |          0.723122 |
+| macro_3       | pressure_first           |      7162 |                         0.574608 |                  0.587667 |            0.0813149 |               0.0118682 |          0.739458 |
+| macro_3       | regret_minimizing_budget |      7162 |                         0.571908 |                  0.585639 |            0.0843132 |               0.0118682 |          0.721586 |
+| macro_3       | uniform_budget           |      7162 |                         0.575972 |                  0.586881 |            0.0840675 |               0.0118682 |          0.756632 |
+| macro_4       | cgcs_balanced_budget     |      7154 |                         0.576559 |                  0.5866   |            0.0841592 |               0.0128599 |          0.755801 |
+| macro_4       | forecast_first           |      7154 |                         0.573129 |                  0.586836 |            0.0837354 |               0.0128599 |          0.720436 |
+| macro_4       | pressure_first           |      7154 |                         0.573847 |                  0.586101 |            0.0827055 |               0.0128599 |          0.73092  |
+| macro_4       | regret_minimizing_budget |      7154 |                         0.571997 |                  0.58432  |            0.0848555 |               0.0128599 |          0.720436 |
+| macro_4       | uniform_budget           |      7154 |                         0.575422 |                  0.585438 |            0.08522   |               0.0128599 |          0.749651 |
+
+## Recommendation summary
+
+| budget_strategy          |   windows |   mean_adjusted_constraint_score |   mean_adjusted_stability |   mean_adjusted_cost |   mean_budget_regret |   reroute_allocation_rate |   decompression_allocation_rate |   monitor_allocation_rate |   avoided_fallback_rate |   mean_budget_switch_rate |   recommendation_score |
+|:-------------------------|----------:|---------------------------------:|--------------------------:|---------------------:|---------------------:|--------------------------:|--------------------------------:|--------------------------:|------------------------:|--------------------------:|-----------------------:|
+| pressure_first           |     36000 |                         0.574512 |                  0.587725 |             0.126936 |            0.0830322 |                  0.277889 |                        0.185528 |                  0.452306 |               0.0146389 |                  0.346347 |               0.357292 |
+| forecast_first           |     36000 |                         0.573683 |                  0.588477 |             0.12437  |            0.0839174 |                  0.296278 |                        0.185917 |                  0.439667 |               0.0146389 |                  0.346347 |               0.355126 |
+| cgcs_balanced_budget     |     36000 |                         0.576925 |                  0.588119 |             0.127534 |            0.0845606 |                  0.265694 |                        0.185528 |                  0.489833 |               0.0146389 |                  0.346347 |               0.354671 |
+| uniform_budget           |     36000 |                         0.575909 |                  0.586942 |             0.130251 |            0.0856052 |                  0.2515   |                        0.176583 |                  0.499833 |               0.0146389 |                  0.346347 |               0.351585 |
+| regret_minimizing_budget |     36000 |                         0.572114 |                  0.585748 |             0.131856 |            0.0857567 |                  0.239222 |                        0.182917 |                  0.469833 |               0.0146389 |                  0.346347 |               0.349605 |
+
+## Interpretation
+
+- Budget allocation turns predictive decompression into a finite-resource routing problem.
+- Pressure-first allocation prioritizes high-pressure windows, but can overspend on noisy pressure spikes.
+- Forecast-first allocation prioritizes expected decompression, but can miss low-probability high-cost collapse.
+- CGCS-balanced allocation spreads resources across pressure, forecast risk, regret, and constraint score.
+- Regret-minimizing allocation learns from policy cost but may under-allocate to early weak signals.
+- Best budget strategy by recommendation score in this run: `pressure_first`.
+
+## Next step
+
+Notebook 26 can build budget phase diagrams:
+- sweep reroute budget,
+- sweep decompression budget,
+- vary fallback penalty,
+- identify stable budget regimes and failure boundaries.
+
+## Notebook 26
 
 # Next
 
