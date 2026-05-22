@@ -1181,6 +1181,84 @@ Notebook 22 can build predictive decompression: forecast decompression before fa
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/22_predictive_decompression_forecasting.ipynb)
 
+
+# Report 22 — Predictive Decompression Forecasting
+
+Notebook 22 forecasts decompression events before fallback occurs.
+
+Constraint view:
+> recursive compression should expand before coherence collapse propagates through compressed macro routes.
+
+## Generated outputs
+
+- Predictive decompression CSV: <a href="results/notebook22_predictive_decompression.csv">`results/notebook22_predictive_decompression.csv`</a>
+- Predictive decompression JSON: <a href="results/notebook22_predictive_decompression.json">`results/notebook22_predictive_decompression.json`</a>
+- Summary CSV: <a href="results/notebook22_summary.csv">`results/notebook22_summary.csv`</a>
+- Feature importance CSV: <a href="results/notebook22_feature_importance.csv">`results/notebook22_feature_importance.csv`</a>
+- Forecast transition matrix CSV: <a href="results/notebook22_forecast_transition_matrix.csv">`results/notebook22_forecast_transition_matrix.csv`</a>
+- Classification report CSV: <a href="results/notebook22_classification_report.csv">`results/notebook22_classification_report.csv`</a>
+- Confusion matrix CSV: <a href="results/notebook22_confusion_matrix.csv">`results/notebook22_confusion_matrix.csv`</a>
+- Figure: <a href="figures/notebook22_probability_timeline.png">`figures/notebook22_probability_timeline.png`</a>
+- Figure: <a href="figures/notebook22_actual_vs_predicted.png">`figures/notebook22_actual_vs_predicted.png`</a>
+- Figure: <a href="figures/notebook22_feature_importance.png">`figures/notebook22_feature_importance.png`</a>
+- Figure: <a href="figures/notebook22_forecast_transition_matrix.png">`figures/notebook22_forecast_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook22_roc_curve.png">`figures/notebook22_roc_curve.png`</a>
+- Figure: <a href="figures/notebook22_pressure_vs_probability.png">`figures/notebook22_pressure_vs_probability.png`</a>
+- Figure: <a href="figures/notebook22_pca_projection.png">`figures/notebook22_pca_projection.png`</a>
+
+## Summary
+
+|   windows |   forecast_horizon |   forecast_positive_windows |   actual_future_decompression_windows |   roc_auc |   mean_probability |   mean_pressure |   mean_stability |   mean_switch_rate |
+|----------:|-------------------:|----------------------------:|--------------------------------------:|----------:|-------------------:|----------------:|-----------------:|-------------------:|
+|       240 |                  5 |                          42 |                                    52 |  0.943433 |           0.209657 |        0.460494 |         0.574643 |           0.759015 |
+
+## Feature importance
+
+| feature             |   importance |
+|:--------------------|-------------:|
+| rolling_pressure    |    0.239532  |
+| rolling_residual    |    0.189588  |
+| macro_cgcs_score    |    0.189084  |
+| rolling_stability   |    0.166333  |
+| rolling_volatility  |    0.123643  |
+| rolling_switch_rate |    0.0641996 |
+| macro_route_id      |    0.0276208 |
+
+## Forecast transition probabilities
+
+|          |   stable |   forecast |
+|:---------|---------:|-----------:|
+| stable   | 0.954315 |  0.0456853 |
+| forecast | 0.214286 |  0.785714  |
+
+## Classification report
+
+|              |   precision |   recall |   f1-score |   support |
+|:-------------|------------:|---------:|-----------:|----------:|
+| 0            |    0.929293 | 0.978723 |   0.953368 |   188     |
+| 1            |    0.904762 | 0.730769 |   0.808511 |    52     |
+| accuracy     |    0.925    | 0.925    |   0.925    |     0.925 |
+| macro avg    |    0.917027 | 0.854746 |   0.880939 |   240     |
+| weighted avg |    0.923978 | 0.925    |   0.921982 |   240     |
+
+## Interpretation
+
+- Forecast probability estimates decompression risk before fallback emerges.
+- Rolling pressure, residual instability, and switch-rate volatility dominate decompression forecasting.
+- Stable compressed plateaus reduce decompression probability.
+- Pressure spikes increase forecast instability and future decompression likelihood.
+- Forecast transition structure reveals persistence between stable and unstable routing phases.
+
+## Next step
+
+Notebook 23 can build multi-horizon forecasting:
+- short horizon,
+- medium horizon,
+- long horizon,
+- recursive decompression cascade prediction.
+
+## Notebook 23
+
 # Next
 
 | Notebook | Direction                                       |
