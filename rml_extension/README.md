@@ -1117,6 +1117,10 @@ Constraint view:
 
 Notebook 21 can build graph-based route topology over accepted, watch, and fallback macro states.
 
+## Notebook 21 -
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/21_adaptive_threshold_gating.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
