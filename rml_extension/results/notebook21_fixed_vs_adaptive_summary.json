@@ -1,0 +1,14 @@
+{
+  "windows": 240,
+  "fixed_accepted": 24,
+  "adaptive_accepted": 30,
+  "fixed_watch": 144,
+  "adaptive_watch": 117,
+  "fixed_fallback": 72,
+  "adaptive_fallback": 93,
+  "early_decompression_candidates": 114,
+  "mean_fixed_switch_rate": 0.6125834269395608,
+  "mean_adaptive_switch_rate": 0.5434470639153302,
+  "mean_fixed_stability_score": 0.5068207724892855,
+  "mean_adaptive_stability_score": 0.4980094084550354
+}
