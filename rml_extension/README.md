@@ -1372,6 +1372,8 @@ Notebook 24 can build route-memory policy evaluation:
 
 ## Notebook 24
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/24_route_memory_policy_evaluation.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
