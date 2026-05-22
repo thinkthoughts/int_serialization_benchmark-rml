@@ -1056,9 +1056,66 @@ The plateau structures in 17–19 especially suggest a clean next step into:
 
 Notebook 20 can add CGCS-style constraint gating over compressed route memory.
 
-#Notebook 20 -
+#Notebook 20 - Constraint-Gated Macro Routing
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/20_constraint_gated_macro_routing.ipynb)
+
+# Report 20 — Constraint-Gated Macro Routing
+
+This report adds a CGCS-style constraint gate over compressed macro routes.
+
+Constraint view:
+> compressed memory is useful only when macro routes remain coherent, stable, and recoverable under observed pressure.
+
+## Generated outputs
+
+- Constraint-gated routing CSV: <a href="results/notebook20_constraint_gated_macro_routing.csv">`results/notebook20_constraint_gated_macro_routing.csv`</a>
+- Constraint-gated routing JSON: <a href="results/notebook20_constraint_gated_macro_routing.json">`results/notebook20_constraint_gated_macro_routing.json`</a>
+- Gate summary CSV: <a href="results/notebook20_gate_summary_by_macro_route.csv">`results/notebook20_gate_summary_by_macro_route.csv`</a>
+- Gate transition matrix CSV: <a href="results/notebook20_gate_transition_matrix.csv">`results/notebook20_gate_transition_matrix.csv`</a>
+- Figure: <a href="/figures/notebook20_macro_cgcs_score_timeline.png">`/figures/notebook20_macro_cgcs_score_timeline.png`</a>
+- Figure: <a href="figures/notebook20_constraint_gate_timeline.png">`figures/notebook20_constraint_gate_timeline.png`</a>
+- Figure: <a href="figures/notebook20_gate_summary_by_macro_route.png">`figures/notebook20_gate_summary_by_macro_route.png`</a>
+- Figure: <a href="figures/notebook20_component_matrix_by_macro_route.png">`figures/notebook20_component_matrix_by_macro_route.png`</a>
+- Figure: <a href="figures/notebook20_raw_vs_gated_switch_rates.png">`figures/notebook20_raw_vs_gated_switch_rates.png`</a>
+- Figure: <a href="figures/notebook20_decompression_recommendation_timeline.png">`figures/notebook20_decompression_recommendation_timeline.png`</a>
+- Figure: <a href="figures/notebook20_gate_transition_matrix.png">`figures/notebook20_gate_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook20_gated_stability_score.png">`figures/notebook20_gated_stability_score.png`</a>
+
+## Summary
+
+|   windows |   macro_route_count |   mean_macro_cgcs_score |   accepted_windows |   watch_windows |   fallback_windows |   decompression_recommended_windows |   mean_raw_macro_switch_rate |   mean_gated_macro_switch_rate |   mean_gated_stability_score |
+|----------:|--------------------:|------------------------:|-------------------:|----------------:|-------------------:|------------------------------------:|-----------------------------:|-------------------------------:|-----------------------------:|
+|       240 |                   5 |                 0.54585 |                 12 |             155 |                 73 |                                  94 |                      0.62587 |                       0.621981 |                      0.49202 |
+
+## Gate summary by macro route
+
+| macro_route   |   windows |   mean_cgcs |   min_cgcs |   accepted_rate |   watch_rate |   fallback_rate |   decompression_rate |   mean_residual |   mean_stability |   mean_pressure |
+|:--------------|----------:|------------:|-----------:|----------------:|-------------:|----------------:|---------------------:|----------------:|-----------------:|----------------:|
+| macro_4       |        32 |    0.600429 |   0.420215 |       0.09375   |     0.8125   |        0.09375  |             0.21875  |        0.11187  |         0.471002 |        0.614983 |
+| macro_3       |        46 |    0.549579 |   0.368707 |       0         |     0.826087 |        0.173913 |             0.282609 |        0.131436 |         0.427586 |        0.520706 |
+| macro_0       |        87 |    0.547009 |   0.296799 |       0.0804598 |     0.551724 |        0.367816 |             0.471264 |        0.128647 |         0.729734 |        0.225362 |
+| macro_2       |        47 |    0.538734 |   0.305138 |       0.0425532 |     0.680851 |        0.276596 |             0.340426 |        0.112703 |         0.450255 |        0.467122 |
+| macro_1       |        28 |    0.485691 |   0.366511 |       0         |     0.392857 |        0.607143 |             0.607143 |        0.132053 |         0.477034 |        0.611385 |
+
+## Gate transition probabilities
+
+|          |   accepted |    watch |   fallback |
+|:---------|-----------:|---------:|-----------:|
+| accepted |  0.0833333 | 0.666667 |   0.25     |
+| watch    |  0.0516129 | 0.658065 |   0.290323 |
+| fallback |  0.0416667 | 0.625    |   0.333333 |
+
+## Interpretation
+
+- Accepted macro routes are compressed states that remain coherent under route pressure.
+- Watch routes are retained but monitored for instability.
+- Fallback routes are blocked or rerouted because compression is not currently trustworthy.
+- Decompression recommendations identify when recursive compression should temporarily expand.
+
+## Next step
+
+Notebook 21 can build graph-based route topology over accepted, watch, and fallback macro states.
 
 # Next
 
