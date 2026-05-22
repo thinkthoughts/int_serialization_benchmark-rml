@@ -1626,6 +1626,8 @@ Notebook 26 can build budget phase diagrams:
 
 ## Notebook 26
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/26_regime_shift_constraint_routing.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
