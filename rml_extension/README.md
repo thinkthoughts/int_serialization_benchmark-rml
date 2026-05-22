@@ -1510,9 +1510,9 @@ Constraint view:
 > predictive routing is useful only when finite constraint budgets are allocated before fallback pressure dominates.
 
 ## Generated outputs
-
-- Budget allocation CSV: <a href="results/notebook25_constraint_budget_allocation.csv">`results/notebook25_constraint_budget_allocation.csv`</a>
-- Budget allocation JSON: <a href="results/notebook25_constraint_budget_allocation.json">`results/notebook25_constraint_budget_allocation.json`</a>
+)
+- Budget allocation CSV: `results/notebook25_constraint_budget_allocation.csv` (49MB)
+- Budget allocation JSON: `results/notebook25_constraint_budget_allocation.json` (140MB)
 - Budget summary CSV: <a href="results/notebook25_budget_summary.csv">`results/notebook25_budget_summary.csv`</a>
 - Policy-budget summary CSV: <a href="results/notebook25_policy_budget_summary.csv">`results/notebook25_policy_budget_summary.csv`</a>
 - Route-budget summary CSV: <a href="results/notebook25_route_budget_summary.csv">`results/notebook25_route_budget_summary.csv`</a>
