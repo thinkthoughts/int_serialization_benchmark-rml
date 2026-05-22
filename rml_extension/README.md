@@ -1121,6 +1121,62 @@ Notebook 21 can build graph-based route topology over accepted, watch, and fallb
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/21_adaptive_threshold_gating.ipynb)
 
+# Report 21 — Adaptive Threshold Gating
+
+This report replaces fixed CGCS-style macro-route gates with adaptive thresholds.
+
+Constraint view:
+> macro-routing gates should tighten under instability and relax under stable coherent plateaus.
+
+## Generated outputs
+
+- Adaptive threshold gating CSV: <a href="results/notebook21_adaptive_threshold_gating.csv">`results/notebook21_adaptive_threshold_gating.csv`</a>
+- Adaptive threshold gating JSON: <a href="results/notebook21_adaptive_threshold_gating.json">`results/notebook21_adaptive_threshold_gating.json`</a>
+- Fixed vs adaptive summary JSON: <a href="results/notebook21_fixed_vs_adaptive_summary.json">`results/notebook21_fixed_vs_adaptive_summary.json`</a>
+- Fixed gate transition matrix CSV: <a href="results/notebook21_fixed_gate_transition_matrix.csv">`results/notebook21_fixed_gate_transition_matrix.csv`</a>
+- Adaptive gate transition matrix CSV: <a href="results/notebook21_adaptive_gate_transition_matrix.csv">`results/notebook21_adaptive_gate_transition_matrix.csv`</a>
+- Figure: <a href="/figures/notebook21_adaptive_threshold_timeline.png">`/figures/notebook21_adaptive_threshold_timeline.png`</a>
+- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_gate_timeline.png">`/figures/notebook21_fixed_vs_adaptive_gate_timeline.png`</a>
+- Figure: <a href="/figures/notebook21_early_decompression_candidates.png">`/figures/notebook21_early_decompression_candidates.png`</a>
+- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_switch_rates.png">`/figures/notebook21_fixed_vs_adaptive_switch_rates.png`</a>
+- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_stability.png">`/figures/notebook21_fixed_vs_adaptive_stability.png`</a>
+- Figure: <a href="/figures/notebook21_threshold_pressure_components.png">`/figures/notebook21_threshold_pressure_components.png`</a>
+- Figure: <a href="/figures/notebook21_adaptive_gate_transition_matrix.png">`/figures/notebook21_adaptive_gate_transition_matrix.png`</a>
+- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_gate_counts.png">`/figures/notebook21_fixed_vs_adaptive_gate_counts.png`</a>
+
+## Summary
+
+|   windows |   fixed_accepted |   adaptive_accepted |   fixed_watch |   adaptive_watch |   fixed_fallback |   adaptive_fallback |   early_decompression_candidates |   mean_fixed_switch_rate |   mean_adaptive_switch_rate |   mean_fixed_stability_score |   mean_adaptive_stability_score |
+|----------:|-----------------:|--------------------:|--------------:|-----------------:|-----------------:|--------------------:|---------------------------------:|-------------------------:|----------------------------:|-----------------------------:|--------------------------------:|
+|       240 |               24 |                  30 |           144 |              117 |               72 |                  93 |                              114 |                 0.612583 |                    0.543447 |                     0.506821 |                        0.498009 |
+
+## Adaptive gate transition probabilities
+
+|          |   accepted |    watch |   fallback |
+|:---------|-----------:|---------:|-----------:|
+| accepted |  0.833333  | 0.166667 |   0        |
+| watch    |  0.0431034 | 0.594828 |   0.362069 |
+| fallback |  0         | 0.451613 |   0.548387 |
+
+## Fixed gate transition probabilities
+
+|          |   accepted |    watch |   fallback |
+|:---------|-----------:|---------:|-----------:|
+| accepted |  0.5       | 0.416667 |  0.0833333 |
+| watch    |  0.0769231 | 0.65035  |  0.272727  |
+| fallback |  0.0138889 | 0.555556 |  0.430556  |
+
+## Interpretation
+
+- Adaptive gates tighten during high pressure, high volatility, and high residual windows.
+- Adaptive gates relax during stable compressed-route plateaus.
+- Early decompression candidates identify windows where macro compression may need temporary expansion.
+- Fixed gates are easier to interpret; adaptive gates are better for streaming pressure-sensitive routing.
+
+## Next step
+
+Notebook 22 can build predictive decompression: forecast decompression before fallback occurs.
+
 # Next
 
 | Notebook | Direction                                       |
