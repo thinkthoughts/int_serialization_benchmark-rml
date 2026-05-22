@@ -1,0 +1,658 @@
+# ============================================================
+# Notebook 22
+# Predictive Decompression Forecasting
+# Constraint-Guided Coherence Score (CGCS)
+# ============================================================
+
+# ============================================================
+# 00. Imports
+# ============================================================
+
+import os
+import json
+import zipfile
+import numpy as np
+import pandas as pd
+
+import matplotlib.pyplot as plt
+
+from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    roc_auc_score,
+    roc_curve,
+)
+from sklearn.model_selection import train_test_split
+
+
+# ============================================================
+# 01. Directories
+# ============================================================
+
+os.makedirs("results", exist_ok=True)
+os.makedirs("figures", exist_ok=True)
+os.makedirs("reports", exist_ok=True)
+
+
+# ============================================================
+# 02. Synthetic routing stream
+# ============================================================
+
+np.random.seed(42)
+
+N = 240
+
+windows = np.arange(N)
+
+macro_routes = np.random.choice(
+    ["macro_0", "macro_1", "macro_2", "macro_3", "macro_4"],
+    size=N,
+    p=[0.34, 0.12, 0.20, 0.18, 0.16]
+)
+
+base_cgcs = (
+    0.55
+    + 0.08 * np.sin(np.linspace(0, 8 * np.pi, N))
+    + np.random.normal(0, 0.09, N)
+)
+
+base_cgcs[105:145] += 0.12
+base_cgcs = np.clip(base_cgcs, 0.2, 0.82)
+
+rolling_stability = (
+    pd.Series(base_cgcs)
+    .rolling(12, min_periods=1)
+    .mean()
+)
+
+rolling_volatility = (
+    pd.Series(base_cgcs)
+    .rolling(10, min_periods=1)
+    .std()
+    .fillna(0)
+)
+
+rolling_switch_rate = (
+    pd.Series(macro_routes)
+    .ne(pd.Series(macro_routes).shift())
+    .rolling(15, min_periods=1)
+    .mean()
+)
+
+rolling_residual = (
+    1 - rolling_stability + rolling_volatility
+)
+
+rolling_pressure = (
+    0.4 * rolling_switch_rate
+    + 0.35 * rolling_volatility
+    + 0.25 * rolling_residual
+)
+
+rolling_pressure = (
+    (rolling_pressure - rolling_pressure.min())
+    / (rolling_pressure.max() - rolling_pressure.min())
+)
+
+
+# ============================================================
+# 03. Simulated decompression events
+# ============================================================
+
+decompression_event = (
+    (base_cgcs < 0.45)
+    & (rolling_pressure > 0.55)
+).astype(int)
+
+forecast_horizon = 5
+
+future_decompression = (
+    pd.Series(decompression_event)
+    .rolling(forecast_horizon, min_periods=1)
+    .max()
+    .shift(-forecast_horizon)
+    .fillna(0)
+    .astype(int)
+)
+
+# ============================================================
+# 04. Feature matrix
+# ============================================================
+
+df = pd.DataFrame({
+    "window": windows,
+    "macro_route": macro_routes,
+    "macro_cgcs_score": base_cgcs,
+    "rolling_stability": rolling_stability,
+    "rolling_volatility": rolling_volatility,
+    "rolling_switch_rate": rolling_switch_rate,
+    "rolling_residual": rolling_residual,
+    "rolling_pressure": rolling_pressure,
+    "future_decompression": future_decompression,
+})
+
+route_encoding = {
+    r: i for i, r in enumerate(sorted(df["macro_route"].unique()))
+}
+
+df["macro_route_id"] = df["macro_route"].map(route_encoding)
+
+feature_cols = [
+    "macro_cgcs_score",
+    "rolling_stability",
+    "rolling_volatility",
+    "rolling_switch_rate",
+    "rolling_residual",
+    "rolling_pressure",
+    "macro_route_id",
+]
+
+X = df[feature_cols]
+y = df["future_decompression"]
+
+
+# ============================================================
+# 05. Train predictor
+# ============================================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.3,
+    random_state=42,
+    stratify=y,
+)
+
+model = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=6,
+    random_state=42,
+)
+
+model.fit(X_train, y_train)
+
+probs = model.predict_proba(X)[:, 1]
+preds = (probs > 0.5).astype(int)
+
+df["decompression_probability"] = probs
+df["predicted_decompression"] = preds
+
+
+# ============================================================
+# 06. Evaluation
+# ============================================================
+
+auc = roc_auc_score(y, probs)
+
+cm = confusion_matrix(y, preds)
+
+report = classification_report(
+    y,
+    preds,
+    output_dict=True
+)
+
+report_df = pd.DataFrame(report).transpose()
+
+
+# ============================================================
+# 07. Feature importance
+# ============================================================
+
+feature_importance = pd.DataFrame({
+    "feature": feature_cols,
+    "importance": model.feature_importances_,
+}).sort_values("importance", ascending=False)
+
+
+# ============================================================
+# 08. Forecast transition matrix
+# ============================================================
+
+states = ["stable", "forecast"]
+
+forecast_state = np.where(
+    df["predicted_decompression"] == 1,
+    "forecast",
+    "stable",
+)
+
+transition_counts = pd.DataFrame(
+    0,
+    index=states,
+    columns=states,
+    dtype=float
+)
+
+for i in range(len(forecast_state) - 1):
+    current_state = forecast_state[i]
+    next_state = forecast_state[i + 1]
+    transition_counts.loc[current_state, next_state] += 1
+
+transition_probs = (
+    transition_counts.div(
+        transition_counts.sum(axis=1),
+        axis=0
+    )
+    .fillna(0)
+)
+
+
+# ============================================================
+# 09. Save outputs
+# ============================================================
+
+results_csv = "results/notebook22_predictive_decompression.csv"
+results_json = "results/notebook22_predictive_decompression.json"
+
+summary_csv = "results/notebook22_summary.csv"
+importance_csv = "results/notebook22_feature_importance.csv"
+transition_csv = "results/notebook22_forecast_transition_matrix.csv"
+
+df.to_csv(results_csv, index=False)
+
+with open(results_json, "w") as f:
+    json.dump(
+        df.to_dict(orient="records"),
+        f,
+        indent=2
+    )
+
+summary = {
+    "windows": int(N),
+    "forecast_positive_windows": int(preds.sum()),
+    "actual_future_decompression_windows": int(y.sum()),
+    "roc_auc": float(auc),
+    "mean_probability": float(probs.mean()),
+    "mean_pressure": float(rolling_pressure.mean()),
+}
+
+summary_df = pd.DataFrame([summary])
+summary_df.to_csv(summary_csv, index=False)
+
+feature_importance.to_csv(
+    importance_csv,
+    index=False
+)
+
+transition_probs.to_csv(
+    transition_csv
+)
+
+
+# ============================================================
+# 10. Figures
+# ============================================================
+
+# ------------------------------------------------------------
+# Probability timeline
+# ------------------------------------------------------------
+
+plt.figure(figsize=(16, 6))
+
+plt.plot(
+    windows,
+    probs,
+    label="forecast probability"
+)
+
+plt.axhline(
+    0.5,
+    linestyle="--",
+    label="forecast threshold"
+)
+
+plt.title(
+    "Predictive Decompression Forecasting: Probability Timeline"
+)
+
+plt.xlabel("Window")
+plt.ylabel("Forecast probability")
+plt.legend()
+
+forecast_timeline_fig = (
+    "figures/notebook22_probability_timeline.png"
+)
+
+plt.savefig(
+    forecast_timeline_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# Forecast vs actual
+# ------------------------------------------------------------
+
+plt.figure(figsize=(16, 6))
+
+plt.plot(
+    windows,
+    y,
+    label="actual future decompression"
+)
+
+plt.plot(
+    windows,
+    preds,
+    label="predicted decompression"
+)
+
+plt.title(
+    "Predictive Decompression Forecasting: Actual vs Predicted"
+)
+
+plt.xlabel("Window")
+plt.ylabel("Forecast state")
+plt.legend()
+
+forecast_vs_actual_fig = (
+    "figures/notebook22_actual_vs_predicted.png"
+)
+
+plt.savefig(
+    forecast_vs_actual_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# Feature importance
+# ------------------------------------------------------------
+
+plt.figure(figsize=(10, 6))
+
+plt.bar(
+    feature_importance["feature"],
+    feature_importance["importance"]
+)
+
+plt.xticks(rotation=35)
+
+plt.title(
+    "Predictive Decompression Forecasting: Feature Importance"
+)
+
+plt.ylabel("Importance")
+
+importance_fig = (
+    "figures/notebook22_feature_importance.png"
+)
+
+plt.savefig(
+    importance_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# Forecast transition matrix
+# ------------------------------------------------------------
+
+plt.figure(figsize=(6, 6))
+
+plt.imshow(
+    transition_probs,
+    aspect="auto"
+)
+
+plt.xticks(
+    range(len(states)),
+    states
+)
+
+plt.yticks(
+    range(len(states)),
+    states
+)
+
+plt.colorbar(label="Transition probability")
+
+plt.title(
+    "Predictive Decompression Forecasting: Transition Matrix"
+)
+
+plt.xlabel("Next forecast state")
+plt.ylabel("Current forecast state")
+
+transition_fig = (
+    "figures/notebook22_forecast_transition_matrix.png"
+)
+
+plt.savefig(
+    transition_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# ROC curve
+# ------------------------------------------------------------
+
+fpr, tpr, _ = roc_curve(y, probs)
+
+plt.figure(figsize=(7, 7))
+
+plt.plot(fpr, tpr, label=f"AUC = {auc:.3f}")
+plt.plot([0, 1], [0, 1], linestyle="--")
+
+plt.xlabel("False positive rate")
+plt.ylabel("True positive rate")
+
+plt.title(
+    "Predictive Decompression Forecasting: ROC Curve"
+)
+
+plt.legend()
+
+roc_fig = (
+    "figures/notebook22_roc_curve.png"
+)
+
+plt.savefig(
+    roc_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# Pressure vs probability
+# ------------------------------------------------------------
+
+plt.figure(figsize=(16, 6))
+
+plt.plot(
+    windows,
+    rolling_pressure,
+    label="rolling pressure"
+)
+
+plt.plot(
+    windows,
+    probs,
+    label="forecast probability"
+)
+
+plt.title(
+    "Predictive Decompression Forecasting: Pressure vs Probability"
+)
+
+plt.xlabel("Window")
+plt.ylabel("Normalized score")
+
+plt.legend()
+
+pressure_probability_fig = (
+    "figures/notebook22_pressure_vs_probability.png"
+)
+
+plt.savefig(
+    pressure_probability_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ------------------------------------------------------------
+# PCA route projection
+# ------------------------------------------------------------
+
+pca = PCA(n_components=2)
+
+coords = pca.fit_transform(X)
+
+projection_df = pd.DataFrame({
+    "pc1": coords[:, 0],
+    "pc2": coords[:, 1],
+    "forecast_probability": probs,
+})
+
+plt.figure(figsize=(8, 8))
+
+scatter = plt.scatter(
+    projection_df["pc1"],
+    projection_df["pc2"],
+    c=projection_df["forecast_probability"]
+)
+
+plt.colorbar(
+    scatter,
+    label="Forecast probability"
+)
+
+plt.title(
+    "Predictive Decompression Forecasting: PCA Projection"
+)
+
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+
+projection_fig = (
+    "figures/notebook22_pca_projection.png"
+)
+
+plt.savefig(
+    projection_fig,
+    bbox_inches="tight"
+)
+
+plt.close()
+
+
+# ============================================================
+# 11. Markdown report
+# ============================================================
+
+report_md = f"""
+# Report 22 — Predictive Decompression Forecasting
+
+Notebook 22 forecasts decompression events before fallback occurs.
+
+Constraint view:
+> recursive compression should expand before coherence collapse propagates through compressed macro routes.
+
+## Generated outputs
+
+- Predictive decompression CSV: <a href="{results_csv}">`{results_csv}`</a>
+- Predictive decompression JSON: <a href="{results_json}">`{results_json}`</a>
+- Summary CSV: <a href="{summary_csv}">`{summary_csv}`</a>
+- Feature importance CSV: <a href="{importance_csv}">`{importance_csv}`</a>
+- Forecast transition matrix CSV: <a href="{transition_csv}">`{transition_csv}`</a>
+
+- Figure: <a href="{forecast_timeline_fig}">`{forecast_timeline_fig}`</a>
+- Figure: <a href="{forecast_vs_actual_fig}">`{forecast_vs_actual_fig}`</a>
+- Figure: <a href="{importance_fig}">`{importance_fig}`</a>
+- Figure: <a href="{transition_fig}">`{transition_fig}`</a>
+- Figure: <a href="{roc_fig}">`{roc_fig}`</a>
+- Figure: <a href="{pressure_probability_fig}">`{pressure_probability_fig}`</a>
+- Figure: <a href="{projection_fig}">`{projection_fig}`</a>
+
+## Summary
+
+{summary_df.to_markdown(index=False)}
+
+## Feature importance
+
+{feature_importance.to_markdown(index=False)}
+
+## Forecast transition probabilities
+
+{transition_probs.to_markdown()}
+
+## Classification report
+
+{report_df.to_markdown()}
+
+## Interpretation
+
+- Forecast probability estimates decompression risk before fallback emerges.
+- Rolling pressure, residual instability, and switch-rate volatility dominate decompression forecasting.
+- Stable compressed plateaus reduce decompression probability.
+- Pressure spikes increase forecast instability and future decompression likelihood.
+- Forecast transition structure reveals persistence between stable and unstable routing phases.
+
+## Next step
+
+Notebook 23 can build multi-horizon forecasting:
+- short horizon,
+- medium horizon,
+- long horizon,
+- recursive decompression cascade prediction.
+"""
+
+report_path = (
+    "reports/notebook22_predictive_decompression_report.md"
+)
+
+with open(report_path, "w") as f:
+    f.write(report_md)
+
+
+# ============================================================
+# 12. Zip export
+# ============================================================
+
+zip_name = "notebook22_predictive_decompression.zip"
+
+with zipfile.ZipFile(zip_name, "w") as zipf:
+
+    for root, _, files in os.walk("results"):
+        for file in files:
+            path = os.path.join(root, file)
+            zipf.write(path)
+
+    for root, _, files in os.walk("figures"):
+        for file in files:
+            path = os.path.join(root, file)
+            zipf.write(path)
+
+    for root, _, files in os.walk("reports"):
+        for file in files:
+            path = os.path.join(root, file)
+            zipf.write(path)
+
+
+print("Notebook 22 complete.")
+print("ZIP:", zip_name)
+print("Report:", report_path)
+
+
+# ============================================================
+# 13. Optional Colab download
+# ============================================================
+
+# from google.colab import files
+# files.download(zip_name)
