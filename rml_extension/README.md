@@ -1259,7 +1259,7 @@ Notebook 23 can build multi-horizon forecasting:
 
 ## Notebook 23
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/ElementalTask-RML/blob/main/notebooks/23_predictive_constraint_routing.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/ElementalTask-RML/blob/main/notebooks/notebook23_predictive_constraint_routing_report.md)
 
 
 # Report 23 — Predictive Constraint Routing
