@@ -1135,14 +1135,14 @@ Constraint view:
 - Fixed vs adaptive summary JSON: <a href="results/notebook21_fixed_vs_adaptive_summary.json">`results/notebook21_fixed_vs_adaptive_summary.json`</a>
 - Fixed gate transition matrix CSV: <a href="results/notebook21_fixed_gate_transition_matrix.csv">`results/notebook21_fixed_gate_transition_matrix.csv`</a>
 - Adaptive gate transition matrix CSV: <a href="results/notebook21_adaptive_gate_transition_matrix.csv">`results/notebook21_adaptive_gate_transition_matrix.csv`</a>
-- Figure: <a href="/figures/notebook21_adaptive_threshold_timeline.png">`/figures/notebook21_adaptive_threshold_timeline.png`</a>
-- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_gate_timeline.png">`/figures/notebook21_fixed_vs_adaptive_gate_timeline.png`</a>
-- Figure: <a href="/figures/notebook21_early_decompression_candidates.png">`/figures/notebook21_early_decompression_candidates.png`</a>
-- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_switch_rates.png">`/figures/notebook21_fixed_vs_adaptive_switch_rates.png`</a>
-- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_stability.png">`/figures/notebook21_fixed_vs_adaptive_stability.png`</a>
-- Figure: <a href="/figures/notebook21_threshold_pressure_components.png">`/figures/notebook21_threshold_pressure_components.png`</a>
-- Figure: <a href="/figures/notebook21_adaptive_gate_transition_matrix.png">`/figures/notebook21_adaptive_gate_transition_matrix.png`</a>
-- Figure: <a href="/figures/notebook21_fixed_vs_adaptive_gate_counts.png">`/figures/notebook21_fixed_vs_adaptive_gate_counts.png`</a>
+- Figure: <a href="figures/notebook21_adaptive_threshold_timeline.png">`/figures/notebook21_adaptive_threshold_timeline.png`</a>
+- Figure: <a href="figures/notebook21_fixed_vs_adaptive_gate_timeline.png">`/figures/notebook21_fixed_vs_adaptive_gate_timeline.png`</a>
+- Figure: <a href="figures/notebook21_early_decompression_candidates.png">`/figures/notebook21_early_decompression_candidates.png`</a>
+- Figure: <a href="figures/notebook21_fixed_vs_adaptive_switch_rates.png">`/figures/notebook21_fixed_vs_adaptive_switch_rates.png`</a>
+- Figure: <a href="figures/notebook21_fixed_vs_adaptive_stability.png">`/figures/notebook21_fixed_vs_adaptive_stability.png`</a>
+- Figure: <a href="figures/notebook21_threshold_pressure_components.png">`/figures/notebook21_threshold_pressure_components.png`</a>
+- Figure: <a href="figures/notebook21_adaptive_gate_transition_matrix.png">`/figures/notebook21_adaptive_gate_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook21_fixed_vs_adaptive_gate_counts.png">`/figures/notebook21_fixed_vs_adaptive_gate_counts.png`</a>
 
 ## Summary
 
