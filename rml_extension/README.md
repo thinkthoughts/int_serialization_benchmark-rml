@@ -1374,6 +1374,131 @@ Notebook 24 can build route-memory policy evaluation:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/24_route_memory_policy_evaluation.ipynb)
 
+# Report 24 — Route-Memory Policy Evaluation
+
+This report compares route-memory policies across repeated trials.
+
+Constraint view:
+> route-memory policies should be compared by stability, fallback reduction, regret, and constraint alignment.
+
+## Generated outputs
+
+- Policy evaluation CSV: <a href="results/notebook24_route_memory_policy_evaluation.csv">`results/notebook24_route_memory_policy_evaluation.csv`</a>
+- Policy evaluation JSON: <a href="results/notebook24_route_memory_policy_evaluation.json">`results/notebook24_route_memory_policy_evaluation.json`</a>
+- Policy summary CSV: <a href="results/notebook24_policy_summary.csv">`results/notebook24_policy_summary.csv`</a>
+- Trial summary CSV: <a href="results/notebook24_trial_summary.csv">`results/notebook24_trial_summary.csv`</a>
+- Route-policy summary CSV: <a href="results/notebook24_route_policy_summary.csv">`results/notebook24_route_policy_summary.csv`</a>
+- aggressive_predictive gate transition matrix CSV: <a href="results/notebook24_aggressive_predictive_gate_transition_matrix.csv">`results/notebook24_aggressive_predictive_gate_transition_matrix.csv`</a>
+- cgcs_balanced gate transition matrix CSV: <a href="results/notebook24_cgcs_balanced_gate_transition_matrix.csv">`results/notebook24_cgcs_balanced_gate_transition_matrix.csv`</a>
+- conservative_predictive gate transition matrix CSV: <a href="results/notebook24_conservative_predictive_gate_transition_matrix.csv">`results/notebook24_conservative_predictive_gate_transition_matrix.csv`</a>
+- predictive gate transition matrix CSV: <a href="results/notebook24_predictive_gate_transition_matrix.csv">`results/notebook24_predictive_gate_transition_matrix.csv`</a>
+- reactive gate transition matrix CSV: <a href="results/notebook24_reactive_gate_transition_matrix.csv">`results/notebook24_reactive_gate_transition_matrix.csv`</a>
+- Figure: <a href="figures/notebook24_policy_constraint_score.png">`figures/notebook24_policy_constraint_score.png`</a>
+- Figure: <a href="figures/notebook24_policy_regret.png">`figures/notebook24_policy_regret.png`</a>
+- Figure: <a href="figures/notebook24_fallback_vs_reroute_rates.png">`figures/notebook24_fallback_vs_reroute_rates.png`</a>
+- Figure: <a href="figures/notebook24_stability_distribution.png">`figures/notebook24_stability_distribution.png`</a>
+- Figure: <a href="figures/notebook24_switch_rate_distribution.png">`figures/notebook24_switch_rate_distribution.png`</a>
+- Figure: <a href="figures/notebook24_route_policy_constraint_heatmap.png">`figures/notebook24_route_policy_constraint_heatmap.png`</a>
+- Figure: <a href="figures/notebook24_trial_constraint_score_timeline.png">`figures/notebook24_trial_constraint_score_timeline.png`</a>
+- Figure: <a href="figures/notebook24_predictive_gate_transition_matrix.png">`figures/notebook24_predictive_gate_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook24_policy_recommendation_summary.png">`figures/notebook24_policy_recommendation_summary.png`</a>
+
+## Summary
+
+| policy                  |   windows |   mean_stability |   std_stability |   mean_constraint_score |   mean_cost |   mean_regret |   fallback_rate |   reroute_rate |   watch_rate |   accepted_rate |   mean_switch_rate |
+|:------------------------|----------:|-----------------:|----------------:|------------------------:|------------:|--------------:|----------------:|---------------:|-------------:|----------------:|-------------------:|
+| cgcs_balanced           |      9600 |         0.588481 |        0.120581 |                0.626514 |    0.208521 |     0.106736  |       0.0619792 |       0.424375 |     0.399792 |        0.113854 |           0.458154 |
+| predictive              |      9600 |         0.595671 |        0.131342 |                0.624655 |    0.238448 |     0.136662  |       0.0935417 |       0.448854 |     0.346146 |        0.111458 |           0.465712 |
+| conservative_predictive |      9600 |         0.564233 |        0.114745 |                0.622721 |    0.13814  |     0.036354  |       0.0226042 |       0.193438 |     0.683438 |        0.100521 |           0.364311 |
+| aggressive_predictive   |      9600 |         0.592404 |        0.154928 |                0.61063  |    0.352543 |     0.250757  |       0.178333  |       0.629062 |     0.114479 |        0.078125 |           0.432945 |
+| reactive                |      9600 |         0.509743 |        0.180596 |                0.584941 |    0.20083  |     0.0990446 |       0.129167  |       0        |     0.733333 |        0.1375   |           0.259097 |
+
+## Trial summary preview
+
+|   trial | policy                  |   mean_stability |   mean_constraint_score |   mean_cost |   mean_regret |   fallback_rate |   reroute_rate |   mean_switch_rate |
+|--------:|:------------------------|-----------------:|------------------------:|------------:|--------------:|----------------:|---------------:|-------------------:|
+|       0 | aggressive_predictive   |         0.598535 |                0.617131 |    0.33552  |     0.23425   |       0.154167  |       0.658333 |           0.419501 |
+|       0 | cgcs_balanced           |         0.589077 |                0.628348 |    0.200233 |     0.0989625 |       0.0541667 |       0.420833 |           0.456097 |
+|       0 | conservative_predictive |         0.563327 |                0.623673 |    0.128791 |     0.0275208 |       0.0166667 |       0.175    |           0.325069 |
+|       0 | predictive              |         0.59266  |                0.622906 |    0.240408 |     0.139137  |       0.1       |       0.429167 |           0.474152 |
+|       0 | reactive                |         0.509743 |                0.585365 |    0.200491 |     0.0992208 |       0.129167  |       0        |           0.259097 |
+|       1 | aggressive_predictive   |         0.592202 |                0.611037 |    0.344103 |     0.244246  |       0.170833  |       0.616667 |           0.461446 |
+|       1 | cgcs_balanced           |         0.588827 |                0.627812 |    0.197407 |     0.09755   |       0.05      |       0.416667 |           0.462096 |
+|       1 | conservative_predictive |         0.564202 |                0.622337 |    0.136878 |     0.0370208 |       0.0208333 |       0.191667 |           0.385082 |
+|       1 | predictive              |         0.597743 |                0.626378 |    0.232023 |     0.132167  |       0.0833333 |       0.458333 |           0.455264 |
+|       1 | reactive                |         0.509743 |                0.584303 |    0.20134  |     0.101483  |       0.129167  |       0        |           0.259097 |
+|       2 | aggressive_predictive   |         0.589952 |                0.608006 |    0.360732 |     0.259071  |       0.1875    |       0.620833 |           0.436446 |
+|       2 | cgcs_balanced           |         0.586327 |                0.624681 |    0.210361 |     0.1087    |       0.0666667 |       0.408333 |           0.454936 |
+|       2 | conservative_predictive |         0.566702 |                0.624331 |    0.135832 |     0.0341708 |       0.0166667 |       0.2125   |           0.358478 |
+|       2 | predictive              |         0.596493 |                0.626248 |    0.228978 |     0.127317  |       0.0833333 |       0.445833 |           0.471097 |
+|       2 | reactive                |         0.509743 |                0.584673 |    0.201044 |     0.0993833 |       0.129167  |       0        |           0.259097 |
+
+## Route-policy summary
+
+| macro_route   | policy                  |   windows |   mean_stability |   mean_constraint_score |   mean_regret |   fallback_rate |   reroute_rate |
+|:--------------|:------------------------|----------:|-----------------:|------------------------:|--------------:|----------------:|---------------:|
+| macro_0       | aggressive_predictive   |      3440 |         0.570018 |                0.582417 |     0.298358  |       0.260465  |       0.578779 |
+| macro_0       | cgcs_balanced           |      3440 |         0.577943 |                0.609787 |     0.114964  |       0.0991279 |       0.405814 |
+| macro_0       | conservative_predictive |      3440 |         0.563024 |                0.612497 |     0.0405875 |       0.0412791 |       0.25     |
+| macro_0       | predictive              |      3440 |         0.579039 |                0.603859 |     0.148879  |       0.14157   |       0.395349 |
+| macro_0       | reactive                |      3440 |         0.496361 |                0.565861 |     0.116996  |       0.174419  |       0        |
+| macro_1       | aggressive_predictive   |      1320 |         0.624931 |                0.635767 |     0.237996  |       0.141667  |       0.623485 |
+| macro_1       | cgcs_balanced           |      1320 |         0.610121 |                0.644729 |     0.108045  |       0.0424242 |       0.361364 |
+| macro_1       | conservative_predictive |      1320 |         0.582727 |                0.637749 |     0.0564909 |       0.0159091 |       0.12803  |
+| macro_1       | predictive              |      1320 |         0.618052 |                0.643243 |     0.140401  |       0.0734848 |       0.400758 |
+| macro_1       | reactive                |      1320 |         0.562333 |                0.627432 |     0.0356015 |       0.030303  |       0        |
+| macro_2       | aggressive_predictive   |      1720 |         0.620628 |                0.637785 |     0.215635  |       0.101163  |       0.701163 |
+| macro_2       | cgcs_balanced           |      1720 |         0.610523 |                0.642464 |     0.128783  |       0.0430233 |       0.516279 |
+| macro_2       | conservative_predictive |      1720 |         0.573232 |                0.631472 |     0.0395047 |       0.0168605 |       0.137791 |
+| macro_2       | predictive              |      1720 |         0.627337 |                0.648492 |     0.141674  |       0.0476744 |       0.581395 |
+| macro_2       | reactive                |      1720 |         0.533977 |                0.604345 |     0.0849733 |       0.0930233 |       0        |
+| macro_3       | aggressive_predictive   |      1720 |         0.590334 |                0.61764  |     0.22355   |       0.122674  |       0.711628 |
+| macro_3       | cgcs_balanced           |      1720 |         0.57791  |                0.628194 |     0.0857076 |       0.019186  |       0.461047 |
+| macro_3       | conservative_predictive |      1720 |         0.547694 |                0.618986 |     0.0300919 |       0         |       0.201744 |
+| macro_3       | predictive              |      1720 |         0.590003 |                0.627886 |     0.122632  |       0.0534884 |       0.518023 |
+| macro_3       | reactive                |      1720 |         0.491398 |                0.579025 |     0.101981  |       0.116279  |       0        |
+| macro_4       | aggressive_predictive   |      1400 |         0.584607 |                0.614277 |     0.2224    |       0.174286  |       0.567857 |
+| macro_4       | cgcs_balanced           |      1400 |         0.579879 |                0.628779 |     0.0840329 |       0.065     |       0.371429 |
+| macro_4       | conservative_predictive |      1400 |         0.559029 |                0.62751  |     0.0107879 |       0.0178571 |       0.174286 |
+| macro_4       | predictive              |      1400 |         0.583493 |                0.624974 |     0.114199  |       0.1       |       0.377857 |
+| macro_4       | reactive                |      1400 |         0.485807 |                0.575186 |     0.128433  |       0.171429  |       0        |
+
+## Policy recommendation
+
+| policy                  |   windows |   mean_stability |   std_stability |   mean_constraint_score |   mean_cost |   mean_regret |   fallback_rate |   reroute_rate |   watch_rate |   accepted_rate |   mean_switch_rate |   rank_score |
+|:------------------------|----------:|-----------------:|----------------:|------------------------:|------------:|--------------:|----------------:|---------------:|-------------:|----------------:|-------------------:|-------------:|
+| conservative_predictive |      9600 |         0.564233 |        0.114745 |                0.622721 |    0.13814  |     0.036354  |       0.0226042 |       0.193438 |     0.683438 |        0.100521 |           0.364311 |     0.707761 |
+| cgcs_balanced           |      9600 |         0.588481 |        0.120581 |                0.626514 |    0.208521 |     0.106736  |       0.0619792 |       0.424375 |     0.399792 |        0.113854 |           0.458154 |     0.653298 |
+| predictive              |      9600 |         0.595671 |        0.131342 |                0.624655 |    0.238448 |     0.136662  |       0.0935417 |       0.448854 |     0.346146 |        0.111458 |           0.465712 |     0.625749 |
+| reactive                |      9600 |         0.509743 |        0.180596 |                0.584941 |    0.20083  |     0.0990446 |       0.129167  |       0        |     0.733333 |        0.1375   |           0.259097 |     0.613041 |
+| aggressive_predictive   |      9600 |         0.592404 |        0.154928 |                0.61063  |    0.352543 |     0.250757  |       0.178333  |       0.629062 |     0.114479 |        0.078125 |           0.432945 |     0.515603 |
+
+## Predictive gate transition probabilities
+
+|          |   accepted |     watch |   reroute |   fallback |
+|:---------|-----------:|----------:|----------:|-----------:|
+| accepted |  0.518519  | 0.37037   |  0.111111 |  0         |
+| watch    |  0.104651  | 0.569767  |  0.313953 |  0.0116279 |
+| reroute  |  0.0392157 | 0.245098  |  0.558824 |  0.156863  |
+| fallback |  0         | 0.0833333 |  0.666667 |  0.25      |
+
+## Interpretation
+
+- Reactive routing minimizes early intervention but waits until decompression is already observed.
+- Predictive routing can reduce reactive fallback handling by inserting reroute states before collapse.
+- Conservative predictive routing reduces unnecessary reroutes but may miss some avoidable fallback windows.
+- Aggressive predictive routing increases reroute pressure and may raise switching cost.
+- CGCS-balanced routing weighs stability, pressure, fallback avoidance, and route switching together.
+- Best policy by recommendation score in this run: `conservative_predictive`.
+
+## Next step
+
+Notebook 25 can build policy-regret phase diagrams:
+- vary forecast threshold,
+- vary fallback penalty,
+- vary reroute cost,
+- map stable regions of route-memory policy choice.
+
 # Next
 
 | Notebook | Direction                                       |
