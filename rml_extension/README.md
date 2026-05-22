@@ -1259,6 +1259,120 @@ Notebook 23 can build multi-horizon forecasting:
 
 ## Notebook 23
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/ElementalTask-RML/blob/main/notebooks/23_predictive_constraint_routing.ipynb)
+
+
+# Report 23 — Predictive Constraint Routing
+
+Notebook 23 uses decompression forecasts to route before fallback occurs.
+
+Constraint view:
+> predictive routing is useful when forecast risk can stabilize compressed routes before fallback becomes necessary.
+
+## Generated outputs
+
+- Predictive constraint routing CSV: <a href="results/notebook23_predictive_constraint_routing.csv">`results/notebook23_predictive_constraint_routing.csv`</a>
+- Predictive constraint routing JSON: <a href="results/notebook23_predictive_constraint_routing.json">`results/notebook23_predictive_constraint_routing.json`</a>
+- Summary CSV: <a href="results/notebook23_summary.csv">`results/notebook23_summary.csv`</a>
+- Action summary CSV: <a href="results/notebook23_action_summary.csv">`results/notebook23_action_summary.csv`</a>
+- Route summary CSV: <a href="results/notebook23_route_summary.csv">`results/notebook23_route_summary.csv`</a>
+- Feature importance CSV: <a href="results/notebook23_feature_importance.csv">`results/notebook23_feature_importance.csv`</a>
+- Predictive gate transition matrix CSV: <a href="results/notebook23_predictive_gate_transition_matrix.csv">`results/notebook23_predictive_gate_transition_matrix.csv`</a>
+- Reactive gate transition matrix CSV: <a href="results/notebook23_reactive_gate_transition_matrix.csv">`results/notebook23_reactive_gate_transition_matrix.csv`</a>
+- Forecast classification report CSV: <a href="results/notebook23_forecast_classification_report.csv">`results/notebook23_forecast_classification_report.csv`</a>
+
+- Figure: <a href="figures/notebook23_decompression_risk_timeline.png">`figures/notebook23_decompression_risk_timeline.png`</a>
+- Figure: <a href="figures/notebook23_reactive_vs_predictive_gate_timeline.png">`figures/notebook23_reactive_vs_predictive_gate_timeline.png`</a>
+- Figure: <a href="figures/notebook23_reactive_vs_predictive_stability.png">`figures/notebook23_reactive_vs_predictive_stability.png`</a>
+- Figure: <a href="figures/notebook23_reactive_vs_predictive_switch_rates.png">`figures/notebook23_reactive_vs_predictive_switch_rates.png`</a>
+- Figure: <a href="figures/notebook23_action_counts.png">`figures/notebook23_action_counts.png`</a>
+- Figure: <a href="figures/notebook23_stability_gain_by_macro_route.png">`figures/notebook23_stability_gain_by_macro_route.png`</a>
+- Figure: <a href="figures/notebook23_predictive_gate_transition_matrix.png">`figures/notebook23_predictive_gate_transition_matrix.png`</a>
+- Figure: <a href="figures/notebook23_pressure_risk_intervention.png">`figures/notebook23_pressure_risk_intervention.png`</a>
+- Figure: <a href="figures/notebook23_avoided_fallback_summary.png">`figures/notebook23_avoided_fallback_summary.png`</a>
+
+## Summary
+
+|   windows |   roc_auc |   forecast_positive_windows |   actual_future_decompression_windows |   predictive_reroute_windows |   reactive_fallback_windows |   predictive_fallback_windows |   avoidable_fallback_windows |   mean_reactive_stability |   mean_predictive_stability |   mean_stability_gain |   mean_reactive_switch_rate |   mean_predictive_switch_rate |
+|----------:|----------:|----------------------------:|--------------------------------------:|-----------------------------:|----------------------------:|------------------------------:|-----------------------------:|--------------------------:|----------------------------:|----------------------:|----------------------------:|------------------------------:|
+|       240 |  0.955189 |                          21 |                                    28 |                           15 |                          11 |                             6 |                           19 |                  0.525255 |                    0.553589 |             0.0283333 |                    0.186263 |                      0.188826 |
+
+## Predictive action summary
+
+| predictive_action   |   windows |   mean_probability |   mean_pressure |   mean_cgcs |   mean_stability_gain |   avoidable_fallback_rate |
+|:--------------------|----------:|-------------------:|----------------:|------------:|----------------------:|--------------------------:|
+| monitor             |       193 |          0.0742822 |        0.366176 |    0.525796 |            0.00735751 |                  0        |
+| retain_compressed   |        26 |          0.0346947 |        0.365855 |    0.758215 |            0.06       |                  0        |
+| predictive_reroute  |        15 |          0.582068  |        0.640679 |    0.500804 |            0.216      |                  0.866667 |
+| protective_fallback |         6 |          0.751807  |        0.760037 |    0.407737 |            0.0966667  |                  1        |
+
+## Macro route summary
+
+| macro_route   |   windows |   mean_probability |   mean_pressure |   mean_cgcs |   mean_stability_gain |   predictive_reroute_rate |   protective_fallback_rate |
+|:--------------|----------:|-------------------:|----------------:|------------:|----------------------:|--------------------------:|---------------------------:|
+| macro_1       |        26 |          0.174996  |        0.437776 |    0.537271 |             0.0530769 |                 0.0769231 |                  0.0769231 |
+| macro_4       |        47 |          0.159265  |        0.38458  |    0.535345 |             0.0278723 |                 0.0851064 |                  0.0638298 |
+| macro_3       |        39 |          0.117493  |        0.418102 |    0.554013 |             0.0374359 |                 0.0769231 |                  0         |
+| macro_2       |        49 |          0.100203  |        0.369517 |    0.533377 |             0.0189796 |                 0.0204082 |                  0.0204082 |
+| macro_0       |        79 |          0.0880109 |        0.385884 |    0.560487 |             0.0217722 |                 0.0632911 |                  0         |
+
+## Feature importance
+
+| feature             |   importance |
+|:--------------------|-------------:|
+| rolling_pressure    |    0.224015  |
+| rolling_stability   |    0.221592  |
+| rolling_residual    |    0.200987  |
+| rolling_switch_rate |    0.118482  |
+| macro_cgcs_score    |    0.114278  |
+| rolling_volatility  |    0.0835203 |
+| macro_route_id      |    0.0371263 |
+
+## Predictive gate transition probabilities
+
+|          |   accepted |    watch |   reroute |   fallback |
+|:---------|-----------:|---------:|----------:|-----------:|
+| accepted |  0.461538  | 0.538462 |  0        | 0          |
+| watch    |  0.0677083 | 0.911458 |  0.015625 | 0.00520833 |
+| reroute  |  0.0666667 | 0.2      |  0.533333 | 0.2        |
+| fallback |  0         | 0        |  0.666667 | 0.333333   |
+
+## Reactive gate transition probabilities
+
+|          |   accepted |    watch |   fallback |
+|:---------|-----------:|---------:|-----------:|
+| accepted |  0.444444  | 0.518519 |  0.037037  |
+| watch    |  0.0646766 | 0.910448 |  0.0248756 |
+| fallback |  0.181818  | 0.454545 |  0.363636  |
+
+## Forecast classification report
+
+|              |   precision |   recall |   f1-score |    support |
+|:-------------|------------:|---------:|-----------:|-----------:|
+| 0            |    0.958904 | 0.990566 |   0.974478 | 212        |
+| 1            |    0.904762 | 0.678571 |   0.77551  |  28        |
+| accuracy     |    0.954167 | 0.954167 |   0.954167 |   0.954167 |
+| macro avg    |    0.931833 | 0.834569 |   0.874994 | 240        |
+| weighted avg |    0.952588 | 0.954167 |   0.951265 | 240        |
+
+## Interpretation
+
+- Predictive routing converts high decompression probability into route actions before fallback is observed.
+- Predictive reroute windows act as intermediate states between watch and fallback.
+- Protective fallback is reserved for high-risk, high-pressure windows.
+- Stability gain estimates whether forecast-informed routing improves compressed-route reliability.
+- Avoidable fallback windows identify where forecasting can reduce reactive collapse handling.
+
+## Next step
+
+Notebook 24 can build route-memory policy evaluation:
+- compare routing policies across repeated trials,
+- estimate stability distributions,
+- score policy regret,
+- select routing policies under CGCS-style constraints.
+
+## Notebook 24
+
 # Next
 
 | Notebook | Direction                                       |
