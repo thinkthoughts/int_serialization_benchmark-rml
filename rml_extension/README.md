@@ -1179,6 +1179,8 @@ Notebook 22 can build predictive decompression: forecast decompression before fa
 
 ## Notebook 22
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/recursive-memory-compression/blob/main/notebooks/22_predictive_decompression_forecasting.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
