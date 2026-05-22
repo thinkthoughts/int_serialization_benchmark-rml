@@ -1047,11 +1047,18 @@ Constraint view:
 - Macro switch rate should be lower than child switch rate if compression stabilizes routing.
 - Redundancy pairs identify candidates for safe merge or grouped monitoring.
 
+## (Notebooks 17-19)
+
+The plateau structures in 17–19 especially suggest a clean next step into:
+“stable latent manifolds under recursive routing pressure.”
+
 ## Next step
 
 Notebook 20 can add CGCS-style constraint gating over compressed route memory.
 
 #Notebook 20 -
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/20_constraint_gated_macro_routing.ipynb)
 
 # Next
 
