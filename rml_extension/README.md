@@ -1499,6 +1499,10 @@ Notebook 25 can build policy-regret phase diagrams:
 - vary reroute cost,
 - map stable regions of route-memory policy choice.
 
+##Notebook 25
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/thinkthoughts/int_serialization_benchmark-rml/blob/main/rml_extension/notebooks/25_constraint_budget_allocation.ipynb)
+
 # Next
 
 | Notebook | Direction                                       |
